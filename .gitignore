@@ -1,2 +1,4 @@
 *.[oa]
 myRtsp
+cscope*
+.depend
