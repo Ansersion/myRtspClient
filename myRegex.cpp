@@ -2,8 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+const int MyRegex::REGEX_FAILURE = 0;
+const int MyRegex::REGEX_SUCCESS = 1;
+
 MyRegex::MyRegex():
-	pReg(NULL), pMatch(NULL)
+	pReg(NULL), pMatch(NULL), NextPos(string::npos), LastStr(NULL)
 {
 	memset(RegexBuf, 0, REGEX_BUF_SIZE);
 }
@@ -66,6 +69,50 @@ int MyRegex::Regex(const char * str, const char * pattern, list<string> * groups
 	return REGEX_SUCCESS;
 }
 
+int MyRegex::Regex(const char * str, const char * pattern, bool ignore_case)
+{
+    list<string> tmp;
+    return Regex(str, pattern, &tmp, ignore_case);
+}
+
+int MyRegex::RegexLine(string * str, string * pattern, list<string> * groups, bool ignore_case)
+{
+    const int EndOfString = 0;
+    const int StillInString = 1;
+    string::size_type TmpPos = 0;
+    string MatchedLine("");
+
+    if(LastStr != str) {
+	LastStr = str;
+	NextPos = 0;
+    }
+    if(string::npos == NextPos) return EndOfString;
+    if(!LastStr || !pattern || !groups) return EndOfString;
+    TmpPos = LastStr->find("\n", NextPos);
+    groups->clear();
+    if(TmpPos != string::npos) {
+	MatchedLine.assign(LastStr->substr(NextPos, TmpPos - NextPos));
+	NextPos = ++TmpPos;
+    } else {
+	MatchedLine.assign(LastStr->substr(NextPos));
+	NextPos = string::npos;
+    }
+    if(!Regex(MatchedLine.c_str(), pattern->c_str(), groups, ignore_case)) {
+	groups->clear();
+    } else {
+	groups->push_front(MatchedLine);
+    }
+    return StillInString;
+}
+
+int MyRegex::RegexLine(string * str, string * pattern, bool ignore_case)
+{
+    list<string> tmp;
+    return RegexLine(str, pattern, &tmp, ignore_case);
+}
+
+/********************/
+/* proteced method */
 const char * MyRegex::Substr(const char * str, int pos1, int pos2)
 {
 	if(!str) return NULL;
