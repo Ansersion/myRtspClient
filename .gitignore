@@ -1,5 +1,6 @@
 *.[oa]
 myRtsp
 cscope*
+.*swp
 .depend
 myTest

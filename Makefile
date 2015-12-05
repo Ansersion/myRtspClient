@@ -6,7 +6,6 @@ OBJS := $(patsubst %.cpp,%.o, $(SRCS))
 TARGET := myRtsp
 $(TARGET) : $(OBJS) 
 	$(CXX) $(CXXFLAGS) -o $(TARGET) $(OBJS) 
-	mv $(OBJS) ./objs/
 
 .depend: $(SRCS) 
 	@$(CXX) -MM $(SRCS) > $@  		

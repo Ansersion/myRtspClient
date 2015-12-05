@@ -3,12 +3,12 @@
 #include <regex.h>
 #include <memory.h>
 #include <stdlib.h>
-#include "myRegex.h"
 #include <string>
 #include <list>
 #include <iostream>
 #include <gtest/gtest.h>
 
+#include "myRegex.h"
 using namespace std;
 
 TEST(myRegex, Regex_InvalidInput)
@@ -19,6 +19,7 @@ TEST(myRegex, Regex_InvalidInput)
     char pattern[] = "ansersion";
     list<string> group;
     bool IgnoreCase = true;
+
 
     /* int Regex(const char * str, const char * pattern, list<string> * groups, bool ignore_case = false); */
     EXPECT_EQ(Regex.Regex(NULL, pattern, &group, IgnoreCase), MyRegex::REGEX_FAILURE);
@@ -50,6 +51,14 @@ TEST(myRegex, Regex_RegularInput)
     EXPECT_EQ(Regex.Regex(str, pattern, &group), MyRegex::REGEX_SUCCESS);
     EXPECT_EQ(Regex.Regex(str_with_brackets, pattern_with_brackets, &group), MyRegex::REGEX_SUCCESS);
     EXPECT_EQ(Regex.Regex(str_with_new_line, pattern, &group), MyRegex::REGEX_SUCCESS);
+
+
+	//### Test anchor tag '\b' ###//
+	string AnchorStr1("rtsp://192.168.15.1007/test");
+	string AnchorStr2("rtsp://192.168.15.100/test");
+	string AnchorPattern("rtsp://([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})\\b");
+    EXPECT_EQ(Regex.Regex(AnchorStr1.c_str(), AnchorPattern.c_str(), &group), MyRegex::REGEX_FAILURE);
+    EXPECT_EQ(Regex.Regex(AnchorStr2.c_str(), AnchorPattern.c_str(), &group), MyRegex::REGEX_SUCCESS);
 }
 
 TEST(myRegex, RegexLine_RegularInput)

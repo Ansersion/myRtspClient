@@ -1,0 +1,84 @@
+#ifndef RTSP_CLIENT_H
+#define RTSP_CLIENT_H
+
+#include <map>
+#include <string>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include "myRegex.h"
+
+using std::map;
+using std::string;
+
+#define PORT_RTSP 				554
+#define VERSION_RTSP 			"1.0"
+#define SELECT_TIMEOUT_SEC 		1
+#define SELECT_TIMEOUT_USEC 	0
+
+#define CHECK_OK 				1
+#define CHECK_ERROR				0
+
+#define TRANS_OK 				1
+#define TRANS_ERROR 			0
+
+#define RECV_BUF_SIZE 			8192
+
+enum SessionType {
+    VIDEO_SESSION = 0, 
+    AUDIO_SESSION
+};
+
+enum ErrorType {
+    RTSP_NO_ERROR = 0,
+    RTSP_INVALID_URI,
+	RTSP_SEND_ERROR, 
+	RTSP_RECV_ERROR,
+    RTSP_UNKNOWN_ERROR
+};
+
+class RtspClient
+{
+	public:
+		RtspClient();
+		RtspClient(string uri);
+		~RtspClient();
+		ErrorType DoDESCRIBE(string uri = "");
+		ErrorType DoOPTIONS(string uri = "");
+		ErrorType DoPAUSE();
+		ErrorType DoPLAY();
+		ErrorType DoSETUP(SessionType st, string uri = "");
+		ErrorType DoTEARDOWN();
+
+		string ParseError(ErrorType et);
+
+		void SetURI(const string uri) { RtspURI.assign(uri); };
+		string GetURI() const { return RtspURI; };
+		void SetPort(const int port) { RtspPort = port; };
+		string GetResponse() const { return RtspResponse; };
+
+		/* Tools Methods */
+		int CreateTcpSockfd(string uri = "");
+		in_addr_t GetIP(string uri = "");
+		uint16_t GetPort(string uri = "");
+
+	protected:
+		int CheckSockWritable(int sockfd);
+		int CheckSockReadable(int sockfd);
+		int Send(const char * msg, int size);
+		int Send(string msg);
+		int Recv(char * msg, int size);
+		int Recv(string * msg);
+		int Close(int sockfd);
+
+	protected:
+		string RtspURI;
+		unsigned int RtspCSeq;
+		int RtspSockfd;
+		string RtspIP;
+		uint16_t RtspPort;
+		string RtspResponse;
+
+		MyRegex Regex;
+};
+
+#endif
