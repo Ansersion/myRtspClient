@@ -15,19 +15,24 @@ using std::string;
 using std::stringstream;
 using std::cout;
 using std::endl;
+using std::pair;
 
 RtspClient::RtspClient():
 	RtspURI(""), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse("")
 {
+	SDPInfo.clear();
 }
 
 RtspClient::RtspClient(string uri):
 	RtspURI(uri), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse("")
 {
+	SDPInfo.clear();
 }
 
 RtspClient::~RtspClient()
 {
+
+
 }
 
 ErrorType RtspClient::DoDESCRIBE(string uri)
@@ -104,10 +109,64 @@ ErrorType RtspClient::DoPLAY()
 
 ErrorType RtspClient::DoSETUP(SessionType st, string uri)
 {
+	string RtspUri("");
+	int Sockfd = -1;
+
+	if(uri.length() != 0) {
+		RtspUri.assign(uri);
+		RtspURI.assign(uri);
+	}
+	else if(RtspURI.length() != 0) RtspUri.assign(RtspURI);
+	else return RTSP_INVALID_URI;
+
+	Sockfd = CreateTcpSockfd(RtspUri);
+
+	string Cmd("OPTIONS");
+	stringstream Msg("");
+	Msg << Cmd << " " << RtspUri << " " << "RTSP/" << VERSION_RTSP << "\r\n";
+	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
+	Msg << "\r\n";
+
+	if(!Send(Msg.str())) {
+		Close(Sockfd);
+		return RTSP_SEND_ERROR;
+	}
+	if(!Recv(&RtspResponse)) {
+		Close(Sockfd);
+		return RTSP_RECV_ERROR;
+	}
+	// can't close.
+	// Socket must be active after SETUP.
+	// Close(Sockfd);
+	return RTSP_NO_ERROR;
 }
 
 ErrorType RtspClient::DoTEARDOWN()
 {
+}
+
+int RtspClient::ParseSDP(string uri)
+{
+	string Response("");
+	int Result = 0; // don't have meaning yet
+
+	if(uri.length() != 0) Response.assign(uri);
+	else if(RtspResponse.length() != 0) Response.assign(RtspResponse);
+	else return Result;
+
+	string Pattern = "([a-zA-Z])=(.*)";
+	list<string> Group;
+	int i = 0;
+	while(Regex.RegexLine(&Response, &Pattern, &Group)) {
+		if(!Group.empty()) {
+			Group.pop_front(); // pop the line
+			Group.pop_front(); // pop the matched part
+			string Key(Group.front()); Group.pop_front();
+			string Value(Group.front()); Group.pop_front();
+			SDPInfo.insert(pair<string, string>(Key, Value));
+		}
+	}
+	return Result;
 }
 
 string RtspClient::ParseError(ErrorType et)
@@ -125,6 +184,27 @@ string RtspClient::ParseError(ErrorType et)
 			break;
 		case RTSP_RECV_ERROR:
 			ErrStr.assign("MyRtsp recv error");
+			break;
+		case RTSP_RESPONSE_BLANK:
+			ErrStr.assign("MyRtsp Response BLANK");
+			break;
+		case RTSP_RESPONSE_200:
+			ErrStr.assign("MyRtsp Response 200 OK");
+			break;
+		case RTSP_RESPONSE_400:
+			ErrStr.assign("MyRtsp Response 400 Bad Request");
+			break;
+		case RTSP_RESPONSE_401:
+			ErrStr.assign("MyRtsp Response 401 Unauthorized");
+			break;
+		case RTSP_RESPONSE_404:
+			ErrStr.assign("MyRtsp Response 404 Not Found");
+			break;
+		case RTSP_RESPONSE_500:
+			ErrStr.assign("MyRtsp Response 500 Internal Server Error");
+			break;
+		case RTSP_RESPONSE_501:
+			ErrStr.assign("MyRtsp Response 501 Not Implemented");
 			break;
 		case RTSP_UNKNOWN_ERROR:
 			ErrStr.assign("MyRtsp Unknown Error");
@@ -346,3 +426,19 @@ int RtspClient::Close(int sockfd)
 	}
 	return CloseResult;
 }
+
+bool RtspClient::IsResponseOK(string response)
+{
+	// example: 
+	// "RTSP/1.0 200 OK"
+	string Pattern("RTSP/[0-9]+\\.[0-9]+ +200");
+	list<string> Groups;
+	bool IgnoreCase = true;
+	bool Result = false;
+
+	if(Regex.Regex(response.c_str(), Pattern.c_str(), &Groups, IgnoreCase)) {
+		Result = true;
+	}
+	return Result;
+}
+

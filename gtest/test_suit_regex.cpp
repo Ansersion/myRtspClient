@@ -82,11 +82,11 @@ TEST(myRegex, RegexLine_RegularInput)
     while(Regex.RegexLine(&str, &pattern, &group)) {
 	if(!group.empty()) {
 	    EXPECT_EQ(true, LineWillBeMatched == group.front());
-	    group.pop_front();
+	    group.pop_front(); // pop the line
 	    EXPECT_EQ(true, PartWillBeMatched == group.front());
-	    group.pop_front();
+	    group.pop_front(); // pop the matched part
 	    EXPECT_EQ(true, GroupWillBeMatched == group.front());
-	    group.pop_front();
+	    group.pop_front(); // pop the group
 	}
     }
 }

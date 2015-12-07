@@ -9,6 +9,7 @@
 
 using std::map;
 using std::string;
+using std::multimap;
 
 #define PORT_RTSP 				554
 #define VERSION_RTSP 			"1.0"
@@ -33,6 +34,13 @@ enum ErrorType {
     RTSP_INVALID_URI,
 	RTSP_SEND_ERROR, 
 	RTSP_RECV_ERROR,
+	RTSP_RESPONSE_BLANK,
+	RTSP_RESPONSE_200,
+	RTSP_RESPONSE_400,
+	RTSP_RESPONSE_401,
+	RTSP_RESPONSE_404,
+	RTSP_RESPONSE_500,
+	RTSP_RESPONSE_501,
     RTSP_UNKNOWN_ERROR
 };
 
@@ -48,6 +56,7 @@ class RtspClient
 		ErrorType DoPLAY();
 		ErrorType DoSETUP(SessionType st, string uri = "");
 		ErrorType DoTEARDOWN();
+		int ParseSDP(string uri = "");
 
 		string ParseError(ErrorType et);
 
@@ -55,11 +64,13 @@ class RtspClient
 		string GetURI() const { return RtspURI; };
 		void SetPort(const int port) { RtspPort = port; };
 		string GetResponse() const { return RtspResponse; };
+		multimap<string, string> GetSDPInfo() const { return SDPInfo; };
 
 		/* Tools Methods */
 		int CreateTcpSockfd(string uri = "");
 		in_addr_t GetIP(string uri = "");
 		uint16_t GetPort(string uri = "");
+		bool IsResponseOK(string response);
 
 	protected:
 		int CheckSockWritable(int sockfd);
@@ -77,6 +88,7 @@ class RtspClient
 		string RtspIP;
 		uint16_t RtspPort;
 		string RtspResponse;
+		multimap<string, string> SDPInfo;
 
 		MyRegex Regex;
 };

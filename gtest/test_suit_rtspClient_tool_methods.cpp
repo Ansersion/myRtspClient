@@ -34,6 +34,15 @@ TEST(rtspClient, ToolMethods_InvalidInput)
 	EXPECT_EQ(Client2.GetPort(RtspUri2), RtspPort);
 	EXPECT_EQ(Client3.GetPort(RtspUri3), RtspPort);
 
+	string Response1("");
+	string Response2("UNKNOWN");
+	string Response3("hsldhglreiwuo");
+
+	RtspClient RtspResponseTest;
+	EXPECT_EQ(RtspResponseTest.IsResponseOK(Response1), false);
+	EXPECT_EQ(RtspResponseTest.IsResponseOK(Response2), false);
+	EXPECT_EQ(RtspResponseTest.IsResponseOK(Response3), false);
+
 }
 
 TEST(rtspClient, ToolMethods_RegularInput)
@@ -58,5 +67,14 @@ TEST(rtspClient, ToolMethods_RegularInput)
 	EXPECT_EQ(Client1.GetPort(), RtspPort);
 	EXPECT_EQ(Client2.GetPort(RtspUri2), RtspPort);
 	EXPECT_EQ(Client3.GetPort(RtspUri3), RtspPort);
+
+	string Response_200("RTSP/1.0 200 OK\r\nServer: VLC/2.1.6\r\nDate: Sun, 06 Dec 2015 11:51:38 GMT\r\n\r\n");
+	string Response_400("RTSP/1.0 400 Bad Request\r\nServer: VLC/2.1.6\r\nDate: Sun, 06 Dec 2015 11:51:38 GMT\r\n\r\n");
+	string Response_500("RTSP/1.0 500 Internal Server Error\r\nServer: VLC/2.1.6\r\nDate: Sun, 06 Dec 2015 11:51:38 GMT\r\n\r\n");
+
+	RtspClient RtspResponseTest;
+	EXPECT_EQ(RtspResponseTest.IsResponseOK(Response_200), true);
+	EXPECT_EQ(RtspResponseTest.IsResponseOK(Response_400), false);
+	EXPECT_EQ(RtspResponseTest.IsResponseOK(Response_500), false);
 }
 

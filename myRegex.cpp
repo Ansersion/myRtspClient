@@ -88,7 +88,9 @@ int MyRegex::RegexLine(string * str, string * pattern, list<string> * groups, bo
     }
     if(string::npos == NextPos) return EndOfString;
     if(!LastStr || !pattern || !groups) return EndOfString;
-    TmpPos = LastStr->find("\n", NextPos);
+    TmpPos = LastStr->find("\r\n", NextPos);
+	if(string::npos == TmpPos) TmpPos = LastStr->find("\n", NextPos);
+
     groups->clear();
     if(TmpPos != string::npos) {
 	MatchedLine.assign(LastStr->substr(NextPos, TmpPos - NextPos));
