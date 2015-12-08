@@ -21,12 +21,14 @@ RtspClient::RtspClient():
 	RtspURI(""), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse("")
 {
 	SDPInfo.clear();
+	MediaSessionMap.clear();
 }
 
 RtspClient::RtspClient(string uri):
 	RtspURI(uri), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse("")
 {
 	SDPInfo.clear();
+	MediaSessionMap.clear();
 }
 
 RtspClient::~RtspClient()
@@ -107,34 +109,33 @@ ErrorType RtspClient::DoPLAY()
 {
 }
 
-ErrorType RtspClient::DoSETUP(SessionType st, string uri)
+ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 {
-	string RtspUri("");
-	int Sockfd = -1;
+	// map<string , MediaSession> MediaSessionToSetup;
+	// int Sockfd = -1;
 
-	if(uri.length() != 0) {
-		RtspUri.assign(uri);
-		RtspURI.assign(uri);
-	}
-	else if(RtspURI.length() != 0) RtspUri.assign(RtspURI);
-	else return RTSP_INVALID_URI;
+	// if(!media_session) {
+	// 	MediaSessionToSetup = GetMediaSessions();
+	// } else {
+	// 	MediaSessionToSetup.insert(pair<string, MediaSession>(media_session->MediaType, media_session));
+	// }
 
-	Sockfd = CreateTcpSockfd(RtspUri);
+	// Sockfd = CreateTcpSockfd(RtspUri);
 
-	string Cmd("OPTIONS");
-	stringstream Msg("");
-	Msg << Cmd << " " << RtspUri << " " << "RTSP/" << VERSION_RTSP << "\r\n";
-	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
-	Msg << "\r\n";
+	// string Cmd("OPTIONS");
+	// stringstream Msg("");
+	// Msg << Cmd << " " << RtspUri << " " << "RTSP/" << VERSION_RTSP << "\r\n";
+	// Msg << "CSeq: " << ++RtspCSeq << "\r\n";
+	// Msg << "\r\n";
 
-	if(!Send(Msg.str())) {
-		Close(Sockfd);
-		return RTSP_SEND_ERROR;
-	}
-	if(!Recv(&RtspResponse)) {
-		Close(Sockfd);
-		return RTSP_RECV_ERROR;
-	}
+	// if(!Send(Msg.str())) {
+	// 	Close(Sockfd);
+	// 	return RTSP_SEND_ERROR;
+	// }
+	// if(!Recv(&RtspResponse)) {
+	// 	Close(Sockfd);
+	// 	return RTSP_RECV_ERROR;
+	// }
 	// can't close.
 	// Socket must be active after SETUP.
 	// Close(Sockfd);
@@ -157,13 +158,49 @@ int RtspClient::ParseSDP(string uri)
 	string Pattern = "([a-zA-Z])=(.*)";
 	list<string> Group;
 	int i = 0;
+	bool CollectMediaInfo = false;
+	string CurrentMediaSession("");
 	while(Regex.RegexLine(&Response, &Pattern, &Group)) {
+		string Key(""), Value("");
 		if(!Group.empty()) {
 			Group.pop_front(); // pop the line
 			Group.pop_front(); // pop the matched part
-			string Key(Group.front()); Group.pop_front();
-			string Value(Group.front()); Group.pop_front();
+			Key.assign(Group.front()); Group.pop_front();
+			Value.assign(Group.front()); Group.pop_front();
 			SDPInfo.insert(pair<string, string>(Key, Value));
+		}
+		if(Key == "m") CollectMediaInfo = true;
+		if(Key == "s") CollectMediaInfo = false;
+		if(!CollectMediaInfo) continue;
+
+		if(Key == "m") {
+			string PatternTmp("([a-zA-Z]+) +");
+			if(!Regex.Regex(Value.c_str(), PatternTmp.c_str(), &Group)) {
+				continue;
+			}
+			Group.pop_front();
+			CurrentMediaSession.assign(Group.front());
+			MediaSession NewMediaSession;
+			NewMediaSession.MediaType.assign(CurrentMediaSession);
+			MediaSessionMap[CurrentMediaSession] = NewMediaSession;
+		}
+		if("a" == Key) {
+			string PatternRtpmap("rtpmap:.* +([0-9A-Za-z]+)/([0-9]+)");
+			string PatternControl("control:(.+)");
+			if(CurrentMediaSession.length() == 0) {
+				continue;
+			}
+			if(Regex.Regex(Value.c_str(), PatternRtpmap.c_str(), &Group)) {
+				Group.pop_front();
+				MediaSessionMap[CurrentMediaSession].EncodeType = Group.front();;
+				Group.pop_front();
+				stringstream TimeRate;
+				TimeRate << Group.front();
+				TimeRate >> MediaSessionMap[CurrentMediaSession].TimeRate;
+			} else if(Regex.Regex(Value.c_str(), PatternControl.c_str(), &Group)) {
+				Group.pop_front();
+				MediaSessionMap[CurrentMediaSession].ControlURI = Group.front();;
+			}
 		}
 	}
 	return Result;
@@ -263,6 +300,52 @@ int RtspClient::CreateTcpSockfd(string uri)
 	RtspSockfd = Sockfd;
 	return Sockfd;
 }
+
+// int RtspClient::CreateUdpSockfd(uint16_t RTPPort)
+// {
+// 	int Sockfd = -1;
+// 	struct sockaddr_in Servaddr;
+// 	in_addr_t Ip = 0;
+// 	uint16_t Port = 0;
+// 	string RtspUri("");
+// 	int SockStatus = -1;
+// 
+// 	if(uri.length() != 0) {
+// 		RtspUri.assign(uri);
+// 		RtspURI.assign(uri);
+// 	}
+// 	else if(RtspURI.length() != 0) RtspUri.assign(RtspURI);
+// 	else return Sockfd;
+// 
+// 	if((Sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+// 		perror("Socket created error");
+// 		return Sockfd;
+// 	}
+// 
+// 	// Set Sockfd NONBLOCK
+// 	SockStatus = fcntl(Sockfd, F_GETFL, 0);
+// 	fcntl(Sockfd, F_SETFL, SockStatus | O_NONBLOCK);
+// 
+// 	// Connect to server
+// 	bzero(&Servaddr, sizeof(Servaddr));
+// 	Servaddr.sin_family = AF_INET;
+// 	Servaddr.sin_port = htons(GetPort(uri));
+// 	Servaddr.sin_addr.s_addr = GetIP(uri);
+// 
+// 	if(connect(Sockfd, (struct sockaddr *)&Servaddr, sizeof(Servaddr)) < 0 && errno != EINPROGRESS) {
+// 		perror("connect error");
+// 		close(Sockfd);
+// 		Sockfd = -1;
+// 		return Sockfd;
+// 	}
+// 	if(!CheckSockWritable(Sockfd)) {
+// 		Sockfd = -1;
+// 		return Sockfd;
+// 	}
+// 
+// 	RtspSockfd = Sockfd;
+// 	return Sockfd;
+// }
 
 in_addr_t RtspClient::GetIP(string uri)
 {

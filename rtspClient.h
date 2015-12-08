@@ -44,6 +44,15 @@ enum ErrorType {
     RTSP_UNKNOWN_ERROR
 };
 
+typedef struct MediaSession {
+	string MediaType;
+	string EncodeType;
+	unsigned int TimeRate;
+	string ControlURI;
+	uint16_t RTPPort;
+	uint16_t RTCPPort;
+}MediaSession;
+
 class RtspClient
 {
 	public:
@@ -54,7 +63,7 @@ class RtspClient
 		ErrorType DoOPTIONS(string uri = "");
 		ErrorType DoPAUSE();
 		ErrorType DoPLAY();
-		ErrorType DoSETUP(SessionType st, string uri = "");
+		ErrorType DoSETUP(MediaSession * media_session = NULL);
 		ErrorType DoTEARDOWN();
 		int ParseSDP(string uri = "");
 
@@ -68,9 +77,13 @@ class RtspClient
 
 		/* Tools Methods */
 		int CreateTcpSockfd(string uri = "");
+		/* "CreateUdpSockfd" is only for test. 
+		 * We will use jrtplib instead later. */
+		int CreateUdpSockfd(uint16_t RTPPort); 
 		in_addr_t GetIP(string uri = "");
 		uint16_t GetPort(string uri = "");
 		bool IsResponseOK(string response);
+		map<string, MediaSession> GetMediaSessions() const { return MediaSessionMap; }
 
 	protected:
 		int CheckSockWritable(int sockfd);
@@ -89,6 +102,7 @@ class RtspClient
 		uint16_t RtspPort;
 		string RtspResponse;
 		multimap<string, string> SDPInfo;
+		map<string , MediaSession> MediaSessionMap;
 
 		MyRegex Regex;
 };

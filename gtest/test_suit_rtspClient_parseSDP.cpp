@@ -74,11 +74,22 @@ TEST(rtspClient, RtspClient_ParseSDP_RegularInput)
 	typedef multimap<string, string>::iterator It_type;
 	pair<It_type, It_type> p = SDPInfo.equal_range("s");
 	It_type It = p.first;
+	map<string, MediaSession> MediaSessionMap = Client.GetMediaSessions();
 
 	EXPECT_EQ(true, It->second == "Unnamed");
 	EXPECT_EQ(SDPInfo.count("a"), 10);
 	EXPECT_EQ(SDPInfo.count("m"), 2);
 	EXPECT_EQ(SDPInfo.count("v"), 1);
 	EXPECT_EQ(SDPInfo.count("x"), 0);
+
+	EXPECT_EQ(true, MediaSessionMap["audio"].MediaType == "audio");
+	EXPECT_EQ(true, MediaSessionMap["audio"].EncodeType == "MPA");
+	EXPECT_EQ(true, MediaSessionMap["audio"].TimeRate == 90000);
+	EXPECT_EQ(true, MediaSessionMap["audio"].ControlURI == "rtsp://127.0.0.1:554/ansersion/trackID=0");
+
+	EXPECT_EQ(true, MediaSessionMap["video"].MediaType == "video");
+	EXPECT_EQ(true, MediaSessionMap["video"].EncodeType == "H264");
+	EXPECT_EQ(true, MediaSessionMap["video"].TimeRate == 90000);
+	EXPECT_EQ(true, MediaSessionMap["video"].ControlURI == "rtsp://127.0.0.1:554/ansersion/trackID=1");
 }
 
