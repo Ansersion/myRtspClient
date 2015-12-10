@@ -23,6 +23,7 @@ using std::multimap;
 #define TRANS_ERROR 			0
 
 #define RECV_BUF_SIZE 			8192
+#define SEARCH_PORT_RTP_FROM 	10000 // must be even number
 
 enum SessionType {
     VIDEO_SESSION = 0, 
@@ -34,6 +35,7 @@ enum ErrorType {
     RTSP_INVALID_URI,
 	RTSP_SEND_ERROR, 
 	RTSP_RECV_ERROR,
+	RTSP_INVALID_MEDIA_SESSION,
 	RTSP_RESPONSE_BLANK,
 	RTSP_RESPONSE_200,
 	RTSP_RESPONSE_400,
@@ -44,14 +46,24 @@ enum ErrorType {
     RTSP_UNKNOWN_ERROR
 };
 
-typedef struct MediaSession {
-	string MediaType;
-	string EncodeType;
-	unsigned int TimeRate;
-	string ControlURI;
-	uint16_t RTPPort;
-	uint16_t RTCPPort;
-}MediaSession;
+class MediaSession {
+	public:
+		MediaSession();
+		string MediaType;
+		string EncodeType;
+		string Protocol;
+		unsigned int TimeRate;
+		string ControlURI;
+		string SessionID;
+		int RTSPSockfd;
+		uint16_t RTPPort;
+		int RTPSockfd;
+		uint16_t RTCPPort;
+		int RTCPSockfd;
+};
+
+// typedef shared_ptr< multimap<string, string> > 	 	SDPInfoPtr;
+// typedef shared_ptr< map<string, MediaSessionPtr> > 	MediaSessionMapPtr;
 
 class RtspClient
 {
@@ -62,10 +74,16 @@ class RtspClient
 		ErrorType DoDESCRIBE(string uri = "");
 		ErrorType DoOPTIONS(string uri = "");
 		ErrorType DoPAUSE();
+		ErrorType DoSETUP();
+		ErrorType DoSETUP(MediaSession * media_session);
 		ErrorType DoPLAY();
-		ErrorType DoSETUP(MediaSession * media_session = NULL);
+		ErrorType DoPLAY(MediaSession * media_session);
+		ErrorType DoPLAY(string media_type);
 		ErrorType DoTEARDOWN();
-		int ParseSDP(string uri = "");
+		int ParseSDP(string SDP = "");
+		string ParseSessionID(string ResponseOfSETUP = "");
+		const MediaSession * GetVideoSession();
+		const MediaSession * GetAudioSession();
 
 		string ParseError(ErrorType et);
 
@@ -73,17 +91,17 @@ class RtspClient
 		string GetURI() const { return RtspURI; };
 		void SetPort(const int port) { RtspPort = port; };
 		string GetResponse() const { return RtspResponse; };
-		multimap<string, string> GetSDPInfo() const { return SDPInfo; };
+		multimap<string, string> GetSDPInfo() const { return *SDPInfo; };
 
 		/* Tools Methods */
 		int CreateTcpSockfd(string uri = "");
 		/* "CreateUdpSockfd" is only for test. 
 		 * We will use jrtplib instead later. */
-		int CreateUdpSockfd(uint16_t RTPPort); 
+		int CreateRTP_RTCPSockfd(MediaSession * media_session, uint16_t RTP_port = 0); 
 		in_addr_t GetIP(string uri = "");
 		uint16_t GetPort(string uri = "");
 		bool IsResponseOK(string response);
-		map<string, MediaSession> GetMediaSessions() const { return MediaSessionMap; }
+		map<string, MediaSession> GetMediaSessions() const { return *MediaSessionMap; }
 
 	protected:
 		int CheckSockWritable(int sockfd);
@@ -101,8 +119,8 @@ class RtspClient
 		string RtspIP;
 		uint16_t RtspPort;
 		string RtspResponse;
-		multimap<string, string> SDPInfo;
-		map<string , MediaSession> MediaSessionMap;
+		multimap<string, string> *SDPInfo;
+		map<string, MediaSession> *MediaSessionMap;
 
 		MyRegex Regex;
 };

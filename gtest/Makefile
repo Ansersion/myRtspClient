@@ -65,6 +65,7 @@ $(TESTS): $(OBJS) gtest_main.a
 	$(CXX) $(CXXFLAGS) -o $(TESTS) $(USER_OBJ_DIR)/*.o $(OBJS) $(LIBS)
 
 clean :
+	(cd ..; make clean;)
 	rm -f $(TESTS) gtest.a gtest_main.a *.o
 
 # Builds gtest.a and gtest_main.a.

@@ -84,11 +84,13 @@ TEST(rtspClient, RtspClient_ParseSDP_RegularInput)
 
 	EXPECT_EQ(true, MediaSessionMap["audio"].MediaType == "audio");
 	EXPECT_EQ(true, MediaSessionMap["audio"].EncodeType == "MPA");
+	EXPECT_EQ(true, MediaSessionMap["audio"].Protocol == "RTP/AVP");
 	EXPECT_EQ(true, MediaSessionMap["audio"].TimeRate == 90000);
 	EXPECT_EQ(true, MediaSessionMap["audio"].ControlURI == "rtsp://127.0.0.1:554/ansersion/trackID=0");
 
 	EXPECT_EQ(true, MediaSessionMap["video"].MediaType == "video");
 	EXPECT_EQ(true, MediaSessionMap["video"].EncodeType == "H264");
+	EXPECT_EQ(true, MediaSessionMap["video"].Protocol == "RTP/AVP");
 	EXPECT_EQ(true, MediaSessionMap["video"].TimeRate == 90000);
 	EXPECT_EQ(true, MediaSessionMap["video"].ControlURI == "rtsp://127.0.0.1:554/ansersion/trackID=1");
 }
