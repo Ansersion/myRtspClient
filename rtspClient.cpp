@@ -1,4 +1,6 @@
 #include "rtspClient.h"
+#include "utils.h"
+
 #include <sstream>
 #include <iostream>
 #include <string>
@@ -57,16 +59,16 @@ ErrorType RtspClient::DoDESCRIBE(string uri)
 	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
 	Msg << "\r\n";
 
-	if(!Send(Msg.str())) {
+	if(!SendRTSP(Msg.str())) {
 		Close(Sockfd);
 		return RTSP_SEND_ERROR;
 	}
-	if(!Recv(&RtspResponse)) {
+	if(!RecvRTSP(&RtspResponse)) {
 		Close(Sockfd);
 		return RTSP_RECV_ERROR;
 	}
+	RecvSDP(Sockfd, &RtspResponse);
 	Close(Sockfd);
-	// sleep(1); for stream control
 	return RTSP_NO_ERROR;
 }
 
@@ -90,11 +92,11 @@ ErrorType RtspClient::DoOPTIONS(string uri)
 	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
 	Msg << "\r\n";
 
-	if(!Send(Msg.str())) {
+	if(!SendRTSP(Msg.str())) {
 		Close(Sockfd);
 		return RTSP_SEND_ERROR;
 	}
-	if(!Recv(&RtspResponse)) {
+	if(!RecvRTSP(&RtspResponse)) {
 		Close(Sockfd);
 		return RTSP_RECV_ERROR;
 	}
@@ -113,7 +115,6 @@ ErrorType RtspClient::DoSETUP()
 
 	for(map<string, MediaSession>::iterator it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
 		Err = DoSETUP(&(it->second));
-		sleep(1); // for stream control
 		printf("Setup Session %s: %s\n", it->first.c_str(), ParseError(Err).c_str());
 	}
 	return Err;
@@ -143,12 +144,12 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
 	Msg << "\r\n";
 
-	if(RTSP_NO_ERROR == Err && !Send(Msg.str())) {
+	if(RTSP_NO_ERROR == Err && !SendRTSP(Msg.str())) {
 		Close(Sockfd);
 		Sockfd = -1;
 		Err = RTSP_SEND_ERROR;
 	}
-	if(RTSP_NO_ERROR == Err && !Recv(&RtspResponse)) {
+	if(RTSP_NO_ERROR == Err && !RecvRTSP(&RtspResponse)) {
 		Close(Sockfd);
 		Sockfd = -1;
 		Err = RTSP_RECV_ERROR;
@@ -185,10 +186,10 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session)
 	Msg << "Session: " << media_session->SessionID << "\r\n";
 	Msg << "\r\n";
 
-	if(!Send(Msg.str())) {
+	if(!SendRTSP(Msg.str())) {
 		return RTSP_SEND_ERROR;
 	}
-	if(!Recv(&RtspResponse)) {
+	if(!RecvRTSP(&RtspResponse)) {
 		return RTSP_RECV_ERROR;
 	}
 	return RTSP_NO_ERROR;
@@ -481,14 +482,18 @@ uint16_t RtspClient::GetPort(string uri)
 
 /*********************/
 /* Protected Methods */
-int RtspClient::CheckSockWritable(int sockfd)
+int RtspClient::CheckSockWritable(int sockfd, struct timeval * tval)
 {
 	fd_set Wset;
 	struct timeval Tval;
 	FD_ZERO(&Wset);
 	FD_SET(sockfd, &Wset);
-	Tval.tv_sec = SELECT_TIMEOUT_SEC;
-	Tval.tv_usec = SELECT_TIMEOUT_USEC;
+	if(!tval) {
+		Tval.tv_sec = SELECT_TIMEOUT_SEC;
+		Tval.tv_usec = SELECT_TIMEOUT_USEC;
+	} else {
+		Tval = *tval;
+	}
 
 	while(select(sockfd + 1, NULL, &Wset, NULL, &Tval) != 0) {
 		if(FD_ISSET(sockfd, &Wset)) {
@@ -500,14 +505,18 @@ int RtspClient::CheckSockWritable(int sockfd)
 	return CHECK_ERROR;
 }
 
-int RtspClient::CheckSockReadable(int sockfd)
+int RtspClient::CheckSockReadable(int sockfd, struct timeval * tval)
 {
 	fd_set Rset;
 	struct timeval Tval;
 	FD_ZERO(&Rset);
 	FD_SET(sockfd, &Rset);
-	Tval.tv_sec = SELECT_TIMEOUT_SEC;
-	Tval.tv_usec = SELECT_TIMEOUT_USEC;
+	if(!tval) {
+		Tval.tv_sec = SELECT_TIMEOUT_SEC;
+		Tval.tv_usec = SELECT_TIMEOUT_USEC;
+	} else {
+		Tval = *tval;
+	}
 
 	while(select(sockfd + 1, &Rset, NULL, NULL, &Tval) != 0) {
 		if(FD_ISSET(sockfd, &Rset)) {
@@ -519,56 +528,129 @@ int RtspClient::CheckSockReadable(int sockfd)
 	return CHECK_ERROR;
 }
 
-int RtspClient::Send(const char * msg, int size)
+int RtspClient::SendRTSP(const char * msg, size_t size)
 {
-	if(!msg || size <= 0) {
-		printf("Recv Argument Error\n");
-		return TRANS_ERROR;
+ 	if(!msg || size < 0) {
+ 		printf("Recv Argument Error\n");
+ 		return TRANS_ERROR;
+ 	}
+
+ 	int SendResult = 0;
+ 	int Index = 0;
+ 	int Err = TRANS_OK;
+
+	while(size > 0) {
+		if(!CheckSockWritable(RtspSockfd)) {
+			Err = TRANS_ERROR;
+			break;
+		}
+		SendResult = Writen(RtspSockfd, msg+Index, size);
+		if(SendResult < 0) {
+			if(errno == EINTR) continue;
+			else if(errno == EWOULDBLOCK || errno == EAGAIN) continue;
+			else {
+				Err = TRANS_ERROR;
+				break;
+			}
+		} else if(SendResult == 0) {
+			Err = TRANS_ERROR;
+			break;
+		}
+		Index += SendResult;
+		size -= SendResult;
 	}
 
-	int SendResult = 0;
-	if(!CheckSockWritable(RtspSockfd)) return TRANS_ERROR;
-	SendResult = send(RtspSockfd, msg, size, 0);
-	if(0 == SendResult) {
-		printf("Socket disconnected\n");
-		return TRANS_ERROR;
-	}
-	if(SendResult < 0 && 
-			errno != EINTR && errno != EWOULDBLOCK && errno != EAGAIN) {
-		return TRANS_ERROR;
-	}
+	return Err;
+}
+// {
+// 	if(!msg || size <= 0) {
+// 		printf("Recv Argument Error\n");
+// 		return TRANS_ERROR;
+// 	}
+// 
+// 	int SendResult = 0;
+// 	int Index = 0;
+// 	int Err = TRANS_OK;
+// 	while(size != 0) {
+// 		if(!CheckSockWritable(RtspSockfd)) {
+// 			Err = TRANS_ERROR;
+// 			break;
+// 		}
+// 		SendResult = send(RtspSockfd, msg+Index, size, 0);
+// 		if(0 == SendResult) {
+// 			printf("Socket disconnected\n");
+// 			Err = TRANS_ERROR;
+// 			break;
+// 		} else if(SendResult < 0) {
+// 			if(errno == EINTR) continue;
+// 			else if(errno == EWOULDBLOCK || errno == EAGAIN) {
+// 				Err = TRANS_OK;
+// 				break;
+// 			} else {
+// 				Err = TRANS_ERROR;
+// 				break;
+// 			}
+// 		} else {
+// 			Index += SendResult;
+// 			size -= SendResult;
+// 			continue;
+// 		}
+// 	}
+// 
+// 	return Err;
+// }
 
-	return TRANS_OK;
+int RtspClient::SendRTSP(string msg)
+{
+	return SendRTSP(msg.c_str(), msg.length());
 }
 
-int RtspClient::Send(string msg)
+int RtspClient::RecvRTSP(char * msg, size_t maxlen)
 {
-	return Send(msg.c_str(), msg.length());
-}
-
-int RtspClient::Recv(char * msg, int size)
-{
-	if(!msg || size <= 0) {
+	if(!msg || maxlen < 0) {
 		printf("Recv Argument Error\n");
 		return TRANS_ERROR;
 	}
 
 	int RecvResult = 0;
-	if(!CheckSockReadable(RtspSockfd)) return TRANS_ERROR;
-	RecvResult = recv(RtspSockfd, msg, size, 0);
-	if(0 == RecvResult) {
-		printf("Socket disconnected\n");
-		return TRANS_ERROR;
-	}
-	if(RecvResult < 0 && 
-			errno != EINTR && errno != EWOULDBLOCK && errno != EAGAIN) {
-		return TRANS_ERROR;
-	}
+	int Index = 0;
+	int Err = TRANS_OK;
 
-	return TRANS_OK;
+	memset(msg, 0, maxlen);
+	while(maxlen > 0) {
+		if(!CheckSockReadable(RtspSockfd)) {
+			Err = TRANS_ERROR;
+			break;
+		}
+		RecvResult = ReadLine(RtspSockfd, msg + Index, maxlen);
+		if(RecvResult < 0) {
+			if(errno == EINTR) continue;
+			else if(errno == EWOULDBLOCK || errno == EAGAIN) {
+				Err = TRANS_OK;
+				break;
+			} else {
+				Err = TRANS_ERROR;
+				break;
+			}
+		} else if(RecvResult == 0) {
+			Err = TRANS_ERROR;
+			break;
+		}
+		/*
+		 * Single with "\r\n" or "\n" is the termination tag of RTSP.
+		 * */
+		if(RecvResult <= strlen("\r\n") &&
+				Regex.Regex(msg+Index, "^(\r\n|\n)$")) {
+			Err = TRANS_OK;
+			break;
+		}
+		Index += RecvResult;
+		maxlen -= RecvResult;
+	}
+	return Err;
 }
 
-int RtspClient::Recv(string * msg)
+int RtspClient::RecvRTSP(string * msg)
 {
 	if(!msg) {
 		printf("Invalid Argument\n");
@@ -576,10 +658,79 @@ int RtspClient::Recv(string * msg)
 	}
 
 	char * Buf = (char *)calloc(RECV_BUF_SIZE, sizeof(char));
-	int RecvResult = 0;
+	int RecvResult = TRANS_OK;
 
 	msg->assign("");
-	RecvResult = Recv(Buf, RECV_BUF_SIZE);
+	RecvResult = RecvRTSP(Buf, RECV_BUF_SIZE);
+	if(TRANS_OK == RecvResult) msg->assign(Buf);
+	free(Buf);
+	return RecvResult;
+}
+
+int RtspClient::RecvSDP(int sockfd, char * msg, size_t size)
+{
+	if(!msg || size < 0) {
+		printf("Recv Argument Error\n");
+		return TRANS_ERROR;
+	}
+
+	int RecvResult = 0;
+	int Index = 0;
+	int Err = TRANS_OK;
+
+	memset(msg, 0, size);
+	while(size > 0) {
+		if(!CheckSockReadable(RtspSockfd)) {
+			Err = TRANS_ERROR;
+			break;
+		}
+		RecvResult = Readn(sockfd, msg + Index, size);
+		if(RecvResult < 0) {
+			if(errno == EINTR) continue;
+			else if(errno == EWOULDBLOCK || errno == EAGAIN) {
+				Err = TRANS_OK;
+				break;
+			} else {
+				Err = TRANS_ERROR;
+				break;
+			}
+		} else if(RecvResult == 0) {
+			Err = TRANS_ERROR;
+			break;
+		}
+		Index += RecvResult;
+		size -= RecvResult;
+	}
+
+	return Err;
+}
+
+int RtspClient::RecvSDP(int sockfd, string * msg)
+{
+	if(!msg) msg = &RtspResponse;
+
+	char * Buf = (char *)calloc(RECV_BUF_SIZE, sizeof(char));
+	size_t Size = 0;
+	int RecvResult = TRANS_OK;
+	string DESCRIBEResponse(RtspResponse);
+
+	msg->assign("");
+	string Pattern("Content-Length: +([0-9]+)");
+	list<string> Group;
+	stringstream tmp;
+	if(Regex.Regex(DESCRIBEResponse.c_str(), Pattern.c_str(), &Group)) {
+		Group.pop_front();
+		tmp << Group.front();
+		tmp >> Size;
+		if(Size >= RECV_BUF_SIZE) {
+			printf("SDP size:Too large\n");
+			return TRANS_ERROR;
+		}
+	} else {
+		// Invalid "DESCRIBE" Response
+		return TRANS_ERROR;
+	}
+	RecvResult = RecvSDP(sockfd, Buf, Size);
 	if(TRANS_OK == RecvResult) msg->assign(Buf);
 	free(Buf);
 	return RecvResult;

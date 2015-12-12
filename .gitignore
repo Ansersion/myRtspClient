@@ -4,3 +4,6 @@ cscope*
 .*swp
 .depend
 myTest
+capdir
+backup
+backup/*

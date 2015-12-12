@@ -104,12 +104,16 @@ class RtspClient
 		map<string, MediaSession> GetMediaSessions() const { return *MediaSessionMap; }
 
 	protected:
-		int CheckSockWritable(int sockfd);
-		int CheckSockReadable(int sockfd);
-		int Send(const char * msg, int size);
-		int Send(string msg);
-		int Recv(char * msg, int size);
-		int Recv(string * msg);
+		int CheckSockWritable(int sockfd, struct timeval * tval = NULL);
+		int CheckSockReadable(int sockfd, struct timeval * tval = NULL);
+		int SendRTSP(const char * msg, size_t size);
+		int SendRTSP(string msg);
+		int RecvRTSP(char * msg, size_t max_line);
+		int RecvRTSP(string * msg);
+
+		/* "RecvSDP" can only be used after DESCRIBE. */
+		int RecvSDP(int sockfd, char * msg, size_t size);
+		int RecvSDP(int sockfd, string * msg = NULL); 
 		int Close(int sockfd);
 
 	protected:

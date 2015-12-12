@@ -59,6 +59,24 @@ TEST(myRegex, Regex_RegularInput)
 	string AnchorPattern("rtsp://([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})\\b");
     EXPECT_EQ(Regex.Regex(AnchorStr1.c_str(), AnchorPattern.c_str(), &group), MyRegex::REGEX_FAILURE);
     EXPECT_EQ(Regex.Regex(AnchorStr2.c_str(), AnchorPattern.c_str(), &group), MyRegex::REGEX_SUCCESS);
+
+	//### Test single line ###//
+	string SingleStr1("\r\n");
+	string SingleStr2("\n");
+	string SingleStr3("ansersion\r\n");
+	string SingleStr4("\r\nansersion");
+	string SingleStr5("\nansersion");
+	string SingleStr6("ansersion\n");
+
+	string SinglePattern("^(\r\n|\n)$");
+
+    EXPECT_EQ(Regex.Regex(SingleStr1.c_str(), SinglePattern.c_str()), MyRegex::REGEX_SUCCESS);
+    EXPECT_EQ(Regex.Regex(SingleStr2.c_str(), SinglePattern.c_str()), MyRegex::REGEX_SUCCESS);
+
+    EXPECT_EQ(Regex.Regex(SingleStr3.c_str(), SinglePattern.c_str()), MyRegex::REGEX_FAILURE);
+    EXPECT_EQ(Regex.Regex(SingleStr4.c_str(), SinglePattern.c_str()), MyRegex::REGEX_FAILURE);
+    EXPECT_EQ(Regex.Regex(SingleStr5.c_str(), SinglePattern.c_str()), MyRegex::REGEX_FAILURE);
+    EXPECT_EQ(Regex.Regex(SingleStr6.c_str(), SinglePattern.c_str()), MyRegex::REGEX_FAILURE);
 }
 
 TEST(myRegex, RegexLine_RegularInput)
