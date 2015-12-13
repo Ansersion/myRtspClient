@@ -156,9 +156,7 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 	}
 	media_session->SessionID = ParseSessionID(RtspResponse);
 	media_session->RTSPSockfd = Sockfd;
-	// can't close.
-	// Socket must be active after SETUP.
-	// Close(Sockfd);
+	Close(Sockfd);
 	return Err;
 }
 
@@ -179,6 +177,10 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session)
 		return RTSP_INVALID_MEDIA_SESSION;
 	}
 
+	ErrorType Err = RTSP_NO_ERROR;
+	int Sockfd = -1;
+	Sockfd = CreateTcpSockfd();
+
 	string Cmd("PLAY");
 	stringstream Msg("");
 	Msg << Cmd << " " << RtspURI << " " << "RTSP/" << VERSION_RTSP << "\r\n";
@@ -186,12 +188,17 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session)
 	Msg << "Session: " << media_session->SessionID << "\r\n";
 	Msg << "\r\n";
 
-	if(!SendRTSP(Msg.str())) {
-		return RTSP_SEND_ERROR;
+	if(RTSP_NO_ERROR == Err && !SendRTSP(Msg.str())) {
+		Close(Sockfd);
+		Sockfd = -1;
+		Err = RTSP_SEND_ERROR;
 	}
-	if(!RecvRTSP(&RtspResponse)) {
-		return RTSP_RECV_ERROR;
+	if(RTSP_NO_ERROR == Err && !RecvRTSP(&RtspResponse)) {
+		Close(Sockfd);
+		Sockfd = -1;
+		Err = RTSP_RECV_ERROR;
 	}
+	Close(Sockfd);
 	return RTSP_NO_ERROR;
 }
 
