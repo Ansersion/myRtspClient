@@ -41,8 +41,10 @@ enum ErrorType {
 	RTSP_RESPONSE_400,
 	RTSP_RESPONSE_401,
 	RTSP_RESPONSE_404,
+	RTSP_RESPONSE_40X,
 	RTSP_RESPONSE_500,
 	RTSP_RESPONSE_501,
+	RTSP_RESPONSE_50X,
     RTSP_UNKNOWN_ERROR
 };
 
@@ -55,7 +57,7 @@ class MediaSession {
 		unsigned int TimeRate;
 		string ControlURI;
 		string SessionID;
-		int RTSPSockfd;
+		// int RTSPSockfd;
 		uint16_t RTPPort;
 		int RTPSockfd;
 		uint16_t RTCPPort;
@@ -71,15 +73,53 @@ class RtspClient
 		RtspClient();
 		RtspClient(string uri);
 		~RtspClient();
-		ErrorType DoDESCRIBE(string uri = "");
 		ErrorType DoOPTIONS(string uri = "");
-		ErrorType DoPAUSE();
+		ErrorType DoDESCRIBE(string uri = "");
+
+		/* To setup all of the media sessions in SDP */
 		ErrorType DoSETUP();
+
+		/* To setup the media sessions */
 		ErrorType DoSETUP(MediaSession * media_session);
+
+		/* Example: DoSETUP("video");
+		 * To setup the first video session in SDP
+		 * */
+		ErrorType DoSETUP(string media_type);
+
+		/* To play all of the media sessions in SDP */
 		ErrorType DoPLAY();
+		
+		/* To play the media sessions */
 		ErrorType DoPLAY(MediaSession * media_session);
+
+		/* Example: DoPLAY("video");
+		 * To play the first video session in SDP
+		 * */
 		ErrorType DoPLAY(string media_type);
+
+		/* To pause all of the media sessions in SDP */
+		ErrorType DoPAUSE();
+
+		/* To pause the media sessions */
+		ErrorType DoPAUSE(MediaSession * media_session);
+
+		/* Example: DoPAUSE("video");
+		 * To pause the first video session in SDP
+		 * */
+		ErrorType DoPAUSE(string media_type);
+
+		/* To teardown all of the media sessions in SDP */
 		ErrorType DoTEARDOWN();
+
+		/* To teardown the media sessions */
+		ErrorType DoTEARDOWN(MediaSession * media_session);
+
+		/* Example: DoTEARDOWN("video");
+		 * To teardown the first video session in SDP
+		 * */
+		ErrorType DoTEARDOWN(string media_type);
+
 		int ParseSDP(string SDP = "");
 		string ParseSessionID(string ResponseOfSETUP = "");
 		const MediaSession * GetVideoSession();
@@ -91,7 +131,7 @@ class RtspClient
 		string GetURI() const { return RtspURI; };
 		void SetPort(const int port) { RtspPort = port; };
 		string GetResponse() const { return RtspResponse; };
-		multimap<string, string> GetSDPInfo() const { return *SDPInfo; };
+		// multimap<string, string> GetSDPInfo() const { return *SDPInfo; };
 
 		/* Tools Methods */
 		int CreateTcpSockfd(string uri = "");
@@ -100,7 +140,8 @@ class RtspClient
 		int CreateRTP_RTCPSockfd(MediaSession * media_session, uint16_t RTP_port = 0); 
 		in_addr_t GetIP(string uri = "");
 		uint16_t GetPort(string uri = "");
-		bool IsResponseOK(string response);
+		// "IsResponse_200_OK" is really a ineffective method, should be modified in future.
+		bool IsResponse_200_OK(ErrorType * err = NULL, string * response = NULL);
 		map<string, MediaSession> GetMediaSessions() const { return *MediaSessionMap; }
 
 	protected:
@@ -123,7 +164,8 @@ class RtspClient
 		string RtspIP;
 		uint16_t RtspPort;
 		string RtspResponse;
-		multimap<string, string> *SDPInfo;
+		// multimap<string, string> *SDPInfo;
+		string SDPStr;
 		map<string, MediaSession> *MediaSessionMap;
 
 		MyRegex Regex;

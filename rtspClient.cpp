@@ -20,22 +20,22 @@ using std::endl;
 using std::pair;
 
 RtspClient::RtspClient():
-	RtspURI(""), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse("")
+	RtspURI(""), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse(""), SDPStr("")
 {
-	SDPInfo = new multimap<string, string>;
+	// SDPInfo = new multimap<string, string>;
 	MediaSessionMap = new map<string, MediaSession>;
 }
 
 RtspClient::RtspClient(string uri):
-	RtspURI(uri), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse("")
+	RtspURI(uri), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse(""), SDPStr("")
 {
-	SDPInfo = new multimap<string, string>;
+	// SDPInfo = new multimap<string, string>;
 	MediaSessionMap = new map<string, MediaSession>;
 }
 
 RtspClient::~RtspClient()
 {
-	delete SDPInfo;
+	// delete SDPInfo;
 	delete MediaSessionMap;
 }
 
@@ -67,7 +67,7 @@ ErrorType RtspClient::DoDESCRIBE(string uri)
 		Close(Sockfd);
 		return RTSP_RECV_ERROR;
 	}
-	RecvSDP(Sockfd, &RtspResponse);
+	RecvSDP(Sockfd, &SDPStr);
 	Close(Sockfd);
 	return RTSP_NO_ERROR;
 }
@@ -106,18 +106,79 @@ ErrorType RtspClient::DoOPTIONS(string uri)
 
 ErrorType RtspClient::DoPAUSE()
 {
+	ErrorType Err = RTSP_NO_ERROR;
+	ErrorType ErrAll = RTSP_NO_ERROR;
+
+	for(map<string, MediaSession>::iterator it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
+		Err = DoPAUSE(&(it->second));
+		if(RTSP_NO_ERROR == ErrAll) ErrAll = Err; // Remeber the first error
+		printf("PAUSE Session %s: %s\n", it->first.c_str(), ParseError(Err).c_str());
+	}
+
+	return ErrAll;
+}
+
+ErrorType RtspClient::DoPAUSE(MediaSession * media_session)
+{
+	if(!media_session) {
+		return RTSP_INVALID_MEDIA_SESSION;
+	}
+	ErrorType Err = RTSP_NO_ERROR;
+	int Sockfd = -1;
+
+	Sockfd = CreateTcpSockfd();
+	
+	string Cmd("PAUSE");
+	stringstream Msg("");
+	Msg << Cmd << " " << RtspURI << " " << "RTSP/" << VERSION_RTSP << "\r\n";
+	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
+	Msg << "Session: " << media_session->SessionID << "\r\n";
+	Msg << "\r\n";
+
+	if(RTSP_NO_ERROR == Err && !SendRTSP(Msg.str())) {
+		Close(Sockfd);
+		Sockfd = -1;
+		Err = RTSP_SEND_ERROR;
+	}
+	if(RTSP_NO_ERROR == Err && !RecvRTSP(&RtspResponse)) {
+		Close(Sockfd);
+		Sockfd = -1;
+		Err = RTSP_RECV_ERROR;
+	}
+	Close(Sockfd);
+	return Err;
+}
+
+ErrorType RtspClient::DoPAUSE(string media_type)
+{
+	ErrorType Err = RTSP_NO_ERROR;
+	map<string, MediaSession>::iterator it;
+	bool IgnoreCase = true;
+
+	for(it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
+		if(Regex.Regex(it->first.c_str(), media_type.c_str(), IgnoreCase)) break;
+	}
+
+	if(it != MediaSessionMap->end()) {
+		Err = DoPAUSE(&(it->second));
+		return Err;
+	}
+	Err = RTSP_INVALID_MEDIA_SESSION;
+	return Err;
 }
 
 ErrorType RtspClient::DoSETUP()
 {
 	ErrorType Err = RTSP_NO_ERROR;
-	int Sockfd = -1;
+	ErrorType ErrAll = RTSP_NO_ERROR;
 
 	for(map<string, MediaSession>::iterator it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
 		Err = DoSETUP(&(it->second));
+		if(RTSP_NO_ERROR == ErrAll) ErrAll = Err; // Remeber the first error
 		printf("Setup Session %s: %s\n", it->first.c_str(), ParseError(Err).c_str());
 	}
-	return Err;
+
+	return ErrAll;
 }
 
 ErrorType RtspClient::DoSETUP(MediaSession * media_session)
@@ -155,20 +216,41 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 		Err = RTSP_RECV_ERROR;
 	}
 	media_session->SessionID = ParseSessionID(RtspResponse);
-	media_session->RTSPSockfd = Sockfd;
+	// media_session->RTSPSockfd = Sockfd;
 	Close(Sockfd);
+	return Err;
+}
+
+ErrorType RtspClient::DoSETUP(string media_type)
+{
+	ErrorType Err = RTSP_NO_ERROR;
+	map<string, MediaSession>::iterator it;
+	bool IgnoreCase = true;
+
+	for(it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
+		if(Regex.Regex(it->first.c_str(), media_type.c_str(), IgnoreCase)) break;
+	}
+
+	if(it != MediaSessionMap->end()) {
+		Err = DoSETUP(&(it->second));
+		return Err;
+	}
+	Err = RTSP_INVALID_MEDIA_SESSION;
 	return Err;
 }
 
 ErrorType RtspClient::DoPLAY()
 {
 	ErrorType Err = RTSP_NO_ERROR;
-	int Sockfd = -1;
+	ErrorType ErrAll = RTSP_NO_ERROR;
 
 	for(map<string, MediaSession>::iterator it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
 		Err = DoPLAY(&(it->second));
+		if(RTSP_NO_ERROR == ErrAll) ErrAll = Err; // Remeber the first error
+		printf("PLAY Session %s: %s\n", it->first.c_str(), ParseError(Err).c_str());
 	}
-	return Err;
+
+	return ErrAll;
 }
 
 ErrorType RtspClient::DoPLAY(MediaSession * media_session)
@@ -222,6 +304,76 @@ ErrorType RtspClient::DoPLAY(string media_type)
 
 ErrorType RtspClient::DoTEARDOWN()
 {
+	ErrorType Err = RTSP_NO_ERROR;
+	ErrorType ErrAll = RTSP_NO_ERROR;
+
+	for(map<string, MediaSession>::iterator it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
+		Err = DoTEARDOWN(&(it->second));
+		if(RTSP_NO_ERROR == ErrAll) ErrAll = Err; // Remeber the first error
+		printf("TEARDOWN Session %s: %s\n", it->first.c_str(), ParseError(Err).c_str());
+	}
+
+	return ErrAll;
+}
+
+ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session)
+{
+	if(!media_session) {
+		return RTSP_INVALID_MEDIA_SESSION;
+	}
+	ErrorType Err = RTSP_NO_ERROR;
+	int Sockfd = -1;
+
+	Sockfd = CreateTcpSockfd();
+	
+	string Cmd("TEARDOWN");
+	stringstream Msg("");
+	Msg << Cmd << " " << RtspURI << " " << "RTSP/" << VERSION_RTSP << "\r\n";
+	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
+	Msg << "Session: " << media_session->SessionID << "\r\n";
+	Msg << "\r\n";
+
+	if(RTSP_NO_ERROR == Err && !SendRTSP(Msg.str())) {
+		Close(Sockfd);
+		Sockfd = -1;
+		Err = RTSP_SEND_ERROR;
+	}
+	if(RTSP_NO_ERROR == Err && !RecvRTSP(&RtspResponse)) {
+		Close(Sockfd);
+		Sockfd = -1;
+		Err = RTSP_RECV_ERROR;
+	}
+	if(RTSP_NO_ERROR == Err) {
+		map<string, MediaSession>::iterator it;
+		for(it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
+			if(media_session->SessionID == it->second.SessionID) break;
+		}
+		if(it != MediaSessionMap->end()) {
+			MediaSessionMap->erase(it->first);
+			close(media_session->RTPSockfd);
+			close(media_session->RTCPSockfd);
+		}
+	}
+	Close(Sockfd);
+	return Err;
+}
+
+ErrorType RtspClient::DoTEARDOWN(string media_type)
+{
+	ErrorType Err = RTSP_NO_ERROR;
+	map<string, MediaSession>::iterator it;
+	bool IgnoreCase = true;
+
+	for(it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
+		if(Regex.Regex(it->first.c_str(), media_type.c_str(), IgnoreCase)) break;
+	}
+
+	if(it != MediaSessionMap->end()) {
+		Err = DoTEARDOWN(&(it->second));
+		return Err;
+	}
+	Err = RTSP_INVALID_MEDIA_SESSION;
+	return Err;
 }
 
 int RtspClient::ParseSDP(string SDP)
@@ -230,12 +382,11 @@ int RtspClient::ParseSDP(string SDP)
 	int Result = 0; // don't have meaning yet
 
 	if(SDP.length() != 0) Response.assign(SDP);
-	else if(RtspResponse.length() != 0) Response.assign(RtspResponse);
+	else if(RtspResponse.length() != 0) Response.assign(SDPStr);
 	else return Result;
 
 	string Pattern = "([a-zA-Z])=(.*)";
 	list<string> Group;
-	int i = 0;
 	bool CollectMediaInfo = false;
 	string CurrentMediaSession("");
 	while(Regex.RegexLine(&Response, &Pattern, &Group)) {
@@ -245,7 +396,7 @@ int RtspClient::ParseSDP(string SDP)
 			Group.pop_front(); // pop the matched part
 			Key.assign(Group.front()); Group.pop_front();
 			Value.assign(Group.front()); Group.pop_front();
-			SDPInfo->insert(pair<string, string>(Key, Value));
+			// SDPInfo->insert(pair<string, string>(Key, Value));
 		}
 		if(Key == "m") CollectMediaInfo = true;
 		if(Key == "s") CollectMediaInfo = false;
@@ -321,11 +472,17 @@ string RtspClient::ParseError(ErrorType et)
 		case RTSP_RESPONSE_404:
 			ErrStr.assign("MyRtsp: Response 404 Not Found");
 			break;
+		case RTSP_RESPONSE_40X:
+			ErrStr.assign("MyRtsp: Response Client Error");
+			break;
 		case RTSP_RESPONSE_500:
 			ErrStr.assign("MyRtsp: Response 500 Internal Server Error");
 			break;
 		case RTSP_RESPONSE_501:
 			ErrStr.assign("MyRtsp: Response 501 Not Implemented");
+			break;
+		case RTSP_RESPONSE_50X:
+			ErrStr.assign("MyRtsp: Response Server Error");
 			break;
 		case RTSP_UNKNOWN_ERROR:
 			ErrStr.assign("MyRtsp: Unknown Error");
@@ -343,8 +500,6 @@ int RtspClient::CreateTcpSockfd(string uri)
 {
 	int Sockfd = -1;
 	struct sockaddr_in Servaddr;
-	in_addr_t Ip = 0;
-	uint16_t Port = 0;
 	string RtspUri("");
 	int SockStatus = -1;
 
@@ -646,7 +801,7 @@ int RtspClient::RecvRTSP(char * msg, size_t maxlen)
 		/*
 		 * Single with "\r\n" or "\n" is the termination tag of RTSP.
 		 * */
-		if(RecvResult <= strlen("\r\n") &&
+		if(RecvResult <= (int)strlen("\r\n") &&
 				Regex.Regex(msg+Index, "^(\r\n|\n)$")) {
 			Err = TRANS_OK;
 			break;
@@ -714,7 +869,7 @@ int RtspClient::RecvSDP(int sockfd, char * msg, size_t size)
 
 int RtspClient::RecvSDP(int sockfd, string * msg)
 {
-	if(!msg) msg = &RtspResponse;
+	if(!msg) msg = &SDPStr;
 
 	char * Buf = (char *)calloc(RECV_BUF_SIZE, sizeof(char));
 	size_t Size = 0;
@@ -776,17 +931,36 @@ string RtspClient::ParseSessionID(string ResponseOfSETUP)
 	return Result;
 }
 
-bool RtspClient::IsResponseOK(string response)
+bool RtspClient::IsResponse_200_OK(ErrorType * err, string * response)
 {
 	// example: 
 	// "RTSP/1.0 200 OK"
-	string Pattern("RTSP/[0-9]+\\.[0-9]+ +200");
+
+	string Pattern200("RTSP/[0-9]+\\.[0-9]+ +200");
+	string Pattern40x("RTSP/[0-9]+\\.[0-9]+ +40[0-9]");
+	string Pattern50x("RTSP/[0-9]+\\.[0-9]+ +50[0-9]");
+
 	list<string> Groups;
 	bool IgnoreCase = true;
 	bool Result = false;
 
-	if(Regex.Regex(response.c_str(), Pattern.c_str(), &Groups, IgnoreCase)) {
+	string Response("");
+
+	if(!response) Response.assign(RtspResponse);
+	else Response.assign(*response);
+
+	if(Regex.Regex(Response.c_str(), Pattern200.c_str(), &Groups, IgnoreCase)) {
 		Result = true;
+		if(!err) return Result;
+		*err = RTSP_RESPONSE_200;
+	} else if(Regex.Regex(Response.c_str(), Pattern40x.c_str(), &Groups, IgnoreCase)) {
+		Result = false;
+		if(!err) return Result;
+		*err = RTSP_RESPONSE_40X;
+	} else if(Regex.Regex(Response.c_str(), Pattern50x.c_str(), &Groups, IgnoreCase)) {
+		Result = false;
+		if(!err) return Result;
+		*err = RTSP_RESPONSE_50X;
 	}
 	return Result;
 }
@@ -798,7 +972,7 @@ MediaSession::MediaSession():
 		TimeRate(0),
 		ControlURI(""),
 		SessionID(""),
-		RTSPSockfd(-1),
+		// RTSPSockfd(-1),
 		RTPPort(0),
 		RTPSockfd(-1),
 		RTCPPort(0),

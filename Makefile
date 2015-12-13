@@ -1,5 +1,5 @@
 CXX = g++
-CPPFLAGS += -g -O0 $(INCLUDE_DIR)
+CPPFLAGS += -g -O0 $(INCLUDE_DIR) -Wall
 SRCS := $(wildcard *.cpp)
 OBJS := $(patsubst %.cpp,%.o, $(SRCS))
 

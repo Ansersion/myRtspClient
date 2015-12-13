@@ -85,8 +85,16 @@ TEST(rtspClient, DoSETUP_RegularInput)
 	string RtspUri("rtsp://127.0.0.1/ansersion");
     RtspClient Client(RtspUri);
 
-	if((Client.DoOPTIONS() == RTSP_NO_ERROR) && (Client.DoDESCRIBE() == RTSP_NO_ERROR)) Client.ParseSDP();
+	EXPECT_EQ(Client.DoOPTIONS(), RTSP_NO_ERROR); 
+	EXPECT_TRUE(Client.IsResponse_200_OK());
+
+	EXPECT_EQ(Client.DoDESCRIBE(), RTSP_NO_ERROR); 
+	EXPECT_TRUE(Client.IsResponse_200_OK());
+
+	EXPECT_EQ(Client.ParseSDP(), RTSP_NO_ERROR);
+
 	EXPECT_EQ(Client.DoSETUP(), RTSP_NO_ERROR);
+	EXPECT_TRUE(Client.IsResponse_200_OK());
 }
 
 TEST(rtspClient, DoPLAY_InvalidInput)
@@ -98,18 +106,24 @@ TEST(rtspClient, DoPLAY_RegularInput)
 	string RtspUri("rtsp://127.0.0.1/ansersion");
     RtspClient Client(RtspUri);
 
-	if(Client.DoOPTIONS() != RTSP_NO_ERROR)
-		printf("DoPlay DoOPTIONS\n");
-	else if(Client.DoDESCRIBE() != RTSP_NO_ERROR)
-		printf("DoPlay DoDESCRIBE\n");
-	else if(Client.ParseSDP() != RTSP_NO_ERROR)
-		printf("DoPlay ParseSDP\n");
-	else if(Client.DoSETUP() != RTSP_NO_ERROR)
-		printf("DoPlay DoSETUP\n");
-	else if(Client.DoPLAY() != RTSP_NO_ERROR)
-		printf("DoPlay DoPLAY\n");
-	else 
-		printf("PLAY OK\n");
+	EXPECT_EQ(Client.DoOPTIONS(), RTSP_NO_ERROR);
+	EXPECT_TRUE(Client.IsResponse_200_OK());
 
+	EXPECT_EQ(Client.DoDESCRIBE(), RTSP_NO_ERROR);
+	EXPECT_TRUE(Client.IsResponse_200_OK());
+
+	EXPECT_EQ(Client.ParseSDP(), RTSP_NO_ERROR);
+
+	EXPECT_EQ(Client.DoSETUP(), RTSP_NO_ERROR);
+	EXPECT_TRUE(Client.IsResponse_200_OK());
+
+	printf("start PLAY\n");
+	EXPECT_EQ(Client.DoPLAY("video"), RTSP_NO_ERROR);
+	EXPECT_TRUE(Client.IsResponse_200_OK());
+
+	sleep(3);
+	printf("start TEARDOWN\n");
+	EXPECT_EQ(Client.DoTEARDOWN("video"), RTSP_NO_ERROR);
+	EXPECT_TRUE(Client.IsResponse_200_OK());
 	sleep(3);
 }

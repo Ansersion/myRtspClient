@@ -39,9 +39,9 @@ TEST(rtspClient, ToolMethods_InvalidInput)
 	string Response3("hsldhglreiwuo");
 
 	RtspClient RtspResponseTest;
-	EXPECT_EQ(RtspResponseTest.IsResponseOK(Response1), false);
-	EXPECT_EQ(RtspResponseTest.IsResponseOK(Response2), false);
-	EXPECT_EQ(RtspResponseTest.IsResponseOK(Response3), false);
+	EXPECT_FALSE(RtspResponseTest.IsResponse_200_OK(NULL, &Response1));
+	EXPECT_FALSE(RtspResponseTest.IsResponse_200_OK(NULL, &Response2));
+	EXPECT_FALSE(RtspResponseTest.IsResponse_200_OK(NULL, &Response3));
 
 }
 
@@ -73,8 +73,12 @@ TEST(rtspClient, ToolMethods_RegularInput)
 	string Response_500("RTSP/1.0 500 Internal Server Error\r\nServer: VLC/2.1.6\r\nDate: Sun, 06 Dec 2015 11:51:38 GMT\r\n\r\n");
 
 	RtspClient RtspResponseTest;
-	EXPECT_EQ(RtspResponseTest.IsResponseOK(Response_200), true);
-	EXPECT_EQ(RtspResponseTest.IsResponseOK(Response_400), false);
-	EXPECT_EQ(RtspResponseTest.IsResponseOK(Response_500), false);
+	ErrorType Err;
+	EXPECT_TRUE(RtspResponseTest.IsResponse_200_OK(&Err, &Response_200));
+	EXPECT_EQ(Err, RTSP_RESPONSE_200);
+	EXPECT_FALSE(RtspResponseTest.IsResponse_200_OK(&Err, &Response_400));
+	EXPECT_EQ(Err, RTSP_RESPONSE_40X);
+	EXPECT_FALSE(RtspResponseTest.IsResponse_200_OK(&Err, &Response_500));
+	EXPECT_EQ(Err, RTSP_RESPONSE_50X);
 }
 

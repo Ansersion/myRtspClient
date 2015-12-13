@@ -19,19 +19,20 @@ TEST(rtspClient, RtspClient_ParseSDP_InvalidInput)
 
 	string Invalid_SDP1("");
 	string Invalid_SDP2("halsdjg3woiu");
-	multimap<string, string> sdp_info;
+
+	map<string, MediaSession> MediaSessionMap;
 
 	Client.ParseSDP();
-	sdp_info = Client.GetSDPInfo();
-	EXPECT_EQ(sdp_info.empty(), true);
+	MediaSessionMap = Client.GetMediaSessions();
+	EXPECT_EQ(MediaSessionMap.empty(), true);
 
 	Client.ParseSDP(Invalid_SDP1);
-	sdp_info = Client.GetSDPInfo();
-	EXPECT_EQ(sdp_info.empty(), true);
+	MediaSessionMap = Client.GetMediaSessions();
+	EXPECT_EQ(MediaSessionMap.empty(), true);
 
 	Client.ParseSDP(Invalid_SDP2);
-	sdp_info = Client.GetSDPInfo();
-	EXPECT_EQ(sdp_info.empty(), true);
+	MediaSessionMap = Client.GetMediaSessions();
+	EXPECT_EQ(MediaSessionMap.empty(), true);
 }
 
 TEST(rtspClient, RtspClient_ParseSDP_RegularInput)
@@ -70,17 +71,17 @@ TEST(rtspClient, RtspClient_ParseSDP_RegularInput)
 
 	RtspClient Client;
 	Client.ParseSDP(SDP);
-	multimap<string, string> SDPInfo = Client.GetSDPInfo();
-	typedef multimap<string, string>::iterator It_type;
-	pair<It_type, It_type> p = SDPInfo.equal_range("s");
-	It_type It = p.first;
+	// multimap<string, string> SDPInfo = Client.GetSDPInfo();
+	// typedef multimap<string, string>::iterator It_type;
+	// pair<It_type, It_type> p = SDPInfo.equal_range("s");
+	// It_type It = p.first;
 	map<string, MediaSession> MediaSessionMap = Client.GetMediaSessions();
 
-	EXPECT_EQ(true, It->second == "Unnamed");
-	EXPECT_EQ(SDPInfo.count("a"), 10);
-	EXPECT_EQ(SDPInfo.count("m"), 2);
-	EXPECT_EQ(SDPInfo.count("v"), 1);
-	EXPECT_EQ(SDPInfo.count("x"), 0);
+	// EXPECT_EQ(true, It->second == "Unnamed");
+	// EXPECT_EQ(SDPInfo.count("a"), 10);
+	// EXPECT_EQ(SDPInfo.count("m"), 2);
+	// EXPECT_EQ(SDPInfo.count("v"), 1);
+	// EXPECT_EQ(SDPInfo.count("x"), 0);
 
 	EXPECT_EQ(true, MediaSessionMap["audio"].MediaType == "audio");
 	EXPECT_EQ(true, MediaSessionMap["audio"].EncodeType == "MPA");
