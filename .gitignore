@@ -5,5 +5,7 @@ cscope*
 .depend
 myTest
 capdir
-backup
-backup/*
+gtest/backup
+third_party/jrtplib-3.9.1/build
+third_party/jrtplib-3.9.1/build_2
+a.out

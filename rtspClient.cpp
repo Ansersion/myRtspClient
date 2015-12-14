@@ -965,17 +965,3 @@ bool RtspClient::IsResponse_200_OK(ErrorType * err, string * response)
 	return Result;
 }
 
-MediaSession::MediaSession():
-		MediaType(""),
-		EncodeType(""),
-		Protocol(""),
-		TimeRate(0),
-		ControlURI(""),
-		SessionID(""),
-		// RTSPSockfd(-1),
-		RTPPort(0),
-		RTPSockfd(-1),
-		RTCPPort(0),
-		RTCPSockfd(-1)
-{
-}

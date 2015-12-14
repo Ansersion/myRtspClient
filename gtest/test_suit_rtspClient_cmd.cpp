@@ -99,6 +99,25 @@ TEST(rtspClient, DoSETUP_RegularInput)
 
 TEST(rtspClient, DoPLAY_InvalidInput)
 {
+	string RtspUri("rtsp://127.0.0.1/ansersion");
+    RtspClient Client(RtspUri);
+
+	EXPECT_EQ(Client.DoOPTIONS(), RTSP_NO_ERROR);
+	EXPECT_TRUE(Client.IsResponse_200_OK());
+
+	EXPECT_EQ(Client.DoDESCRIBE(), RTSP_NO_ERROR);
+	EXPECT_TRUE(Client.IsResponse_200_OK());
+
+	EXPECT_EQ(Client.ParseSDP(), RTSP_NO_ERROR);
+
+	EXPECT_EQ(Client.DoSETUP(), RTSP_NO_ERROR);
+	EXPECT_TRUE(Client.IsResponse_200_OK());
+
+	EXPECT_EQ(Client.DoPLAY("abc"), RTSP_INVALID_MEDIA_SESSION);
+
+	EXPECT_EQ(Client.DoTEARDOWN(), RTSP_NO_ERROR);
+	EXPECT_TRUE(Client.IsResponse_200_OK());
+
 }
 
 TEST(rtspClient, DoPLAY_RegularInput)

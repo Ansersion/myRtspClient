@@ -56,9 +56,23 @@ INCLUDE_DIR += -I$(USER_DIR)
 
 ORSRCS := $(patsubst $(EXCLUDE_MAIN),, $(SRCS))
 
+THIRD_PATRY := ../third_party
+
+JRTP := $(THIRD_PATRY)/jrtplib-3.9.1/build
+
+JRTP_LIB =
+JRTP_LIB += $(JRTP)/src/libjrtp.a
+
+JRTP_INCLUDE =
+JRTP_INCLUDE += -I$(JRTP)/src
+JRTP_INCLUDE += -I$(JRTP)/../src
+
+INCLUDE_DIR += $(JRTP_INCLUDE)
+LIBS += $(JRTP_LIB)
 
 
 CXXFLAGS += $(INCLUDE_DIR)
+
 $(TESTS): $(OBJS) gtest_main.a
 	(cd ..; make;)
 	rm $(USER_OBJ_DIR)/$(USER_MAIN_OBJ)

@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "myRegex.h"
+#include "MediaSession.h"
 
 using std::map;
 using std::string;
@@ -48,21 +49,22 @@ enum ErrorType {
     RTSP_UNKNOWN_ERROR
 };
 
-class MediaSession {
-	public:
-		MediaSession();
-		string MediaType;
-		string EncodeType;
-		string Protocol;
-		unsigned int TimeRate;
-		string ControlURI;
-		string SessionID;
-		// int RTSPSockfd;
-		uint16_t RTPPort;
-		int RTPSockfd;
-		uint16_t RTCPPort;
-		int RTCPSockfd;
-};
+// class MediaSession {
+// 	public:
+// 		MediaSession();
+// 
+// 		string MediaType;
+// 		string EncodeType;
+// 		string Protocol;
+// 		unsigned int TimeRate;
+// 		string ControlURI;
+// 		string SessionID;
+// 		// int RTSPSockfd;
+// 		uint16_t RTPPort;
+// 		int RTPSockfd;
+// 		uint16_t RTCPPort;
+// 		int RTCPSockfd;
+// };
 
 // typedef shared_ptr< multimap<string, string> > 	 	SDPInfoPtr;
 // typedef shared_ptr< map<string, MediaSessionPtr> > 	MediaSessionMapPtr;
