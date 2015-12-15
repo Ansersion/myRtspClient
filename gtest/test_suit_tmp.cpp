@@ -10,29 +10,35 @@
 
 #include "myRegex.h"
 #include "rtspClient.h"
-using namespace std;
+#include "MediaSession.h"
+#include "myRtpSession.h"
 
-// TEST(rtspClient, DoPLAY_RegularInput)
+using namespace std;
+using namespace jrtplib;
+
+// TEST(rtspClient, TMP_TEST)
 // {
-// 	string RtspUri("rtsp://127.0.0.1/ansersion");
-//     RtspClient Client(RtspUri);
 // 
-// 	EXPECT_EQ(Client.DoOPTIONS(), RTSP_NO_ERROR);
-// 	EXPECT_TRUE(Client.IsResponse_200_OK());
+// 	MediaSession Ms;
+// 	Ms.RTPPort = 20020;
+// 	Ms.TimeRate = 8000;
 // 
-// 	EXPECT_EQ(Client.DoDESCRIBE(), RTSP_NO_ERROR);
-// 	EXPECT_TRUE(Client.IsResponse_200_OK());
+// 	MyRTPSession Mrs;
+// 	if(!Mrs.MyRTP_SetUp(&Ms)) {
+// 		printf("Msr Setup Error");
+// 		return;
+// 	}
 // 
-// 	EXPECT_EQ(Client.ParseSDP(), RTSP_NO_ERROR);
+// 	uint8_t buf[4192];
+// 	size_t size = 0;
+// 	int num = 30;
 // 
-// 	EXPECT_EQ(Client.DoSETUP(), RTSP_NO_ERROR);
-// 	EXPECT_TRUE(Client.IsResponse_200_OK());
+// 	for (int i = 1 ; i <= num ; i++)
+// 	{
+// 	 	printf("size: %lu\n", size);
+// 	 	Mrs.GetMyRTPData(buf, &size);
 // 
-// 	printf("start PLAY\n");
-// 	EXPECT_EQ(Client.DoPLAY("video"), RTSP_NO_ERROR);
-// 	EXPECT_TRUE(Client.IsResponse_200_OK());
-// 
-// 	sleep(3);
-// 	printf("start TEARDOWN\n");
-// 	EXPECT_EQ(Client.DoTEARDOWN("video"), RTSP_NO_ERROR);
+// 	 	RTPTime::Wait(RTPTime(1,0));
+// 	}
+// 	EXPECT_EQ(true, true);
 // }

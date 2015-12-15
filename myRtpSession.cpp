@@ -23,7 +23,7 @@ int MyRTPSession::IsError(int rtperr)
 	return RTP_OK;
 }
 
-int MyRTPSession::RTP_SetUp(MediaSession * media_session)
+int MyRTPSession::MyRTP_SetUp(MediaSession * media_session)
 {
 	if(!media_session) {
 		fprintf(stderr, "%s: Invalid media session\n", __func__);
@@ -55,6 +55,22 @@ int MyRTPSession::RTP_SetUp(MediaSession * media_session)
 	transparams.SetPortbase(media_session->RTPPort);
 	status = Create(sessparams,&transparams);  
 	return IsError(status);
+}
+
+void MyRTPSession::MyRTP_Teardown(MediaSession * media_session, struct timeval * tval)
+{
+	struct timeval Timeout;
+
+	if(!tval) {
+		Timeout.tv_sec = 1; 
+		Timeout.tv_usec = 0; 
+	} else {
+		Timeout.tv_sec = tval->tv_sec;
+		Timeout.tv_usec = tval->tv_usec;
+	}
+
+	media_session->RTPPort = 0;
+	BYEDestroy(RTPTime(Timeout.tv_sec, Timeout.tv_usec), 0, 0);
 }
 
 void MyRTPSession::OnNewSource(RTPSourceData *dat)
@@ -154,6 +170,11 @@ void MyRTPSession::OnRemoveSource(RTPSourceData *dat)
 
 uint8_t * MyRTPSession::GetMyRTPData(uint8_t * data_buf, size_t * size)
 {
+#ifndef RTP_SUPPORT_THREAD
+	int status = Poll();
+	if(!IsError(status)) return NULL;
+#endif 
+
 	if(!data_buf) {
 		fprintf(stderr, "%s: Invalide argument('data_buf==NULL')", __func__);
 		return NULL;
@@ -197,6 +218,11 @@ uint8_t * MyRTPSession::GetMyRTPData(uint8_t * data_buf, size_t * size)
 
 uint8_t * MyRTPSession::GetMyRTPPacket(uint8_t * packet_buf, size_t * size)
 {
+#ifndef RTP_SUPPORT_THREAD
+	int status = Poll();
+	if(!IsError(status)) return NULL;
+#endif 
+
 	if(!packet_buf) {
 		fprintf(stderr, "%s: Invalide argument('packet_buf==NULL')", __func__);
 		return NULL;

@@ -184,7 +184,9 @@ int main(void)
 	
 	for (i = 1 ; i <= num ; i++)
 	{
+		printf("begin before\n");
 		sess.BeginDataAccess();
+		printf("begin after\n");
 		
 		// check incoming packets
 		if (sess.GotoFirstSourceWithData())
@@ -214,14 +216,18 @@ int main(void)
 		sess.EndDataAccess();
 
 #ifndef RTP_SUPPORT_THREAD
+		printf("poll before\n");
 		status = sess.Poll();
+		printf("poll after\n");
 		checkerror(status);
 #endif // RTP_SUPPORT_THREAD
 		
 		RTPTime::Wait(RTPTime(1,0));
 	}
 	
+	printf("start destroy\n");
 	sess.BYEDestroy(RTPTime(10,0),0,0);
+	printf("end destroy\n");
 
 #ifdef WIN32
 	WSACleanup();

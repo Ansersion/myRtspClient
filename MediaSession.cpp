@@ -22,6 +22,8 @@ MediaSession::MediaSession():
 
 MediaSession::~MediaSession()
 {
+	RTP_Teardown();
+
 	if(RTPInterface) delete RTPInterface;
 }
 
@@ -35,12 +37,30 @@ int MediaSession::RTP_SetUp()
 	}
 
 	RTPInterface = new MyRTPSession;
-	if(!RTPInterface->RTP_SetUp(this)) return MEDIA_SESSION_ERROR;
+	if(!RTPInterface->MyRTP_SetUp(this)) return MEDIA_SESSION_ERROR;
 
 	return MEDIA_SESSION_OK;
 }
 
-int MediaSession::RTP_TEARDOWN()
+int MediaSession::RTP_Teardown(struct timeval * tval)
 {
+	if(!RTPInterface) {
+		return MEDIA_SESSION_OK;
+	}
+	if(0 == RTPPort) return MEDIA_SESSION_ERROR;
+
+	RTPPort = 0;
+	RTPSockfd = -1;
+	RTCPPort = 0;
+	RTCPSockfd = -1;
+
+	RTPInterface->MyRTP_Teardown(this, tval);
+	delete RTPInterface;
+	RTPInterface = NULL;
 	return MEDIA_SESSION_OK;
+}
+
+uint8_t * MediaSession::GetMediaData(uint8_t * buf, size_t * size) {
+	if(!RTPInterface) return NULL;
+	return  RTPInterface->GetMyRTPData(buf, size);
 }

@@ -24,7 +24,7 @@ using std::multimap;
 #define TRANS_ERROR 			0
 
 #define RECV_BUF_SIZE 			8192
-#define SEARCH_PORT_RTP_FROM 	10000 // must be even number
+#define SEARCH_PORT_RTP_FROM 	10330 // '10330' is chosen at random(must be a even number)
 
 enum SessionType {
     VIDEO_SESSION = 0, 
@@ -137,15 +137,20 @@ class RtspClient
 
 		/* Tools Methods */
 		int CreateTcpSockfd(string uri = "");
+
 		/* "CreateUdpSockfd" is only for test. 
 		 * We will use jrtplib instead later. */
-		int CreateRTP_RTCPSockfd(MediaSession * media_session, uint16_t RTP_port = 0); 
+		int SetAvailableRTPPort(MediaSession * media_session, uint16_t RTP_port = 0); 
 		in_addr_t GetIP(string uri = "");
 		uint16_t GetPort(string uri = "");
+
 		// "IsResponse_200_OK" is really a ineffective method, should be modified in future.
 		bool IsResponse_200_OK(ErrorType * err = NULL, string * response = NULL);
 		map<string, MediaSession> GetMediaSessions() const { return *MediaSessionMap; }
 
+		uint8_t * GetMediaData(MediaSession * media_session, uint8_t * buf, size_t * size);
+
+		uint8_t * GetMediaData(string media_type, uint8_t * buf, size_t * size);
 	protected:
 		int CheckSockWritable(int sockfd, struct timeval * tval = NULL);
 		int CheckSockReadable(int sockfd, struct timeval * tval = NULL);

@@ -23,7 +23,10 @@ int checkerror(int rtperr);
 class MyRTPSession : public RTPSession
 {
 	public:
-		int RTP_SetUp(MediaSession * media_session);
+		int MyRTP_SetUp(MediaSession * media_session);
+
+		/* Wait 1 second for TEARDOWN at default */
+		void MyRTP_Teardown(MediaSession * media_session, struct timeval * tval = NULL);
 		uint8_t * GetMyRTPData(uint8_t * data_buf, size_t * size);
 		uint8_t * GetMyRTPPacket(uint8_t * packet_buf, size_t * size);
 

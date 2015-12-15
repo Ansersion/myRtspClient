@@ -37,6 +37,7 @@ RtspClient::~RtspClient()
 {
 	// delete SDPInfo;
 	delete MediaSessionMap;
+	MediaSessionMap = NULL;
 }
 
 ErrorType RtspClient::DoDESCRIBE(string uri)
@@ -193,8 +194,8 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 	
 	// "CreateUdpSockfd" is only for test. 
 	// We will use jrtplib instead later. 
-	if(!CreateRTP_RTCPSockfd(media_session)) {
-		printf("CreateRTP_RTCPSockfd Error\n");
+	if(!SetAvailableRTPPort(media_session)) {
+		printf("No port available for RTP and RTCP\n");
 		return RTSP_UNKNOWN_ERROR;
 	}
 	string Cmd("SETUP");
@@ -216,6 +217,8 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 		Err = RTSP_RECV_ERROR;
 	}
 	media_session->SessionID = ParseSessionID(RtspResponse);
+	media_session->RTP_SetUp();
+
 	// media_session->RTSPSockfd = Sockfd;
 	Close(Sockfd);
 	return Err;
@@ -226,6 +229,7 @@ ErrorType RtspClient::DoSETUP(string media_type)
 	ErrorType Err = RTSP_NO_ERROR;
 	map<string, MediaSession>::iterator it;
 	bool IgnoreCase = true;
+
 
 	for(it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
 		if(Regex.Regex(it->first.c_str(), media_type.c_str(), IgnoreCase)) break;
@@ -350,8 +354,8 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session)
 		}
 		if(it != MediaSessionMap->end()) {
 			MediaSessionMap->erase(it->first);
-			close(media_session->RTPSockfd);
-			close(media_session->RTCPSockfd);
+			// close(media_session->RTPSockfd);
+			// close(media_session->RTCPSockfd);
 		}
 	}
 	Close(Sockfd);
@@ -435,6 +439,7 @@ int RtspClient::ParseSDP(string SDP)
 			}
 		}
 	}
+
 	return Result;
 }
 
@@ -540,7 +545,7 @@ int RtspClient::CreateTcpSockfd(string uri)
 	return Sockfd;
 }
 
-int RtspClient::CreateRTP_RTCPSockfd(MediaSession * media_session, uint16_t RTP_port)
+int RtspClient::SetAvailableRTPPort(MediaSession * media_session, uint16_t RTP_port)
 {
 	int RTPSockfd, RTCPSockfd;
 	uint16_t RTPPort;
@@ -553,9 +558,9 @@ int RtspClient::CreateRTP_RTCPSockfd(MediaSession * media_session, uint16_t RTP_
 		Search_RTP_Port_From = SEARCH_PORT_RTP_FROM;
 	}
 	media_session->RTPPort = 0;
-	media_session->RTPSockfd = -1;
+	// media_session->RTPSockfd = -1;
 	media_session->RTCPPort = 0;
-	media_session->RTCPSockfd = -1;
+	// media_session->RTCPSockfd = -1;
 
 	// Create RTP and RTCP udp socket 
 	for(RTPPort = Search_RTP_Port_From; RTPPort < 65535; RTPPort = RTPPort + 2) {
@@ -564,6 +569,11 @@ int RtspClient::CreateRTP_RTCPSockfd(MediaSession * media_session, uint16_t RTP_
 			perror("CreateRTP_RTCPSockfd Error");
 			return 0;
 		}	
+		// if(setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &flag, len) < 0) { 
+		// 	close(RTPPort);
+		// 	perror("CreateRTP_RTCPSockfd Error");
+		// 	return 0;
+		// } 
 		bzero(&servaddr, sizeof(servaddr));
 		servaddr.sin_family = AF_INET;
 		servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -576,23 +586,32 @@ int RtspClient::CreateRTP_RTCPSockfd(MediaSession * media_session, uint16_t RTP_
 		// Bind RTCP Port
 		RTCPPort = RTPPort + 1;
 		if((RTCPSockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-			close(RTPPort);
+			close(RTPSockfd);
 			perror("CreateRTP_RTCPSockfd Error");
 			return 0; // Create failed
 		}	
+		// if(setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, &flag, len) < 0) { 
+		// 	close(RTPPort);
+		// 	close(RTCPPort);
+		// 	perror("CreateRTP_RTCPSockfd Error");
+		// 	return 0;
+		// } 
 		bzero(&servaddr, sizeof(servaddr));
 		servaddr.sin_family = AF_INET;
 		servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 		servaddr.sin_port = htons(RTCPPort);
+
 		if(bind(RTCPSockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) {
-			close(RTPPort);
-			close(RTCPPort);
+			close(RTPSockfd);
+			close(RTCPSockfd);
 			continue;
 		}
+		close(RTPSockfd);
+		close(RTCPSockfd);
 		media_session->RTPPort = RTPPort;
-		media_session->RTPSockfd = RTPSockfd;;
+		// media_session->RTPSockfd = RTPSockfd;;
 		media_session->RTCPPort = RTCPPort;
-		media_session->RTCPSockfd = RTCPSockfd;
+		// media_session->RTCPSockfd = RTCPSockfd;
 		return 1; // Created successfully
 	}
 	return 0; // Created failed
@@ -965,3 +984,23 @@ bool RtspClient::IsResponse_200_OK(ErrorType * err, string * response)
 	return Result;
 }
 
+uint8_t * RtspClient::GetMediaData(MediaSession * media_session, uint8_t * buf, size_t * size) {
+	if(!media_session) return NULL;
+	return media_session->GetMediaData(buf, size);
+}
+
+uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * size) {
+	map<string, MediaSession>::iterator it;
+	bool IgnoreCase = true;
+
+	for(it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
+		if(Regex.Regex(it->first.c_str(), media_type.c_str(), IgnoreCase)) break;
+	}
+
+	if(it == MediaSessionMap->end()) {
+		fprintf(stderr, "%s: No such media session\n", __func__);
+		return NULL;
+	}
+
+	return it->second.GetMediaData(buf, size);
+}

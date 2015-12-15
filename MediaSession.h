@@ -13,7 +13,11 @@ class MediaSession
 	 	MediaSession();
 		~MediaSession();
 	 	int RTP_SetUp();
-	 	int RTP_TEARDOWN();
+
+		/* Wait 1 second for TEARDOWN at default */
+	 	int RTP_Teardown(struct timeval * tval = NULL);
+
+		uint8_t * GetMediaData(uint8_t * buf, size_t * size);
 
 	public:
 		std::string MediaType;
