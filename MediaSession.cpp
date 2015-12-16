@@ -13,9 +13,9 @@ MediaSession::MediaSession():
 	SessionID(""),
 	// RTSPSockfd(-1),
 	RTPPort(0),
-	RTPSockfd(-1),
+	// RTPSockfd(-1),
 	RTCPPort(0),
-	RTCPSockfd(-1),
+	// RTCPSockfd(-1),
 	RTPInterface(NULL)
 {
 }
@@ -50,9 +50,9 @@ int MediaSession::RTP_Teardown(struct timeval * tval)
 	if(0 == RTPPort) return MEDIA_SESSION_ERROR;
 
 	RTPPort = 0;
-	RTPSockfd = -1;
+	// RTPSockfd = -1;
 	RTCPPort = 0;
-	RTCPSockfd = -1;
+	// RTCPSockfd = -1;
 
 	RTPInterface->MyRTP_Teardown(this, tval);
 	delete RTPInterface;
@@ -60,7 +60,7 @@ int MediaSession::RTP_Teardown(struct timeval * tval)
 	return MEDIA_SESSION_OK;
 }
 
-uint8_t * MediaSession::GetMediaData(uint8_t * buf, size_t * size) {
+uint8_t * MediaSession::GetMediaData(uint8_t * buf, size_t * size, unsigned long timeout) {
 	if(!RTPInterface) return NULL;
-	return  RTPInterface->GetMyRTPData(buf, size);
+	return  RTPInterface->GetMyRTPData(buf, size, timeout);
 }

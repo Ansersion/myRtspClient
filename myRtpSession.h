@@ -27,14 +27,15 @@ class MyRTPSession : public RTPSession
 
 		/* Wait 1 second for TEARDOWN at default */
 		void MyRTP_Teardown(MediaSession * media_session, struct timeval * tval = NULL);
-		uint8_t * GetMyRTPData(uint8_t * data_buf, size_t * size);
-		uint8_t * GetMyRTPPacket(uint8_t * packet_buf, size_t * size);
+		uint8_t * GetMyRTPData(uint8_t * data_buf, size_t * size, unsigned long timeout_ms);
+		uint8_t * GetMyRTPPacket(uint8_t * packet_buf, size_t * size, unsigned long timeout_ms);
 
 	protected:
 		int IsError(int rtperr);
 		void OnNewSource(RTPSourceData *dat);
 		void OnBYEPacket(RTPSourceData *dat);
 		void OnRemoveSource(RTPSourceData *dat);
+
 };
 
 #endif

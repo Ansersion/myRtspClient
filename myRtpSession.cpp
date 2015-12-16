@@ -1,10 +1,13 @@
 #include <time.h>
 #include <stdio.h>
+#include <unistd.h>
 #include "myRtpSession.h"
 #include "MediaSession.h"
 
 #define RTP_OK 		1
 #define RTP_ERROR 	0
+
+#define USLEEP_UNIT 	1000 
 
 using namespace jrtplib;
 
@@ -168,13 +171,8 @@ void MyRTPSession::OnRemoveSource(RTPSourceData *dat)
 	std::cout << "Deleting destination " << std::string(inet_ntoa(inaddr)) << ":" << port << std::endl;
 }
 
-uint8_t * MyRTPSession::GetMyRTPData(uint8_t * data_buf, size_t * size)
+uint8_t * MyRTPSession::GetMyRTPData(uint8_t * data_buf, size_t * size, unsigned long timeout_ms)
 {
-#ifndef RTP_SUPPORT_THREAD
-	int status = Poll();
-	if(!IsError(status)) return NULL;
-#endif 
-
 	if(!data_buf) {
 		fprintf(stderr, "%s: Invalide argument('data_buf==NULL')", __func__);
 		return NULL;
@@ -184,45 +182,57 @@ uint8_t * MyRTPSession::GetMyRTPData(uint8_t * data_buf, size_t * size)
 		fprintf(stderr, "%s: Invalide argument('size==NULL')", __func__);
 		return NULL;
 	}
-	BeginDataAccess();
 
-	// check incoming packets
-	if (!GotoFirstSourceWithData()) {
+	unsigned long UsleepTimes = (timeout_ms + USLEEP_UNIT - 1) / USLEEP_UNIT; // floor the 'timeout_ms / USLEEP_UNIT'
+
+	do {
+#ifndef RTP_SUPPORT_THREAD
+		int status = Poll();
+		if(!IsError(status)) return NULL;
+#endif 
+
+		BeginDataAccess();
+
+		// check incoming packets
+		if (!GotoFirstSourceWithData()) {
+			EndDataAccess();
+			usleep(USLEEP_UNIT);
+			UsleepTimes--;
+			continue;
+			// return NULL;
+		}
+		RTPPacket *pack;
+
+		if(!(pack = GetNextPacket()))
+		{
+			EndDataAccess();
+			usleep(USLEEP_UNIT);
+			UsleepTimes--;
+			continue;
+			// return NULL;
+		}
+
+		size_t PacketSize = 0;
+		uint8_t * Packet = NULL;
+		Packet = pack->GetPayloadData();
+		PacketSize = pack->GetPayloadLength();
+		// printf("data length: %lu\n", PacketSize);
+
+		*size = PacketSize;
+		memcpy(data_buf, Packet, PacketSize);
+
+		// we don't longer need the packet, so
+		// we'll delete it
+		DeletePacket(pack);
 		EndDataAccess();
-		return NULL;
-	}
-	RTPPacket *pack;
-
-	if(!(pack = GetNextPacket()))
-	{
-		EndDataAccess();
-		return NULL;
-	}
-
-	size_t PacketSize = 0;
-	uint8_t * Packet = NULL;
-	Packet = pack->GetPayloadData();
-	PacketSize = pack->GetPayloadLength();
-	printf("data length: %lu\n", PacketSize);
-
-	*size = PacketSize;
-	memcpy(data_buf, Packet, PacketSize);
-
-	// we don't longer need the packet, so
-	// we'll delete it
-	DeletePacket(pack);
-	EndDataAccess();
+		UsleepTimes = 0; // Got the data. So not need to sleep any more.
+	} while(UsleepTimes > 0);
 
 	return data_buf;
 }
 
-uint8_t * MyRTPSession::GetMyRTPPacket(uint8_t * packet_buf, size_t * size)
+uint8_t * MyRTPSession::GetMyRTPPacket(uint8_t * packet_buf, size_t * size, unsigned long timeout_ms)
 {
-#ifndef RTP_SUPPORT_THREAD
-	int status = Poll();
-	if(!IsError(status)) return NULL;
-#endif 
-
 	if(!packet_buf) {
 		fprintf(stderr, "%s: Invalide argument('packet_buf==NULL')", __func__);
 		return NULL;
@@ -232,34 +242,51 @@ uint8_t * MyRTPSession::GetMyRTPPacket(uint8_t * packet_buf, size_t * size)
 		fprintf(stderr, "%s: Invalide argument('size==NULL')", __func__);
 		return NULL;
 	}
-	BeginDataAccess();
 
-	// check incoming packets
-	if (!GotoFirstSourceWithData()) {
+	unsigned long UsleepTimes = (timeout_ms + USLEEP_UNIT - 1) / USLEEP_UNIT; // floor the 'timeout_ms / USLEEP_UNIT'
+
+	do {
+#ifndef RTP_SUPPORT_THREAD
+		int status = Poll();
+		if(!IsError(status)) return NULL;
+#endif 
+
+		BeginDataAccess();
+
+		// check incoming packets
+		if (!GotoFirstSourceWithData()) {
+			EndDataAccess();
+			usleep(USLEEP_UNIT);
+			UsleepTimes--;
+			continue;
+			// return NULL;
+		}
+		RTPPacket *pack;
+
+		if(!(pack = GetNextPacket()))
+		{
+			EndDataAccess();
+			usleep(USLEEP_UNIT);
+			UsleepTimes--;
+			continue;
+			// return NULL;
+		}
+
+		size_t PacketSize = 0;
+		uint8_t * Packet = NULL;
+		Packet = pack->GetPacketData();
+		PacketSize = pack->GetPacketLength();
+		// printf("packet length: %lu\n", PacketSize);
+
+		*size = PacketSize;
+		memcpy(packet_buf, Packet, PacketSize);
+
+		// we don't longer need the packet, so
+		// we'll delete it
+		DeletePacket(pack);
 		EndDataAccess();
-		return NULL;
-	}
-	RTPPacket *pack;
-
-	if(!(pack = GetNextPacket()))
-	{
-		EndDataAccess();
-		return NULL;
-	}
-
-	size_t PacketSize = 0;
-	uint8_t * Packet = NULL;
-	Packet = pack->GetPacketData();
-	PacketSize = pack->GetPacketLength();
-	printf("packet length: %lu\n", PacketSize);
-
-	*size = PacketSize;
-	memcpy(packet_buf, Packet, PacketSize);
-
-	// we don't longer need the packet, so
-	// we'll delete it
-	DeletePacket(pack);
-	EndDataAccess();
+		UsleepTimes = 0;
+	} while(UsleepTimes > 0);
 
 	return packet_buf;
 }

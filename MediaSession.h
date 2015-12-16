@@ -5,6 +5,8 @@
 #include <string>
 #include <stdint.h>
 
+#define TIMEOUT_MICROSECONDS 	1000000 // wait for a packet at most 1 second
+
 class MyRTPSession;
 
 class MediaSession
@@ -15,9 +17,12 @@ class MediaSession
 	 	int RTP_SetUp();
 
 		/* Wait 1 second for TEARDOWN at default */
-	 	int RTP_Teardown(struct timeval * tval = NULL);
+		int RTP_Teardown(struct timeval * tval = NULL);
 
-		uint8_t * GetMediaData(uint8_t * buf, size_t * size);
+		/* <timeout_ms> in unit of microsecond.
+		 * Why we set 'timeout' here is to avoid continuously occupying CPU.
+		 * */
+		uint8_t * GetMediaData(uint8_t * buf, size_t * size, unsigned long timeout_ms = TIMEOUT_MICROSECONDS);
 
 	public:
 		std::string MediaType;
@@ -28,9 +33,9 @@ class MediaSession
 		std::string SessionID;
 		// int RTSPSockfd;
 		uint16_t RTPPort;
-		int RTPSockfd;
+		// int RTPSockfd;
 		uint16_t RTCPPort;
-		int RTCPSockfd;
+		// int RTCPSockfd;
 
 	protected:
 		MyRTPSession * RTPInterface;

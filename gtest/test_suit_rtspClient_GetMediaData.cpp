@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <regex.h>
 #include <memory.h>
 #include <stdlib.h>
@@ -7,6 +8,7 @@
 #include <list>
 #include <iostream>
 #include <gtest/gtest.h>
+#include <fcntl.h>
 
 #include "myRegex.h"
 #include "rtspClient.h"
@@ -18,25 +20,26 @@ TEST(rtspClient, TMP_TEST)
     RtspClient Client(RtspUri);
 
 	EXPECT_EQ(Client.DoOPTIONS(), RTSP_NO_ERROR);
+	printf("%s\n", Client.GetResponse().c_str());
 	EXPECT_TRUE(Client.IsResponse_200_OK());
 
 	EXPECT_EQ(Client.DoDESCRIBE(), RTSP_NO_ERROR);
+	printf("%s\n", Client.GetResponse().c_str());
 	EXPECT_TRUE(Client.IsResponse_200_OK());
 
 	EXPECT_EQ(Client.ParseSDP(), RTSP_NO_ERROR);
 
 	EXPECT_EQ(Client.DoSETUP(), RTSP_NO_ERROR);
+	printf("%s\n", Client.GetResponse().c_str());
 	EXPECT_TRUE(Client.IsResponse_200_OK());
 
 	printf("start PLAY\n");
 	EXPECT_EQ(Client.DoPLAY("video"), RTSP_NO_ERROR);
 	EXPECT_TRUE(Client.IsResponse_200_OK());
 
-	sleep(3);
-
 	int packet_num = 0;
-
-	while(++packet_num < 100) {
+	int fd;
+	while(++packet_num < 1000) {
 		uint8_t buf[4192];
 		size_t size = 0;
 		// usleep(30000);

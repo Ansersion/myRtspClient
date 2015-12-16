@@ -31,14 +31,12 @@ using namespace jrtplib;
 // 
 // 	uint8_t buf[4192];
 // 	size_t size = 0;
-// 	int num = 30;
+// 	int num = 100;
 // 
 // 	for (int i = 1 ; i <= num ; i++)
 // 	{
-// 	 	printf("size: %lu\n", size);
 // 	 	Mrs.GetMyRTPData(buf, &size);
-// 
-// 	 	RTPTime::Wait(RTPTime(1,0));
+// 	 	printf("size: %lu\n", size);
 // 	}
 // 	EXPECT_EQ(true, true);
 // }

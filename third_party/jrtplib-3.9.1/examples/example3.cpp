@@ -218,6 +218,7 @@ int main(void)
 #ifndef RTP_SUPPORT_THREAD
 		printf("poll before\n");
 		status = sess.Poll();
+		status = sess.Poll();
 		printf("poll after\n");
 		checkerror(status);
 #endif // RTP_SUPPORT_THREAD
@@ -227,7 +228,9 @@ int main(void)
 	
 	printf("start destroy\n");
 	sess.BYEDestroy(RTPTime(10,0),0,0);
+	sess.BYEDestroy(RTPTime(10,0),0,0);
 	printf("end destroy\n");
+	RTPTime::Wait(RTPTime(3,0));
 
 #ifdef WIN32
 	WSACleanup();
