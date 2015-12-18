@@ -133,6 +133,7 @@ class RtspClient
 		string GetURI() const { return RtspURI; };
 		void SetPort(const int port) { RtspPort = port; };
 		string GetResponse() const { return RtspResponse; };
+		string GetSDP() const { return SDPStr; }
 		// multimap<string, string> GetSDPInfo() const { return *SDPInfo; };
 
 		/* Tools Methods */
@@ -149,8 +150,10 @@ class RtspClient
 		map<string, MediaSession> GetMediaSessions() const { return *MediaSessionMap; }
 
 		uint8_t * GetMediaData(MediaSession * media_session, uint8_t * buf, size_t * size);
-
 		uint8_t * GetMediaData(string media_type, uint8_t * buf, size_t * size);
+
+		uint8_t * GetMediaPacket(MediaSession * media_session, uint8_t * buf, size_t * size);
+		uint8_t * GetMediaPacket(string media_type, uint8_t * buf, size_t * size);
 	protected:
 		int CheckSockWritable(int sockfd, struct timeval * tval = NULL);
 		int CheckSockReadable(int sockfd, struct timeval * tval = NULL);

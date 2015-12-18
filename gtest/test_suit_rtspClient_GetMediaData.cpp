@@ -39,12 +39,14 @@ TEST(rtspClient, TMP_TEST)
 
 	int packet_num = 0;
 	int fd;
+	printf("*******************\n");
 	while(++packet_num < 1000) {
 		uint8_t buf[4192];
 		size_t size = 0;
 		// usleep(30000);
 		Client.GetMediaData("video", buf, &size);
-		printf("recv %lu\n", size);
+		write(1, buf, size);
+		// printf("recv %lu\n", size);
 	}
 
 	printf("start TEARDOWN\n");

@@ -435,7 +435,18 @@ int RtspClient::ParseSDP(string SDP)
 				TimeRate >> (*MediaSessionMap)[CurrentMediaSession].TimeRate;
 			} else if(Regex.Regex(Value.c_str(), PatternControl.c_str(), &Group)) {
 				Group.pop_front();
-				(*MediaSessionMap)[CurrentMediaSession].ControlURI = Group.front();;
+				string ControlURITmp("");
+				/* 'Value' could be  
+				 * 1: "rtsp://127.0.0.1/ansersion/track=1"
+				 * 2: "track=1"
+				 * If is the '2', it should be prefixed with the URI. */
+				if(!Regex.Regex(Value.c_str(), "rtsp://")) {
+					ControlURITmp += RtspURI;
+					ControlURITmp += "/";
+				}
+				ControlURITmp += Group.front();
+				printf("Control: %s\n", ControlURITmp.c_str());
+				(*MediaSessionMap)[CurrentMediaSession].ControlURI.assign(ControlURITmp);
 			}
 		}
 	}
@@ -1003,4 +1014,25 @@ uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * si
 	}
 
 	return it->second.GetMediaData(buf, size);
+}
+
+uint8_t * RtspClient::GetMediaPacket(MediaSession * media_session, uint8_t * buf, size_t * size) {
+	if(!media_session) return NULL;
+	return media_session->GetMediaPacket(buf, size);
+}
+
+uint8_t * RtspClient::GetMediaPacket(string media_type, uint8_t * buf, size_t * size) {
+	map<string, MediaSession>::iterator it;
+	bool IgnoreCase = true;
+
+	for(it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
+		if(Regex.Regex(it->first.c_str(), media_type.c_str(), IgnoreCase)) break;
+	}
+
+	if(it == MediaSessionMap->end()) {
+		fprintf(stderr, "%s: No such media session\n", __func__);
+		return NULL;
+	}
+
+	return it->second.GetMediaPacket(buf, size);
 }

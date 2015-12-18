@@ -19,10 +19,21 @@ class MediaSession
 		/* Wait 1 second for TEARDOWN at default */
 		int RTP_Teardown(struct timeval * tval = NULL);
 
-		/* <timeout_ms> in unit of microsecond.
+		/* Function Name: GetMediaData;
+		 * Description: Get RTP payload;
+		 * note:
+		 * <timeout_ms> in unit of microsecond.
 		 * Why we set 'timeout' here is to avoid continuously occupying CPU.
 		 * */
 		uint8_t * GetMediaData(uint8_t * buf, size_t * size, unsigned long timeout_ms = TIMEOUT_MICROSECONDS);
+
+		/* Function Name: GetMediaPacket;
+		 * Description: Get RTP Packet;
+		 * note:
+		 * <timeout_ms> in unit of microsecond.
+		 * Why we set 'timeout' here is to avoid continuously occupying CPU.
+		 * */
+		uint8_t * GetMediaPacket(uint8_t * buf, size_t * size, unsigned long timeout_ms = TIMEOUT_MICROSECONDS);
 
 	public:
 		std::string MediaType;

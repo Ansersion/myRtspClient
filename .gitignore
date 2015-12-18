@@ -8,4 +8,9 @@ capdir
 gtest/backup
 third_party/jrtplib-3.9.1/build
 third_party/jrtplib-3.9.1/build_2
+third_party/jrtplib-3.9.1/build_backup
 a.out
+*.h264
+simple_example
+complete_example
+test_example.cpp

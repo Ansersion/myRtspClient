@@ -64,3 +64,8 @@ uint8_t * MediaSession::GetMediaData(uint8_t * buf, size_t * size, unsigned long
 	if(!RTPInterface) return NULL;
 	return  RTPInterface->GetMyRTPData(buf, size, timeout);
 }
+
+uint8_t * MediaSession::GetMediaPacket(uint8_t * buf, size_t * size, unsigned long timeout) {
+	if(!RTPInterface) return NULL;
+	return  RTPInterface->GetMyRTPPacket(buf, size, timeout);
+}
