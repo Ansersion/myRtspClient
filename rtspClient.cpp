@@ -35,17 +35,25 @@ using std::endl;
 using std::pair;
 
 RtspClient::RtspClient():
-	RtspURI(""), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse(""), SDPStr("")
+	RtspURI(""), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse(""), SDPStr(""), 
+	SPS(""), PPS("")
 {
 	// SDPInfo = new multimap<string, string>;
 	MediaSessionMap = new map<string, MediaSession>;
+
+	/* Temporary only FU_A supported */
+	NALUType = new FU_A;
 }
 
 RtspClient::RtspClient(string uri):
-	RtspURI(uri), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse(""), SDPStr("")
+	RtspURI(uri), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse(""), SDPStr(""),
+	SPS(""), PPS("")
 {
 	// SDPInfo = new multimap<string, string>;
 	MediaSessionMap = new map<string, MediaSession>;
+
+	/* Temporary only FU_A supported */
+	NALUType = new FU_A;
 }
 
 RtspClient::~RtspClient()
@@ -53,6 +61,9 @@ RtspClient::~RtspClient()
 	// delete SDPInfo;
 	delete MediaSessionMap;
 	MediaSessionMap = NULL;
+
+	delete NALUType;
+	NALUType = NULL;
 }
 
 ErrorType RtspClient::DoDESCRIBE(string uri)
@@ -437,6 +448,7 @@ int RtspClient::ParseSDP(string SDP)
 		}
 		if("a" == Key) {
 			string PatternRtpmap("rtpmap:.* +([0-9A-Za-z]+)/([0-9]+)");
+			string PatternFmtp("fmtp:.*sprop-parameter-sets=([A-Za-z0-9+/=]+),([A-Za-z0-9+/=]+)");
 			string PatternControl("control:(.+)");
 			if(CurrentMediaSession.length() == 0) {
 				continue;
@@ -462,6 +474,11 @@ int RtspClient::ParseSDP(string SDP)
 				ControlURITmp += Group.front();
 				printf("Control: %s\n", ControlURITmp.c_str());
 				(*MediaSessionMap)[CurrentMediaSession].ControlURI.assign(ControlURITmp);
+			} else if(Regex.Regex(Value.c_str(), PatternFmtp.c_str(), &Group)) {
+				Group.pop_front();
+				SPS.assign(Group.front());
+				Group.pop_front();
+				PPS.assign(Group.front());
 			}
 		}
 	}
@@ -1028,7 +1045,29 @@ uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * si
 		return NULL;
 	}
 
-	return it->second.GetMediaData(buf, size);
+	// // NALU Start Code: 0x00000001
+	// buf[0] = 0; buf[1] = 0; buf[2] = 0; buf[3] = 1;
+
+	// do {
+    //     /* buf should be filled like: H264 Start Code + NALU Header + h264 data;
+    //      * H264 Start Code: 4 bytes(0x00000001);
+    //      * NALU Header 	  : 1 byte
+    //      * RTP FU_A Packet: 2 bytes FU_A header + h264 data; */
+
+	// 	uint8_t * RTP_FU_A_Pos = buf+3; // (start code) + (nalu header) - (RTP FU_A header) = 4 + 1 - 2
+	// 	if(!it->second.GetMediaData(RTP_FU_A_StartPos, size)) return NULL;
+	// 	uint8_t NALUHeader = 0;
+    //     NALUHeader = (  
+    //             NALUType->ParseNALUHeader_F(RTP_FU_A_Pos)      | 
+    //             NALUType->ParseNALUHeader_NRI(RTP_FU_A_Pos)    | 
+    //             NALUType->ParseNALUHeader_Type(RTP_FU_A_Pos)
+    //                     );
+	// 	// NALU Start Code: 0x00000001
+	// 	buf[0] = 0; buf[1] = 0; buf[2] = 0; buf[3] = 1;
+	// } while(!NALUType->IsPacketEnd(buf));
+	return GetMediaData(&(it->second), buf, size);
+
+
 }
 
 uint8_t * RtspClient::GetMediaPacket(MediaSession * media_session, uint8_t * buf, size_t * size) {

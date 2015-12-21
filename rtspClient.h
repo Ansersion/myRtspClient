@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include "myRegex.h"
 #include "MediaSession.h"
+#include "nalu_types.h"
 
 using std::map;
 using std::string;
@@ -49,25 +50,17 @@ enum ErrorType {
     RTSP_UNKNOWN_ERROR
 };
 
-// class MediaSession {
-// 	public:
-// 		MediaSession();
-// 
-// 		string MediaType;
-// 		string EncodeType;
-// 		string Protocol;
-// 		unsigned int TimeRate;
-// 		string ControlURI;
-// 		string SessionID;
-// 		// int RTSPSockfd;
-// 		uint16_t RTPPort;
-// 		int RTPSockfd;
-// 		uint16_t RTCPPort;
-// 		int RTCPSockfd;
-// };
+#define MAX_SPS_SIZE 	256
+typedef struct SPS_t{
+	unsigned char Sps[MAX_SPS_SIZE];
+	size_t Size;
+} SPS_t;
 
-// typedef shared_ptr< multimap<string, string> > 	 	SDPInfoPtr;
-// typedef shared_ptr< map<string, MediaSessionPtr> > 	MediaSessionMapPtr;
+#define MAX_PPS_SIZE 	256
+typedef struct PPS_t {
+	unsigned char Pps[MAX_PPS_SIZE];
+	size_t Size;
+} PPS_t;
 
 class RtspClient
 {
@@ -178,7 +171,12 @@ class RtspClient
 		string SDPStr;
 		map<string, MediaSession> *MediaSessionMap;
 
+		string SPS;
+		string PPS;
+
 		MyRegex Regex;
+
+		NALUTypeBase * NALUType;
 };
 
 #endif
