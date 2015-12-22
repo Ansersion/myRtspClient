@@ -6,6 +6,12 @@ FU_A::FU_A()
 {
 	Name.assign("FU_A");
 }
+
+bool FU_A::IsPacketThisType(const uint8_t * rtp_payload)
+{
+	return (FU_A_ID == (rtp_payload[0] & FU_A_ID));
+}
+
 uint8_t FU_A::ParseNALUHeader_F(const uint8_t * rtp_payload)
 {
 	if(!rtp_payload) return FU_A_ERR;

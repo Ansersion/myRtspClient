@@ -37,5 +37,5 @@ $(TARGET_COMPLETE_EXAMPLE) : $(OBJS) $(COMPLETE_EXAMPLE_CPP)
 
 .PHONY : clean jrtplib
 clean:
-	rm -f $(TARGET) *.o .depend cscope.*
+	rm -f $(TARGET_COMPLETE_EXAMPLE) $(TARGET_SIMPLE_EXAMPLE) *.o .depend cscope.*
 

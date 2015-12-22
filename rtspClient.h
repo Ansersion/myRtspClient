@@ -147,6 +147,9 @@ class RtspClient
 
 		uint8_t * GetMediaPacket(MediaSession * media_session, uint8_t * buf, size_t * size);
 		uint8_t * GetMediaPacket(string media_type, uint8_t * buf, size_t * size);
+
+		uint8_t * GetSPSNalu(uint8_t * buf, size_t * size);
+		uint8_t * GetPPSNalu(uint8_t * buf, size_t * size);
 	protected:
 		int CheckSockWritable(int sockfd, struct timeval * tval = NULL);
 		int CheckSockReadable(int sockfd, struct timeval * tval = NULL);
@@ -173,6 +176,7 @@ class RtspClient
 
 		string SPS;
 		string PPS;
+		bool CmdPLAYSent;
 
 		MyRegex Regex;
 

@@ -13,6 +13,10 @@ class NALUTypeBase
 		virtual uint8_t ParseNALUHeader_F(const uint8_t * RTPPayload) = 0;
 		virtual uint8_t ParseNALUHeader_NRI(const uint8_t * RTPPayload) = 0;
 		virtual uint8_t ParseNALUHeader_Type(const uint8_t * RTPPayload) = 0;
+		virtual bool IsPacketStart(const uint8_t * rtp_payload) = 0;
+		virtual bool IsPacketEnd(const uint8_t * rtp_payload) = 0;
+		virtual bool IsPacketReserved(const uint8_t * rtp_payload) = 0;
+		virtual bool IsPacketThisType(const uint8_t * rtp_payload) = 0;
 	protected:
 		std::string Name;
 };
@@ -71,6 +75,8 @@ class FU_A : public NALUTypeBase
 
 		/* Reserved */
 		bool IsPacketReserved(const uint8_t * rtp_payload);
+
+		bool IsPacketThisType(const uint8_t * rtp_payload);
 };
 
 class FU_B : public NALUTypeBase
