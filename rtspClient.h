@@ -151,6 +151,9 @@ class RtspClient
 		uint8_t * GetSPSNalu(uint8_t * buf, size_t * size);
 		uint8_t * GetPPSNalu(uint8_t * buf, size_t * size);
 	protected:
+
+		uint8_t * GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size);
+
 		int CheckSockWritable(int sockfd, struct timeval * tval = NULL);
 		int CheckSockReadable(int sockfd, struct timeval * tval = NULL);
 		int SendRTSP(const char * msg, size_t size);
@@ -179,6 +182,8 @@ class RtspClient
 		bool CmdPLAYSent;
 
 		MyRegex Regex;
+		uint8_t AudioBuffer[8192];
+		uint8_t VideoBuffer[8192];
 
 		NALUTypeBase * NALUType;
 };
