@@ -9,6 +9,7 @@ FU_A::FU_A()
 
 bool FU_A::IsPacketThisType(const uint8_t * rtp_payload)
 {
+	if(!rtp_payload) return false;
 	return (FU_A_ID == (rtp_payload[0] & FU_A_ID));
 }
 
@@ -48,7 +49,7 @@ uint8_t FU_A::ParseNALUHeader_Type(const uint8_t * rtp_payload)
 
 bool FU_A::IsPacketStart(const uint8_t * rtp_payload)
 {
-	if(!rtp_payload) return 0;
+	if(!IsPacketThisType(rtp_payload)) return false;
 
 	uint8_t PacketS_Mask = 0x80; // binary:1000_0000
 
@@ -57,7 +58,7 @@ bool FU_A::IsPacketStart(const uint8_t * rtp_payload)
 
 bool FU_A::IsPacketEnd(const uint8_t * rtp_payload)
 {
-	if(!rtp_payload) return 0;
+	if(!IsPacketThisType(rtp_payload)) return false;
 
 	uint8_t PacketE_Mask = 0x40; // binary:0100_0000
 
@@ -66,7 +67,7 @@ bool FU_A::IsPacketEnd(const uint8_t * rtp_payload)
 
 bool FU_A::IsPacketReserved(const uint8_t * rtp_payload)
 {
-	if(!rtp_payload) return 0;
+	if(!IsPacketThisType(rtp_payload)) return false;
 
 	uint8_t PacketR_Mask = 0x20; // binary:0010_0000
 

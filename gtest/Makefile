@@ -47,7 +47,7 @@ INCLUDE_DIR :=
 SRCS += $(wildcard *.cpp)
 OBJS += $(patsubst %.cpp,%.o, $(SRCS))
 
-USER_MAIN_OBJ	:= myRtsp.o
+# USER_MAIN_OBJ	:= myRtsp.o
 USER_OBJ_DIR 	:= $(USER_DIR)
 
 LIBS += -lpthread
@@ -75,7 +75,7 @@ CXXFLAGS += $(INCLUDE_DIR)
 
 $(TESTS): $(OBJS) gtest_main.a
 	(cd ..; make;)
-	rm $(USER_OBJ_DIR)/$(USER_MAIN_OBJ)
+	# rm -f $(USER_OBJ_DIR)/$(USER_MAIN_OBJ)
 	$(CXX) $(CXXFLAGS) -o $(TESTS) $(USER_OBJ_DIR)/*.o $(OBJS) $(LIBS)
 
 clean :
