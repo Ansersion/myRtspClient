@@ -1,0 +1,29 @@
+##### End of variables to change
+
+NAME = libBase64
+BASE64_LIB = $(NAME).$(LIB_SUFFIX)
+ALL = $(BASE64_LIB)
+all: $(ALL)
+
+OBJS = strDup.$(OBJ) Base64.$(OBJ)
+
+$(BASE64_LIB): $(OBJS)
+	$(LIBRARY_LINK) $@ $(LIBRARY_LINK_OPTS) $(OBJS)
+
+.$(C).$(OBJ):
+	$(C_COMPILER) -c $(C_FLAGS) $<       
+
+.$(CPP).$(OBJ):
+	$(CPLUSPLUS_COMPILER) -c $(CPLUSPLUS_FLAGS) $<
+
+include/Base64.hh: include/Boolean.hh
+Base64.cpp: include/Base64.hh
+strDup.cpp: include/strDup.hh
+
+clean:
+	-rm -rf *.$(OBJ) $(ALL) core *.core *~ include/*~
+
+install:
+	@echo "install not supported\n"
+
+##### Any additional, platform-specific rules come here:

@@ -1,0 +1,4 @@
+INCLUDES = -Iinclude
+PREFIX = /usr/local
+LIBDIR = $(PREFIX)lib
+##### Change the following for your environment:

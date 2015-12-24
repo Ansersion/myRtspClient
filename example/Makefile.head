@@ -1,0 +1,2 @@
+##### Change the following for your environment:
+libmyRtspClient_LIB_SUFFIX = $(LIB_SUFFIX)

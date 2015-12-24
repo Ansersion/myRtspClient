@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo "Use 'sh genMakefiles <os-platform>' to generate Makefile"
+echo ""
+echo "<os-platform>: refer to files 'config.<os-platform>'"

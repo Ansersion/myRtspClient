@@ -1,0 +1,29 @@
+##### End of variables to change
+
+MY_RTSP_CLIENT = myRtspClient
+
+JRTPLIB_DIR = $(THIRD_PARTY_DIR)/jrtplib-3.9.1
+BASE64_DIR = $(THIRD_PARTY_DIR)/Base64_live555
+THIRD_PARTY_DIR = third_party
+EXAMPLE_DIR = example
+
+all:
+	cd $(JRTPLIB_DIR); $(MAKE) 
+	cd $(BASE64_DIR); $(MAKE) 
+	cd $(MY_RTSP_CLIENT); $(MAKE) 
+	cd $(EXAMPLE_DIR); $(MAKE) 
+
+install:
+	cd $(JRTPLIB_DIR); $(MAKE) install
+	cd $(BASE64_DIR); $(MAKE) install
+	cd $(MY_RTSP_CLIENT); $(MAKE) install
+	cd $(EXAMPLE_DIR); $(MAKE) install
+
+clean:
+	cd $(JRTPLIB_DIR); $(MAKE) clean
+	cd $(BASE64_DIR); $(MAKE) clean
+	cd $(MY_RTSP_CLIENT); $(MAKE) clean
+	cd $(EXAMPLE_DIR); $(MAKE) clean
+
+distclean: clean
+	-rm -f $(JRTPLIB_DIR)/Makefile $(BASE64_DIR)/Makefile $(MY_RTSP_CLIENT)/Makefile Makefile

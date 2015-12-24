@@ -1,0 +1,22 @@
+INCLUDES = -Iinclude
+
+JRTPLIB_INCLUDE = ../third_party/jrtplib-3.9.1/src
+JRTPLIB_DIR = $(JRTPLIB_INCLUDE)
+
+JRTPLIB_INCLUDE_BUILD = ../third_party/jrtplib-3.9.1/build/src
+JRTPLIB_BUILD_DIR = $(JRTPLIB_INCLUDE_BUILD)
+
+INCLUDES += -I$(JRTPLIB_INCLUDE)
+INCLUDES += -I$(JRTPLIB_INCLUDE_BUILD)
+
+BASE64_INCLUDE = ../third_party/Base64_live555/include
+BASE64_BUILD = ../third_party/Base64_live555
+
+INCLUDES += -I$(BASE64_INCLUDE)
+
+JRTPLIB_LIB = $(JRTPLIB_INCLUDE_BUILD)/libjrtp.a
+BASE64_LIB = $(BASE64_BUILD)/libBase64.a
+# THIRD_PARTY_LIBS = $(JRTPLIB_INCLUDE_BUILD)/libjrtp.a
+# THIRD_PARTY_LIBS = $(BASE64_BUILD)/libBase64.a
+
+##### Change the following for your environment:

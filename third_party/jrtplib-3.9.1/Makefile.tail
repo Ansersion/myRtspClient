@@ -1,0 +1,15 @@
+JRTPLIB_BUILD_DIR = build
+
+all:
+	@mkdir -p $(JRTPLIB_BUILD_DIR)
+	@echo "Compile jrtplib"
+	(cd $(JRTPLIB_BUILD_DIR); rm -f Makefile; cmake ..; make)
+
+clean:
+	(cd $(JRTPLIB_BUILD_DIR); make clean)
+
+install:
+	@echo "install not supported\n"
+
+##### Any additional, platform-specific rules come here:
+
