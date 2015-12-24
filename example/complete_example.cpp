@@ -92,12 +92,39 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
+	/* Receive 1000 RTP 'video' packets
+	 * note(FIXME): 
+	 * if there are several 'video' session 
+	 * refered in SDP, only receive packets of the first 
+	 * 'video' session, the same as 'audio'.*/
 	int packet_num = 0;
-	/* Receive 1000 RTP media packets */
+	uint8_t buf[8192];
+	size_t size = 0;
+
+	/* Write h264 video data to file "test_packet_recv.h264" 
+	 * Then it could be played by ffplay */
+	int fd = open("test_packet_recv.h264", O_CREAT | O_RDWR);
+	if(Client.GetSPSNalu(buf, &size)) {
+		if(write(fd, buf, size) < 0) {
+			perror("write");
+		}
+	} else {
+		printf("SPS error\n");
+	}
+
+	if(Client.GetPPSNalu(buf, &size)) {
+		if(write(fd, buf, size) < 0) {
+			perror("write");
+		}
+	} else {
+		printf("PPS error\n");
+	}
+
 	while(++packet_num < 1000) {
-		uint8_t buf[4192];
-		size_t size = 0;
-		Client.GetMediaPacket("video", buf, &size);
+		if(!Client.GetMediaData("video", buf, &size)) continue;
+		if(write(fd, buf, size) < 0) {
+			perror("write");
+		}
 		printf("recv %lu\n", size);
 	}
 

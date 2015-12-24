@@ -1,11 +1,49 @@
 #include "nalu_types.h"
 
-const uint8_t FU_A::FU_A_ID = 0x1C; // decimal: 28
+FU_A FU_AObj;
+NALUTypeBase NaluBaseTypeObj;
 
-FU_A::FU_A()
+NALUTypeBase * NALUTypeBase::NalUnitType[NAL_UNIT_TYPE_NUM] =
 {
-	Name.assign("FU_A");
+    NULL,                 &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
+    &NaluBaseTypeObj,     &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
+    &NaluBaseTypeObj,     &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
+    &NaluBaseTypeObj,     NULL,                        NULL,                        NULL, 
+    NULL,                 NULL,                        NULL,                        NULL, 
+    NULL,                 NULL,                        NULL,                        NULL, 
+    NULL,                 NULL,                        NULL,                        NULL, 
+    &FU_AObj,             NULL,                        NULL,                        NULL
+};
+
+uint8_t NALUTypeBase::ParseNALUHeader_F(const uint8_t * rtp_payload) 
+{
+	if(!rtp_payload) return 0;
+	uint8_t NALUHeader_F_Mask = 0x80; // binary: 1000_0000
+	return (rtp_payload[0] & NALUHeader_F_Mask);
 }
+
+uint8_t NALUTypeBase::ParseNALUHeader_NRI(const uint8_t * rtp_payload) 
+{
+	if(!rtp_payload) return 0;
+	uint8_t NALUHeader_NRI_Mask = 0x60; // binary: 0110_0000
+	return (rtp_payload[0] & NALUHeader_NRI_Mask);
+}
+
+uint8_t NALUTypeBase::ParseNALUHeader_Type(const uint8_t * rtp_payload) 
+{
+	if(!rtp_payload) return 0;
+	uint8_t NALUHeader_Type_Mask = 0x1F; // binary: 0001_1111
+	return (rtp_payload[0] & NALUHeader_Type_Mask);
+}
+
+bool NALUTypeBase::IsPacketThisType(const uint8_t * rtp_payload) 
+{
+	// NAL type is valid in the range of [1,12]
+	uint8_t NalType = ParseNALUHeader_Type(rtp_payload);
+	return ((1 <= NalType) && (NalType <= 12));
+}
+
+const uint8_t FU_A::FU_A_ID = 0x1C; // decimal: 28
 
 bool FU_A::IsPacketThisType(const uint8_t * rtp_payload)
 {

@@ -32,8 +32,12 @@
 using std::string;
 using std::stringstream;
 using std::cout;
+using std::cerr;
 using std::endl;
 using std::pair;
+
+extern FU_A FU_AObj;
+extern NALUTypeBase NaluBaseTypeObj;
 
 RtspClient::RtspClient():
 	RtspURI(""), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse(""), SDPStr(""), 
@@ -43,7 +47,7 @@ RtspClient::RtspClient():
 	MediaSessionMap = new map<string, MediaSession>;
 
 	/* Temporary only FU_A supported */
-	NALUType = new FU_A;
+	// NALUType = new FU_A;
 }
 
 RtspClient::RtspClient(string uri):
@@ -54,7 +58,7 @@ RtspClient::RtspClient(string uri):
 	MediaSessionMap = new map<string, MediaSession>;
 
 	/* Temporary only FU_A supported */
-	NALUType = new FU_A;
+	// NALUType = new FU_A;
 }
 
 RtspClient::~RtspClient()
@@ -63,8 +67,8 @@ RtspClient::~RtspClient()
 	delete MediaSessionMap;
 	MediaSessionMap = NULL;
 
-	delete NALUType;
-	NALUType = NULL;
+	// delete NALUType;
+	// NALUType = NULL;
 }
 
 ErrorType RtspClient::DoDESCRIBE(string uri)
@@ -1051,88 +1055,6 @@ uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * si
 	}
 
 	return GetVideoData(&(it->second), buf, size);
-
-	// NALU Start Code: 0x00000001
-	// buf[0] = 0; buf[1] = 0; buf[2] = 0; buf[3] = 1;
-	// *size += 4;
-
-	// uint8_t * BufRTPPacketPos = buf+(*size); // (start code) + (nalu header) - (RTP FU_A header) = 4 + 1 - 2
-
-	// bool NaluStart = true;
-	// bool EndFlag = false;
-	// size_t SizeTmp = 0;
-	// if(!it->second.GetMediaData(BufRTPPacketPos, &SizeTmp)) return NULL;
-	// *size += SizeTmp;
-	// return buf;
-	// do {
-	// 	/* buf should be filled like: H264 Start Code + NALU Header + h264 data;
-	// 	 * H264 Start Code: 4 bytes(0x00000001) or 3 bytes(0x000001)
-	// 	 * NALU Header 	  : 1 byte
-	// 	 * RTP FU_A Packet: 2 bytes FU_A header + h264 data; */
-
-	// 	cout << "GetMediaData do" << endl;
-
-	// 	if(NaluStart) {
-	// 		cout << "if(NaluStart) " << endl;
-	// 		NaluStart = false;
-
-	// 		const unsigned int OverlaySize = 1;
-	// 		uint8_t ByteOverlay = *(BufRTPPacketPos - OverlaySize);
-	// 		uint8_t * RTP_FU_A_Pos = BufRTPPacketPos - OverlaySize; 
-	// 		if(!it->second.GetMediaData(RTP_FU_A_Pos, &SizeTmp)) {
-	// 			cout << "!if->second.GetMediaData(): return NULL;" << endl;
-	// 			return NULL;
-	// 		}
-	// 		printf("%02x, %02x\n", *RTP_FU_A_Pos, *(RTP_FU_A_Pos+1));
-	// 		uint8_t NALUHeader = 0;
-	// 		if(!NALUType->IsPacketThisType(RTP_FU_A_Pos)) {
-	// 			*size += SizeTmp;
-	// 			while(SizeTmp--) {
-	// 				RTP_FU_A_Pos[SizeTmp+1] = RTP_FU_A_Pos[SizeTmp];
-	// 			}
-	// 			*(BufRTPPacketPos - OverlaySize) = ByteOverlay;
-	// 		}
-	// 		NALUHeader = (  
-	// 				NALUType->ParseNALUHeader_F(RTP_FU_A_Pos)      | 
-	// 				NALUType->ParseNALUHeader_NRI(RTP_FU_A_Pos)    | 
-	// 				NALUType->ParseNALUHeader_Type(RTP_FU_A_Pos)
-	// 				);
-	// 		if(!NALUType->IsPacketStart(RTP_FU_A_Pos)) {
-	// 			cout << "!NALUType->IsPacketStart(): return NULL;" << endl;
-	// 			return NULL;
-	// 		}
-
-	// 		EndFlag = NALUType->IsPacketEnd(RTP_FU_A_Pos);
-
-	// 		*RTP_FU_A_Pos = ByteOverlay;
-	// 		*(++RTP_FU_A_Pos) = NALUHeader;
-	// 		*size += SizeTmp - 1;
-	// 		BufRTPPacketPos = buf + (*size);
-	// 	} else {
-	// 		/* NALU Header    : 1 byte
-	// 		 * RTP FU_A Packet: 2 bytes FU_A header + h264 data; */
-	// 		cout << "else " << endl;
-
-	// 		const unsigned int OverlaySize = 2;
-	// 		uint8_t Byte2Overlay = *(BufRTPPacketPos - 2);
-	// 		uint8_t Byte1Overlay = *(BufRTPPacketPos - 1);
-	// 		uint8_t * RTP_FU_A_Pos = BufRTPPacketPos - OverlaySize; 
-	// 		if(!it->second.GetMediaData(RTP_FU_A_Pos, &SizeTmp)) {
-	// 			cout << "!if->second.GetMediaData(): return NULL;" << endl;
-	// 		   	return NULL;
-	// 		}
-
-	// 		printf("%02x, %02x\n", *RTP_FU_A_Pos, *(RTP_FU_A_Pos+1));
-
-	// 		EndFlag = NALUType->IsPacketEnd(RTP_FU_A_Pos);
-
-	// 		*(BufRTPPacketPos - 2) = Byte2Overlay;
-	// 		*(BufRTPPacketPos - 1) = Byte1Overlay;
-	// 		*size += SizeTmp - 2;
-	// 	}
-	// } while(!EndFlag);
-
-	// return buf;
 }
 
 uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size) {
@@ -1146,35 +1068,42 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 	bool EndFlag = false;
 	bool StartFlag = true;
 	uint8_t NALUHeader = 0;
+    NALUTypeBase * NALUType;
 
 	do {
 		if(!media_session->GetMediaData(VideoBuffer, &SizeTmp)) return NULL;
+        if((NALUType = NALUType->NalUnitType[NaluBaseTypeObj.ParseNALUHeader_Type(VideoBuffer)]) == NULL) {
+            cerr << "Error: Unsupported RTP packet!" << endl;
+            return NULL;
+        }
 
-		if(!NALUType->IsPacketThisType(VideoBuffer)) {
-			if(*size + SizeTmp >= 8192) {
-				cout << "Packet too large" << endl;
-				return NULL;
+        if(SizeTmp > sizeof(VideoBuffer)) {
+            cout << "Packet too large" << endl;
+            return NULL;
+        }
+
+        if(NALUType->GetName() == "BaseType") {
+            memcpy(buf + (*size), VideoBuffer, SizeTmp);
+            *size += SizeTmp;
+            StartFlag = NALUType->IsPacketStart(VideoBuffer);
+            EndFlag = NALUType->IsPacketEnd(VideoBuffer);
+		} else if(NALUType->GetName() == "FU_A") {
+			/* FU_A Processing */
+			NALUHeader = (  
+					NALUType->ParseNALUHeader_F(VideoBuffer)      | 
+					NALUType->ParseNALUHeader_NRI(VideoBuffer)    | 
+					NALUType->ParseNALUHeader_Type(VideoBuffer)
+					);
+			StartFlag = NALUType->IsPacketStart(VideoBuffer);
+			EndFlag = NALUType->IsPacketEnd(VideoBuffer);
+			if(StartFlag) {
+				memcpy(buf + (*size), &NALUHeader, sizeof(NALUHeader));
+				*size += sizeof(NALUHeader);
 			}
-			memcpy(buf + (*size), VideoBuffer, SizeTmp);
-			*size += SizeTmp;
-			break;
+			const int FU_A_HeaderSize = 2;
+			memcpy(buf + (*size), VideoBuffer + FU_A_HeaderSize, SizeTmp - FU_A_HeaderSize);
+			*size += SizeTmp - FU_A_HeaderSize;
 		}
-		/* FU_A Processing */
-		NALUHeader = (  
-				NALUType->ParseNALUHeader_F(VideoBuffer)      | 
-				NALUType->ParseNALUHeader_NRI(VideoBuffer)    | 
-				NALUType->ParseNALUHeader_Type(VideoBuffer)
-				);
-		StartFlag = NALUType->IsPacketStart(VideoBuffer);
-		EndFlag = NALUType->IsPacketEnd(VideoBuffer);
-		if(StartFlag) {
-			memcpy(buf + (*size), &NALUHeader, sizeof(NALUHeader));
-			*size += sizeof(NALUHeader);
-
-		}
-		const int FU_A_HeaderSize = 2;
-		memcpy(buf + (*size), VideoBuffer + FU_A_HeaderSize, SizeTmp - FU_A_HeaderSize);
-		*size += SizeTmp - FU_A_HeaderSize;
 	} while(!EndFlag);
 
 	return buf;

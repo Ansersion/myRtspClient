@@ -19,22 +19,41 @@
 #include <string>
 #include <stdint.h>
 
+#define NAL_UNIT_TYPE_NUM 	32
 class NALUTypeBase
 {
 	public:
-		NALUTypeBase() {Name.assign("");};
+		static NALUTypeBase * NalUnitType[NAL_UNIT_TYPE_NUM];
+	public:
+		NALUTypeBase() {Name.assign("BaseType");};
 		virtual ~NALUTypeBase() {};
 	public:
-		virtual uint8_t ParseNALUHeader_F(const uint8_t * RTPPayload) = 0;
-		virtual uint8_t ParseNALUHeader_NRI(const uint8_t * RTPPayload) = 0;
-		virtual uint8_t ParseNALUHeader_Type(const uint8_t * RTPPayload) = 0;
-		virtual bool IsPacketStart(const uint8_t * rtp_payload) = 0;
-		virtual bool IsPacketEnd(const uint8_t * rtp_payload) = 0;
-		virtual bool IsPacketReserved(const uint8_t * rtp_payload) = 0;
-		virtual bool IsPacketThisType(const uint8_t * rtp_payload) = 0;
+		virtual uint8_t ParseNALUHeader_F(const uint8_t * RTPPayload);
+		virtual uint8_t ParseNALUHeader_NRI(const uint8_t * RTPPayload);
+		virtual uint8_t ParseNALUHeader_Type(const uint8_t * RTPPayload);
+		virtual bool IsPacketStart(const uint8_t * rtp_payload) {return true; }
+		virtual bool IsPacketEnd(const uint8_t * rtp_payload) { return true; }
+		virtual bool IsPacketReserved(const uint8_t * rtp_payload) { return false; }
+		virtual bool IsPacketThisType(const uint8_t * rtp_payload);
+		std::string GetName() const { return Name; }
 	protected:
 		std::string Name;
 };
+
+// class NonRTPPacketType : public NALUTypeBase
+// {
+// 	public: 
+// 		NonRTPPacketType() { Name.assign("NonRTPPacketType"); };
+// 		virtual ~NonRTPPacketType() {};
+// 	public:
+// 		uint8_t ParseNALUHeader_F(const uint8_t * RTPPayload) {return 0;};
+// 		uint8_t ParseNALUHeader_NRI(const uint8_t * RTPPayload) {return 0;};
+// 		uint8_t ParseNALUHeader_Type(const uint8_t * RTPPayload) {return 0;};
+// 		bool IsPacketStart(const uint8_t * rtp_payload) {return true;};
+// 		bool IsPacketEnd(const uint8_t * rtp_payload) {return true;};
+// 		bool IsPacketReserved(const uint8_t * rtp_payload) {return false;};
+// 		bool IsPacketThisType(const uint8_t * rtp_payload) {return true;};
+// };
 
 class STAP_A : public NALUTypeBase
 {
@@ -69,7 +88,7 @@ class MTAP_24 : public NALUTypeBase
 class FU_A : public NALUTypeBase
 {
 	public:
-		FU_A();
+		FU_A() { Name.assign("FU_A"); };
 		virtual ~FU_A() {};
 
 	public:

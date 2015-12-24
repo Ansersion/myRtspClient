@@ -17,6 +17,7 @@
 #define RTSP_CLIENT_H
 
 #include <map>
+#include <stdio.h>
 #include <string>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -197,10 +198,10 @@ class RtspClient
 		bool CmdPLAYSent;
 
 		MyRegex Regex;
-		uint8_t AudioBuffer[8192];
-		uint8_t VideoBuffer[8192];
+		uint8_t AudioBuffer[BUFSIZ];
+		uint8_t VideoBuffer[BUFSIZ];
 
-		NALUTypeBase * NALUType;
+		// NALUTypeBase * NALUType;
 };
 
 #endif
