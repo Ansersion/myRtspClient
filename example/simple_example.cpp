@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 
 	/* Write h264 video data to file "test_packet_recv.h264" 
 	 * Then it could be played by ffplay */
-	int fd = open("test_packet_recv.h264", O_CREAT | O_RDWR);
+	int fd = open("test_packet_recv.h264", O_CREAT | O_RDWR, 0);
 	if(Client.GetSPSNalu(buf, &size)) {
 		if(write(fd, buf, size) < 0) {
 			perror("write");

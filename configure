@@ -2,4 +2,4 @@
 
 echo "Use 'sh genMakefiles <os-platform>' to generate Makefile"
 echo ""
-echo "<os-platform>: refer to files 'config.<os-platform>'"
+echo "<os-platform>: refer to files 'config.<os-platform>, such as 'config.armlinux' '"

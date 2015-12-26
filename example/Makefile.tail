@@ -24,7 +24,7 @@ simple_example$(EXE): $(SIMPLE_EXAMPLE_OBJS)
 complete_example$(EXE): $(COMPLETE_EXAMPLE_OBJS)
 	$(LINK) $@ $(CONSOLE_LINK_OPTS) $(COMPLETE_EXAMPLE_OBJS) $(LIBS)
 clean:
-	-rm -rf *.$(SIMPLE_EXAMPLE_OBJS) $(COMPLETE_EXAMPLE_OBJS) $(ALL) core *.core *~ include/*~
+	-rm -rf $(SIMPLE_EXAMPLE_OBJS) $(COMPLETE_EXAMPLE_OBJS) $(ALL) core *.core *~ include/*~
 
 install:
 	@echo "install not supported\n"
