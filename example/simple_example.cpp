@@ -26,8 +26,8 @@ using std::endl;
 
 int main(int argc, char *argv[])
 {
-	// string RtspUri("rtsp://127.0.0.1/ansersion");
-	string RtspUri("rtsp://192.168.81.145/ansersion");
+	string RtspUri("rtsp://127.0.0.1/ansersion");
+	// string RtspUri("rtsp://192.168.81.145/ansersion");
 	RtspClient Client;
 
 	/* Set up rtsp server resource URI */
