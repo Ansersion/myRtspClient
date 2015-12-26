@@ -6,7 +6,7 @@ Under the license of Apache License V2.0.
 
 Linux/Unix installation
 --------------------------------------------------------------------------------
-Now, myRtspClient installation is not supported. You can only the library
+Now, myRtspClient installation is not supported. You can only compile the library
 ./myRtspClient/libmyRtspClient.a. And the headers is in ./myRtspClient/include.
 
 Compiling based on different os-platform, you NEED to configure the
