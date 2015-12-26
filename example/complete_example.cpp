@@ -98,12 +98,13 @@ int main(int argc, char *argv[])
 	 * refered in SDP, only receive packets of the first 
 	 * 'video' session, the same as 'audio'.*/
 	int packet_num = 0;
-	uint8_t buf[8192];
+	uint8_t buf[65534];
 	size_t size = 0;
 
 	/* Write h264 video data to file "test_packet_recv.h264" 
 	 * Then it could be played by ffplay */
-	int fd = open("test_packet_recv.h264", O_CREAT | O_RDWR, 0);
+	// int fd = open("test_packet_recv.h264", O_CREAT | O_RDWR, 0);
+	int fd = open("test_packet_recv.h264", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR);
 	if(Client.GetSPSNalu(buf, &size)) {
 		if(write(fd, buf, size) < 0) {
 			perror("write");
