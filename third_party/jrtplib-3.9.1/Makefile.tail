@@ -1,11 +1,8 @@
 JRTPLIB_BUILD_DIR = build
 
 all:
-	# @rm -f myRtspClientConfig/cmake_config_build.armlinux 
 	@mkdir -p $(JRTPLIB_BUILD_DIR)
 	@echo "Compile jrtplib"
-	# (cd myRtspClientConfig/; perl config_armlinux.pl ../../../config.armlinux)
-	# @cat myRtspClientConfig/cmake_config_build.armlinux CMakeLists.txt_backup > CMakeLists.txt
 	(cd $(JRTPLIB_BUILD_DIR); rm -f Makefile; cmake ..; make)
 
 clean:

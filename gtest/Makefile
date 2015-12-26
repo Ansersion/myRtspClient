@@ -17,7 +17,7 @@
 GTEST_DIR = /home/ansersion/study/rtsp/gtest-1.7.0
 
 # Where to find user code.
-USER_DIR = ..
+USER_DIR = ../myRtspClient
 
 # Flags passed to the preprocessor.
 # Set Google Test's header directory as a system directory, such that
@@ -52,23 +52,25 @@ USER_OBJ_DIR 	:= $(USER_DIR)
 
 LIBS += -lpthread
 LIBS += gtest_main.a
-INCLUDE_DIR += -I$(USER_DIR)
+LIBS += $(USER_DIR)/libmyRtspClient.a
 
-ORSRCS := $(patsubst $(EXCLUDE_MAIN),, $(SRCS))
+INCLUDE_DIR += -I$(USER_DIR)/include
 
-THIRD_PATRY := ../third_party
+# ORSRCS := $(patsubst $(EXCLUDE_MAIN),, $(SRCS))
 
-JRTP := $(THIRD_PATRY)/jrtplib-3.9.1/build
-
-JRTP_LIB =
-JRTP_LIB += $(JRTP)/src/libjrtp.a
-
-JRTP_INCLUDE =
-JRTP_INCLUDE += -I$(JRTP)/src
-JRTP_INCLUDE += -I$(JRTP)/../src
-
-INCLUDE_DIR += $(JRTP_INCLUDE)
-LIBS += $(JRTP_LIB)
+# THIRD_PATRY := ../third_party
+# 
+# JRTP := $(THIRD_PATRY)/jrtplib-3.9.1/build
+# 
+# JRTP_LIB =
+# JRTP_LIB += $(JRTP)/src/libjrtp.a
+# 
+# JRTP_INCLUDE =
+# JRTP_INCLUDE += -I$(JRTP)/src
+# JRTP_INCLUDE += -I$(JRTP)/../src
+# 
+# INCLUDE_DIR += $(JRTP_INCLUDE)
+# LIBS += $(JRTP_LIB)
 
 
 CXXFLAGS += $(INCLUDE_DIR)

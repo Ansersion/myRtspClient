@@ -13,6 +13,7 @@ a.out
 *.h264
 simple_example
 complete_example
+common_example
 test_example.cpp
 simple_example.cpp_backup
 test_packet_recv*

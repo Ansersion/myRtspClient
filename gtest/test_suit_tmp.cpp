@@ -26,10 +26,10 @@
 #include "myRegex.h"
 #include "rtspClient.h"
 #include "MediaSession.h"
-#include "myRtpSession.h"
+// #include "myRtpSession.h"
 
-using namespace std;
-using namespace jrtplib;
+// using namespace std;
+// using namespace jrtplib;
 
 // TEST(rtspClient, TMP_TEST)
 // {
