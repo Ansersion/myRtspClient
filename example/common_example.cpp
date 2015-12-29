@@ -64,7 +64,8 @@ int main(int argc, char *argv[])
 	 * refered in SDP, only receive packets of the first 
 	 * 'video' session, the same as 'audio'.*/
 	int packet_num = 0;
-	uint8_t buf[65534];
+	const size_t BufSize = 65534;
+	uint8_t buf[BufSize];
 	size_t size = 0;
 
 	/* Write h264 video data to file "test_packet_recv.h264" 
@@ -87,7 +88,7 @@ int main(int argc, char *argv[])
 	}
 
 	while(++packet_num < 1000) {
-		if(!Client.GetMediaData("video", buf, &size)) continue;
+		if(!Client.GetMediaData("video", buf, &size, BufSize)) continue;
 		if(write(fd, buf, size) < 0) {
 			perror("write");
 		}

@@ -26,7 +26,16 @@ using std::endl;
 
 int main(int argc, char *argv[])
 {
-	string RtspUri("rtsp://127.0.0.1/ansersion");
+	if(argc != 2) {
+		cout << "Usage: " << argv[0] << " <URL>" << endl;
+		cout << "For example: " << endl;
+		cout << argv[0] << " rtsp://127.0.0.1/ansersion" << endl;
+		return 1;
+	}
+	cout << "Start play " << argv[1] << endl;
+	cout << "Then put video data into test_packet_recv.h264" << endl;
+	string RtspUri(argv[1]);
+
 	RtspClient Client(RtspUri);
 
 	/* Send OPTIONS command to server */
@@ -98,7 +107,8 @@ int main(int argc, char *argv[])
 	 * refered in SDP, only receive packets of the first 
 	 * 'video' session, the same as 'audio'.*/
 	int packet_num = 0;
-	uint8_t buf[65534];
+	const size_t BufSize = 65534;
+	uint8_t buf[BufSize];
 	size_t size = 0;
 
 	/* Write h264 video data to file "test_packet_recv.h264" 
@@ -122,7 +132,7 @@ int main(int argc, char *argv[])
 	}
 
 	while(++packet_num < 1000) {
-		if(!Client.GetMediaData("video", buf, &size)) continue;
+		if(!Client.GetMediaData("video", buf, &size, BufSize)) continue;
 		if(write(fd, buf, size) < 0) {
 			perror("write");
 		}

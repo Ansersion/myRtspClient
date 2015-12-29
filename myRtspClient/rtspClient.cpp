@@ -1032,12 +1032,12 @@ bool RtspClient::IsResponse_200_OK(ErrorType * err, string * response)
 	return Result;
 }
 
-uint8_t * RtspClient::GetMediaData(MediaSession * media_session, uint8_t * buf, size_t * size) {
+uint8_t * RtspClient::GetMediaData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size) {
 	if(!media_session) return NULL;
-	return media_session->GetMediaData(buf, size);
+	return media_session->GetMediaData(buf, size, max_size);
 }
 
-uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * size) {
+uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * size, size_t max_size) {
 	map<string, MediaSession>::iterator it;
 	bool IgnoreCase = true;
 	if(!buf) return NULL;
@@ -1054,10 +1054,10 @@ uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * si
 		return NULL;
 	}
 
-	return GetVideoData(&(it->second), buf, size);
+	return GetVideoData(&(it->second), buf, size, max_size);
 }
 
-uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size) {
+uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size) {
 	if(!media_session || !buf || !size) return NULL;
 
 	*size = 4; // NALU start code size
@@ -1072,15 +1072,21 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 
 	do {
 		if(!media_session->GetMediaData(VideoBuffer, &SizeTmp)) return NULL;
+		if(0 == SizeTmp) return NULL;
         if((NALUType = NALUType->NalUnitType[NaluBaseTypeObj.ParseNALUHeader_Type(VideoBuffer)]) == NULL) {
             cerr << "Error: Unsupported RTP packet!" << endl;
             return NULL;
         }
 
         if(SizeTmp > sizeof(VideoBuffer)) {
-            cout << "Packet too large" << endl;
+            cerr << "RTP Packet too large" << endl;
             return NULL;
         }
+
+		if(*size + SizeTmp > max_size) {
+			fprintf(stderr, "\033[31mWARNING: NALU truncated because larger than buffer: %lu(NALU size) > %lu(Buffer size)\033[0m\n", *size + SizeTmp, max_size);
+			return buf;
+		}
 
         if(NALUType->GetName() == "BaseType") {
             memcpy(buf + (*size), VideoBuffer, SizeTmp);
