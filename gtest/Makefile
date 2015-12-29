@@ -76,12 +76,17 @@ INCLUDE_DIR += -I$(USER_DIR)/include
 CXXFLAGS += $(INCLUDE_DIR)
 
 $(TESTS): $(OBJS) gtest_main.a
-	(cd ..; make;)
+	# (cd ..; make;)
 	# rm -f $(USER_OBJ_DIR)/$(USER_MAIN_OBJ)
 	$(CXX) $(CXXFLAGS) -o $(TESTS) $(USER_OBJ_DIR)/*.o $(OBJS) $(LIBS)
 
+sinclude .depend
+
+.depend: $(SRCS)
+	@$(CXX) $(CXXFLAGS) -MM $(SRCS) > $@  		
+
 clean :
-	(cd ..; make clean;)
+	# (cd ..; make clean;)
 	rm -f $(TESTS) gtest.a gtest_main.a *.o
 
 # Builds gtest.a and gtest_main.a.

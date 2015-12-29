@@ -168,14 +168,14 @@ class RtspClient
 		uint8_t * GetPPSNalu(uint8_t * buf, size_t * size);
 	protected:
 
-		uint8_t * GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size);
+		uint8_t * GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size, bool get_sps_pps_periodly = true);
 
 		int CheckSockWritable(int sockfd, struct timeval * tval = NULL);
 		int CheckSockReadable(int sockfd, struct timeval * tval = NULL);
-		int SendRTSP(const char * msg, size_t size);
-		int SendRTSP(string msg);
-		int RecvRTSP(char * msg, size_t max_line);
-		int RecvRTSP(string * msg);
+		int SendRTSP(int fd, const char * msg, size_t size);
+		int SendRTSP(int fd, string msg);
+		int RecvRTSP(int fd, char * msg, size_t max_line);
+		int RecvRTSP(int fd, string * msg);
 
 		/* "RecvSDP" can only be used after DESCRIBE. */
 		int RecvSDP(int sockfd, char * msg, size_t size);
@@ -202,6 +202,7 @@ class RtspClient
 		uint8_t VideoBuffer[BUFSIZ];
 
 		// NALUTypeBase * NALUType;
+		size_t GetVideoDataCount;
 };
 
 #endif

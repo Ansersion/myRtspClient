@@ -29,6 +29,8 @@
 #include <fcntl.h>
 #include <errno.h>
 
+#define GET_SPS_PPS_PERIOD 	30
+
 using std::string;
 using std::stringstream;
 using std::cout;
@@ -41,7 +43,7 @@ extern NALUTypeBase NaluBaseTypeObj;
 
 RtspClient::RtspClient():
 	RtspURI(""), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse(""), SDPStr(""), 
-	SPS(""), PPS(""), CmdPLAYSent(false)
+	SPS(""), PPS(""), CmdPLAYSent(false), GetVideoDataCount(GET_SPS_PPS_PERIOD)
 {
 	// SDPInfo = new multimap<string, string>;
 	MediaSessionMap = new map<string, MediaSession>;
@@ -52,7 +54,7 @@ RtspClient::RtspClient():
 
 RtspClient::RtspClient(string uri):
 	RtspURI(uri), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse(""), SDPStr(""),
-	SPS(""), PPS(""), CmdPLAYSent(false)
+	SPS(""), PPS(""), CmdPLAYSent(false), GetVideoDataCount(GET_SPS_PPS_PERIOD)
 {
 	// SDPInfo = new multimap<string, string>;
 	MediaSessionMap = new map<string, MediaSession>;
@@ -91,16 +93,16 @@ ErrorType RtspClient::DoDESCRIBE(string uri)
 	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
 	Msg << "\r\n";
 
-	if(!SendRTSP(Msg.str())) {
-		Close(Sockfd);
+	if(!SendRTSP(Sockfd, Msg.str())) {
+		close(Sockfd);
 		return RTSP_SEND_ERROR;
 	}
-	if(!RecvRTSP(&RtspResponse)) {
-		Close(Sockfd);
+	if(!RecvRTSP(Sockfd, &RtspResponse)) {
+		close(Sockfd);
 		return RTSP_RECV_ERROR;
 	}
 	RecvSDP(Sockfd, &SDPStr);
-	Close(Sockfd);
+	close(Sockfd);
 	return RTSP_NO_ERROR;
 }
 
@@ -124,15 +126,15 @@ ErrorType RtspClient::DoOPTIONS(string uri)
 	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
 	Msg << "\r\n";
 
-	if(!SendRTSP(Msg.str())) {
-		Close(Sockfd);
+	if(!SendRTSP(Sockfd, Msg.str())) {
+		close(Sockfd);
 		return RTSP_SEND_ERROR;
 	}
-	if(!RecvRTSP(&RtspResponse)) {
-		Close(Sockfd);
+	if(!RecvRTSP(Sockfd, &RtspResponse)) {
+		close(Sockfd);
 		return RTSP_RECV_ERROR;
 	}
-	Close(Sockfd);
+	close(Sockfd);
 	return RTSP_NO_ERROR;
 }
 
@@ -167,17 +169,17 @@ ErrorType RtspClient::DoPAUSE(MediaSession * media_session)
 	Msg << "Session: " << media_session->SessionID << "\r\n";
 	Msg << "\r\n";
 
-	if(RTSP_NO_ERROR == Err && !SendRTSP(Msg.str())) {
-		Close(Sockfd);
+	if(RTSP_NO_ERROR == Err && !SendRTSP(Sockfd, Msg.str())) {
+		close(Sockfd);
 		Sockfd = -1;
 		Err = RTSP_SEND_ERROR;
 	}
-	if(RTSP_NO_ERROR == Err && !RecvRTSP(&RtspResponse)) {
-		Close(Sockfd);
+	if(RTSP_NO_ERROR == Err && !RecvRTSP(Sockfd, &RtspResponse)) {
+		close(Sockfd);
 		Sockfd = -1;
 		Err = RTSP_RECV_ERROR;
 	}
-	Close(Sockfd);
+	close(Sockfd);
 	return Err;
 }
 
@@ -237,13 +239,13 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
 	Msg << "\r\n";
 
-	if(RTSP_NO_ERROR == Err && !SendRTSP(Msg.str())) {
-		Close(Sockfd);
+	if(RTSP_NO_ERROR == Err && !SendRTSP(Sockfd, Msg.str())) {
+		close(Sockfd);
 		Sockfd = -1;
 		Err = RTSP_SEND_ERROR;
 	}
-	if(RTSP_NO_ERROR == Err && !RecvRTSP(&RtspResponse)) {
-		Close(Sockfd);
+	if(RTSP_NO_ERROR == Err && !RecvRTSP(Sockfd, &RtspResponse)) {
+		close(Sockfd);
 		Sockfd = -1;
 		Err = RTSP_RECV_ERROR;
 	}
@@ -251,7 +253,7 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 	media_session->RTP_SetUp();
 
 	// media_session->RTSPSockfd = Sockfd;
-	Close(Sockfd);
+	close(Sockfd);
 	return Err;
 }
 
@@ -305,17 +307,17 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session)
 	Msg << "Session: " << media_session->SessionID << "\r\n";
 	Msg << "\r\n";
 
-	if(RTSP_NO_ERROR == Err && !SendRTSP(Msg.str())) {
-		Close(Sockfd);
+	if(RTSP_NO_ERROR == Err && !SendRTSP(Sockfd, Msg.str())) {
+		close(Sockfd);
 		Sockfd = -1;
 		Err = RTSP_SEND_ERROR;
 	}
-	if(RTSP_NO_ERROR == Err && !RecvRTSP(&RtspResponse)) {
-		Close(Sockfd);
+	if(RTSP_NO_ERROR == Err && !RecvRTSP(Sockfd, &RtspResponse)) {
+		close(Sockfd);
 		Sockfd = -1;
 		Err = RTSP_RECV_ERROR;
 	}
-	Close(Sockfd);
+	close(Sockfd);
 	return RTSP_NO_ERROR;
 }
 
@@ -368,13 +370,13 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session)
 	Msg << "Session: " << media_session->SessionID << "\r\n";
 	Msg << "\r\n";
 
-	if(RTSP_NO_ERROR == Err && !SendRTSP(Msg.str())) {
-		Close(Sockfd);
+	if(RTSP_NO_ERROR == Err && !SendRTSP(Sockfd, Msg.str())) {
+		close(Sockfd);
 		Sockfd = -1;
 		Err = RTSP_SEND_ERROR;
 	}
-	if(RTSP_NO_ERROR == Err && !RecvRTSP(&RtspResponse)) {
-		Close(Sockfd);
+	if(RTSP_NO_ERROR == Err && !RecvRTSP(Sockfd, &RtspResponse)) {
+		close(Sockfd);
 		Sockfd = -1;
 		Err = RTSP_RECV_ERROR;
 	}
@@ -389,7 +391,7 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session)
 			// close(media_session->RTCPSockfd);
 		}
 	}
-	Close(Sockfd);
+	close(Sockfd);
 	return Err;
 }
 
@@ -589,7 +591,7 @@ int RtspClient::CreateTcpSockfd(string uri)
 		return Sockfd;
 	}
 
-	RtspSockfd = Sockfd;
+	// RtspSockfd = Sockfd;
 	return Sockfd;
 }
 
@@ -757,7 +759,7 @@ int RtspClient::CheckSockReadable(int sockfd, struct timeval * tval)
 	return CHECK_ERROR;
 }
 
-int RtspClient::SendRTSP(const char * msg, size_t size)
+int RtspClient::SendRTSP(int fd, const char * msg, size_t size)
 {
  	if(!msg || size < 0) {
  		printf("Recv Argument Error\n");
@@ -769,11 +771,11 @@ int RtspClient::SendRTSP(const char * msg, size_t size)
  	int Err = TRANS_OK;
 
 	while(size > 0) {
-		if(!CheckSockWritable(RtspSockfd)) {
+		if(!CheckSockWritable(fd)) {
 			Err = TRANS_ERROR;
 			break;
 		}
-		SendResult = Writen(RtspSockfd, msg+Index, size);
+		SendResult = Writen(fd, msg+Index, size);
 		if(SendResult < 0) {
 			if(errno == EINTR) continue;
 			else if(errno == EWOULDBLOCK || errno == EAGAIN) continue;
@@ -829,12 +831,12 @@ int RtspClient::SendRTSP(const char * msg, size_t size)
 // 	return Err;
 // }
 
-int RtspClient::SendRTSP(string msg)
+int RtspClient::SendRTSP(int fd, string msg)
 {
-	return SendRTSP(msg.c_str(), msg.length());
+	return SendRTSP(fd, msg.c_str(), msg.length());
 }
 
-int RtspClient::RecvRTSP(char * msg, size_t maxlen)
+int RtspClient::RecvRTSP(int fd, char * msg, size_t maxlen)
 {
 	if(!msg || maxlen < 0) {
 		printf("Recv Argument Error\n");
@@ -847,11 +849,11 @@ int RtspClient::RecvRTSP(char * msg, size_t maxlen)
 
 	memset(msg, 0, maxlen);
 	while(maxlen > 0) {
-		if(!CheckSockReadable(RtspSockfd)) {
+		if(!CheckSockReadable(fd)) {
 			Err = TRANS_ERROR;
 			break;
 		}
-		RecvResult = ReadLine(RtspSockfd, msg + Index, maxlen);
+		RecvResult = ReadLine(fd, msg + Index, maxlen);
 		if(RecvResult < 0) {
 			if(errno == EINTR) continue;
 			else if(errno == EWOULDBLOCK || errno == EAGAIN) {
@@ -879,7 +881,7 @@ int RtspClient::RecvRTSP(char * msg, size_t maxlen)
 	return Err;
 }
 
-int RtspClient::RecvRTSP(string * msg)
+int RtspClient::RecvRTSP(int fd, string * msg)
 {
 	if(!msg) {
 		printf("Invalid Argument\n");
@@ -890,7 +892,7 @@ int RtspClient::RecvRTSP(string * msg)
 	int RecvResult = TRANS_OK;
 
 	msg->assign("");
-	RecvResult = RecvRTSP(Buf, RECV_BUF_SIZE);
+	RecvResult = RecvRTSP(fd, Buf, RECV_BUF_SIZE);
 	if(TRANS_OK == RecvResult) msg->assign(Buf);
 	free(Buf);
 	return RecvResult;
@@ -909,7 +911,7 @@ int RtspClient::RecvSDP(int sockfd, char * msg, size_t size)
 
 	memset(msg, 0, size);
 	while(size > 0) {
-		if(!CheckSockReadable(RtspSockfd)) {
+		if(!CheckSockReadable(sockfd)) {
 			Err = TRANS_ERROR;
 			break;
 		}
@@ -1057,8 +1059,35 @@ uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * si
 	return GetVideoData(&(it->second), buf, size, max_size);
 }
 
-uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size) {
+uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size, bool get_sps_pps_periodly) {
 	if(!media_session || !buf || !size) return NULL;
+
+	const size_t GetSPS_PPS_Period = GET_SPS_PPS_PERIOD;
+	// GetVideoDataTime = 30;
+	if(true == get_sps_pps_periodly) {
+		if(GetVideoDataCount >= GetSPS_PPS_Period) {
+			GetVideoDataCount = 0;
+
+			const size_t NALU_StartCodeSize = 4;
+			size_t SizeTmp = 0;
+			*size = 0;
+			if(!GetSPSNalu(buf + (*size), &SizeTmp) || SizeTmp <= NALU_StartCodeSize) {
+				fprintf(stderr, "\033[31mWARNING: No H264 SPS\033[0m\n");
+				// return buf;
+			} else {
+				*size += SizeTmp;
+			}
+			if(!GetPPSNalu(buf + (*size), &SizeTmp) || SizeTmp <= NALU_StartCodeSize) {
+				fprintf(stderr, "\033[31mWARNING: No H264 PPS\033[0m\n");
+				// return buf;
+			} else {
+				*size += SizeTmp;
+			}
+			return buf;
+		} else {
+			GetVideoDataCount++;
+		}
+	}
 
 	*size = 4; // NALU start code size
 	buf[0] = 0; buf[1] = 0; buf[2] = 0; buf[3] = 1;
@@ -1072,7 +1101,10 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 
 	do {
 		if(!media_session->GetMediaData(VideoBuffer, &SizeTmp)) return NULL;
-		if(0 == SizeTmp) return NULL;
+		if(0 == SizeTmp) {
+			cerr << "No RTP data" << endl;
+			return NULL;
+		}
         if((NALUType = NALUType->NalUnitType[NaluBaseTypeObj.ParseNALUHeader_Type(VideoBuffer)]) == NULL) {
             cerr << "Error: Unsupported RTP packet!" << endl;
             return NULL;
