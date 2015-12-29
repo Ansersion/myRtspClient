@@ -1,0 +1,9 @@
+2015.12.29:
+- Fix a Segment Fault
+- Change interface function RtspClient::GetMediaData
+  Add a parameter 'max_size' to improve the robustness.
+- Add new feature of RtspClient::GetMediaData 
+  Periodly(exactly invoke this function 30 times) return SPS and PPS data.
+
+2015.12.26:
+- Release myRtspClient 1.0
