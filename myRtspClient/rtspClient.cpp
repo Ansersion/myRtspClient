@@ -344,11 +344,17 @@ ErrorType RtspClient::DoTEARDOWN()
 	ErrorType Err = RTSP_NO_ERROR;
 	ErrorType ErrAll = RTSP_NO_ERROR;
 
-	for(map<string, MediaSession>::iterator it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
-		Err = DoTEARDOWN(&(it->second));
-		if(RTSP_NO_ERROR == ErrAll) ErrAll = Err; // Remeber the first error
-		printf("TEARDOWN Session %s: %s\n", it->first.c_str(), ParseError(Err).c_str());
-	}
+	Err = DoTEARDOWN("audio");
+	if(RTSP_NO_ERROR == ErrAll) ErrAll = Err; // Remeber the first error
+	Err = DoTEARDOWN("video");
+	if(RTSP_NO_ERROR == ErrAll) ErrAll = Err; // Remeber the first error
+
+	// for(map<string, MediaSession>::iterator it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
+	// 	cerr << "TEST: Ready to teardown: " << it->first << endl;
+	// 	Err = DoTEARDOWN(&(it->second));
+	// 	if(RTSP_NO_ERROR == ErrAll) ErrAll = Err; // Remeber the first error
+	// 	printf("TEARDOWN Session %s: %s\n", it->first.c_str(), ParseError(Err).c_str());
+	// }
 
 	return ErrAll;
 }
@@ -360,6 +366,8 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session)
 	}
 	ErrorType Err = RTSP_NO_ERROR;
 	int Sockfd = -1;
+
+	cout << "TEST: TEARDOWN: ###" << media_session->MediaType << "###" << endl;
 
 	Sockfd = CreateTcpSockfd();
 	
@@ -386,7 +394,7 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session)
 			if(media_session->SessionID == it->second.SessionID) break;
 		}
 		if(it != MediaSessionMap->end()) {
-			MediaSessionMap->erase(it->first);
+			MediaSessionMap->erase(it);
 			// close(media_session->RTPSockfd);
 			// close(media_session->RTCPSockfd);
 		}
@@ -452,6 +460,7 @@ int RtspClient::ParseSDP(string SDP)
 			NewMediaSession.MediaType.assign(CurrentMediaSession);
 			NewMediaSession.Protocol.assign(Protocol);
 			(*MediaSessionMap)[CurrentMediaSession] = NewMediaSession;
+
 		}
 		if("a" == Key) {
 			string PatternRtpmap("rtpmap:.* +([0-9A-Za-z]+)/([0-9]+)");

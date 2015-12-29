@@ -19,3 +19,4 @@ simple_example.cpp_backup
 test_packet_recv*
 Makefile_backup
 Makefile
+CoreDumpTest.sh
