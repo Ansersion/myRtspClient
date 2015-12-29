@@ -22,7 +22,7 @@
 #define RTP_OK 		1
 #define RTP_ERROR 	0
 
-#define USLEEP_UNIT 	1000 
+#define USLEEP_UNIT 	10000
 
 using namespace jrtplib;
 
