@@ -23,9 +23,12 @@ Compiling based on armlinux, which configure use file 'config.armlinux':
 
 Features
 --------------------------------------------------------------------------------
-Video Codec Support:
+Video Codec Supported:
 	H264
 
+Cast Method Supported:
+	Unicast
+	
 Info
 --------------------------------------------------------------------------------
 Ansersion 	ansersion@sina.com
