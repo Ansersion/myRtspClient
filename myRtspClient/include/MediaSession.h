@@ -19,10 +19,26 @@
 #include <iostream>
 #include <string>
 #include <stdint.h>
+#include <vector>
 
 #define TIMEOUT_MICROSECONDS 	1000000 // wait for a packet at most 1 second
 
 class MyRTPSession;
+class StreamParameters;
+
+class StreamParameters // ###2015-01-11### //
+{
+	public:
+		/* For general media session */
+		unsigned int PayloadNum;
+		std::string EncodeType;
+		unsigned int TimeRate;
+
+		/* For H264 and H265*/
+		int Packetization; 
+		std::string SPS;
+		std::string PPS;
+};
 
 class MediaSession
 {
@@ -52,9 +68,14 @@ class MediaSession
 
 	public:
 		std::string MediaType;
-		std::string EncodeType;
+		std::vector<uint16_t> Ports; // RTP and RTCP ports, -1 indicate none. ###2015-01-11### //
 		std::string Protocol;
+
+		std::vector<int> PayloadNum; // ###2015-01-11### //
+		std::string EncodeType;
 		unsigned int TimeRate;
+		// std::map<unsigned int, StreamParameters> StreamParams;
+
 		std::string ControlURI;
 		std::string SessionID;
 		// int RTSPSockfd;
@@ -62,6 +83,7 @@ class MediaSession
 		// int RTPSockfd;
 		uint16_t RTCPPort;
 		// int RTCPSockfd;
+		int Packetization;
 
 	protected:
 		MyRTPSession * RTPInterface;

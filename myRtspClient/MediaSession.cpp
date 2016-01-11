@@ -19,6 +19,10 @@
 #define MEDIA_SESSION_OK 		1
 #define MEDIA_SESSION_ERROR 	0
 
+#define SINGAL_NAL_PACKETIZATIOIN 	0
+#define NON_INTERLEAVED 	 		1
+#define INTERLEAVED 			 	2
+
 MediaSession::MediaSession():
 	MediaType(""),
 	EncodeType(""),
@@ -31,7 +35,9 @@ MediaSession::MediaSession():
 	// RTPSockfd(-1),
 	RTCPPort(0),
 	// RTCPSockfd(-1),
-	RTPInterface(NULL)
+	RTPInterface(NULL),
+	Packetization(SINGAL_NAL_PACKETIZATIOIN)
+
 {
 }
 
