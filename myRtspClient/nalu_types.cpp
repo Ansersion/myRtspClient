@@ -1,18 +1,50 @@
 #include "nalu_types.h"
 
-FU_A FU_AObj;
+STAP_A 	STAP_AObj;
+STAP_B 	STAP_BObj;
+MTAP_16 MTAP_16Obj;
+MTAP_24 MTAP_24Obj;
+FU_A 	FU_AObj;
+FU_B 	FU_BObj;
 NALUTypeBase NaluBaseTypeObj;
 
-NALUTypeBase * NALUTypeBase::NalUnitType[NAL_UNIT_TYPE_NUM] =
+NALUTypeBase * NALUTypeBase::NalUnitType[PACKETIZATION_MODE_NUM][NAL_UNIT_TYPE_NUM] =
 {
-    NULL,                 &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
-    &NaluBaseTypeObj,     &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
-    &NaluBaseTypeObj,     &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
-    &NaluBaseTypeObj,     NULL,                        NULL,                        NULL, 
-    NULL,                 NULL,                        NULL,                        NULL, 
-    NULL,                 NULL,                        NULL,                        NULL, 
-    NULL,                 NULL,                        NULL,                        NULL, 
-    &FU_AObj,             NULL,                        NULL,                        NULL
+	/* Packetization Mode: Single NAL */ 
+	{
+		NULL,                 &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
+		&NaluBaseTypeObj,     &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
+		&NaluBaseTypeObj,     &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
+		&NaluBaseTypeObj,     NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL
+	},
+
+	/* Packetization Mode: Non-interleaved */ 
+	{
+		NULL,                 &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
+		&NaluBaseTypeObj,     &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
+		&NaluBaseTypeObj,     &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
+		&NaluBaseTypeObj,     NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		&STAP_AObj,           NULL,                        NULL,                        NULL, 
+		&FU_AObj,             NULL,                        NULL,                        NULL
+	},
+
+	/* Packetization Mode: Interleaved */ 
+	{
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 &STAP_BObj,                  &MTAP_16Obj,                 &MTAP_24Obj, 
+		&FU_AObj,             &FU_BObj,                    NULL,                        NULL
+	}
 };
 
 uint8_t NALUTypeBase::ParseNALUHeader_F(const uint8_t * rtp_payload) 

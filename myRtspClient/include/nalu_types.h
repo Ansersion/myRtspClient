@@ -28,17 +28,27 @@
 //   limitations under the License.
 //
 
+/*******************************/
+/* More info refer to RFC 6184 */
+/*******************************/
+
 #ifndef NALU_TYPES_H
 #define NALU_TYPES_H
 
 #include <string>
 #include <stdint.h>
 
-#define NAL_UNIT_TYPE_NUM 	32
+#define NAL_UNIT_TYPE_NUM 		32
+#define PACKETIZATION_MODE_NUM 	3
+
+#define PACKET_MODE_SINGAL_NAL 			0
+#define PACKET_MODE_NON_INTERLEAVED 	1
+#define PACKET_MODE_INTERLEAVED 		2
+
 class NALUTypeBase
 {
 	public:
-		static NALUTypeBase * NalUnitType[NAL_UNIT_TYPE_NUM];
+		static NALUTypeBase * NalUnitType[PACKETIZATION_MODE_NUM][NAL_UNIT_TYPE_NUM];
 	public:
 		NALUTypeBase() {Name.assign("BaseType");};
 		virtual ~NALUTypeBase() {};
@@ -73,28 +83,28 @@ class NALUTypeBase
 class STAP_A : public NALUTypeBase
 {
 	public:
-		STAP_A() {};
+		STAP_A() { Name.assign("STAP_A"); };
 		virtual ~STAP_A() {};
 };
 
 class STAP_B : public NALUTypeBase
 {
 	public:
-		STAP_B() {};
+		STAP_B() { Name.assign("STAP_B"); };
 		virtual ~STAP_B() {};
 };
 
 class MTAP_16 : public NALUTypeBase
 {
 	public:
-		MTAP_16() {};
+		MTAP_16() { Name.assign("MTAP_16"); };
 		virtual ~MTAP_16() {};
 };
 
 class MTAP_24 : public NALUTypeBase
 {
 	public:
-		MTAP_24() {};
+		MTAP_24() { Name.assign("MTAP_24"); };
 		virtual ~MTAP_24() {};
 };
 
@@ -133,7 +143,7 @@ class FU_A : public NALUTypeBase
 class FU_B : public NALUTypeBase
 {
 	public:
-		FU_B();
+		FU_B() { Name.assign("FU_B"); };
 		virtual ~FU_B() {};
 };
 

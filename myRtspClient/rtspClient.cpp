@@ -16,6 +16,7 @@
 #include "rtspClient.h"
 #include "utils.h"
 #include "Base64.hh"
+#include "nalu_types.h"
 
 #include <sstream>
 #include <iostream>
@@ -495,6 +496,13 @@ int RtspClient::ParseSDP(string SDP)
 				SPS.assign(Group.front());
 				Group.pop_front();
 				PPS.assign(Group.front());
+
+				if(Regex.Regex(Value.c_str(), "packetization-mode=([0-2])", &Group)) {
+					Group.pop_front();
+					stringstream PacketizationMode;
+					PacketizationMode << Group.front();
+					PacketizationMode >> (*MediaSessionMap)[CurrentMediaSession].Packetization;
+				}
 			}
 		}
 	}
@@ -1114,7 +1122,7 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 			cerr << "No RTP data" << endl;
 			return NULL;
 		}
-        if((NALUType = NALUType->NalUnitType[NaluBaseTypeObj.ParseNALUHeader_Type(VideoBuffer)]) == NULL) {
+        if((NALUType = NALUType->NalUnitType[media_session->Packetization][NaluBaseTypeObj.ParseNALUHeader_Type(VideoBuffer)]) == NULL) {
             cerr << "Error: Unsupported RTP packet!" << endl;
             return NULL;
         }

@@ -15,13 +15,10 @@
 
 #include "MediaSession.h"
 #include "myRtpSession.h"
+#include "nalu_types.h"
 
 #define MEDIA_SESSION_OK 		1
 #define MEDIA_SESSION_ERROR 	0
-
-#define SINGAL_NAL_PACKETIZATIOIN 	0
-#define NON_INTERLEAVED 	 		1
-#define INTERLEAVED 			 	2
 
 MediaSession::MediaSession():
 	MediaType(""),
@@ -36,7 +33,7 @@ MediaSession::MediaSession():
 	RTCPPort(0),
 	// RTCPSockfd(-1),
 	RTPInterface(NULL),
-	Packetization(SINGAL_NAL_PACKETIZATIOIN)
+	Packetization(PACKET_MODE_SINGAL_NAL)
 
 {
 }
