@@ -1,3 +1,11 @@
+2016.01.13:
+- Add characteristic of Packetization Mode
+- Add NALU Type Map
+  Use Packetization Mode and NAL type to search 'NALU Type Class'
+- Modify the implementation of 'RtspClient::GetVideoData'
+- Change functions "DoOPTION, DoDESCRIBE..." 
+  To check if TCP socket file descriptor is valid.
+
 2015.12.29:
 - Fix a Segment Fault
 - Change interface function RtspClient::GetMediaData
