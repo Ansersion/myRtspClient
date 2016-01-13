@@ -109,5 +109,6 @@ TEST(rtspClient, RtspClient_ParseSDP_RegularInput)
 	EXPECT_EQ(true, MediaSessionMap["video"].Protocol == "RTP/AVP");
 	EXPECT_EQ(true, MediaSessionMap["video"].TimeRate == 90000);
 	EXPECT_EQ(true, MediaSessionMap["video"].ControlURI == "rtsp://127.0.0.1:554/ansersion/trackID=1");
+	EXPECT_EQ(true, MediaSessionMap["video"].Packetization == 1);
 }
 
