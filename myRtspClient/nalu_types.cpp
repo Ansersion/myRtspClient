@@ -1,18 +1,51 @@
 #include "nalu_types.h"
+#include <string.h>
 
-FU_A FU_AObj;
+STAP_A 	STAP_AObj;
+STAP_B 	STAP_BObj;
+MTAP_16 MTAP_16Obj;
+MTAP_24 MTAP_24Obj;
+FU_A 	FU_AObj;
+FU_B 	FU_BObj;
 NALUTypeBase NaluBaseTypeObj;
 
-NALUTypeBase * NALUTypeBase::NalUnitType[NAL_UNIT_TYPE_NUM] =
+NALUTypeBase * NALUTypeBase::NalUnitType[PACKETIZATION_MODE_NUM][NAL_UNIT_TYPE_NUM] =
 {
-    NULL,                 &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
-    &NaluBaseTypeObj,     &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
-    &NaluBaseTypeObj,     &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
-    &NaluBaseTypeObj,     NULL,                        NULL,                        NULL, 
-    NULL,                 NULL,                        NULL,                        NULL, 
-    NULL,                 NULL,                        NULL,                        NULL, 
-    NULL,                 NULL,                        NULL,                        NULL, 
-    &FU_AObj,             NULL,                        NULL,                        NULL
+	/* Packetization Mode: Single NAL */ 
+	{
+		NULL,                 &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
+		&NaluBaseTypeObj,     &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
+		&NaluBaseTypeObj,     &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
+		&NaluBaseTypeObj,     NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL
+	},
+
+	/* Packetization Mode: Non-interleaved */ 
+	{
+		NULL,                 &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
+		&NaluBaseTypeObj,     &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
+		&NaluBaseTypeObj,     &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
+		&NaluBaseTypeObj,     NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		&STAP_AObj,           NULL,                        NULL,                        NULL, 
+		&FU_AObj,             NULL,                        NULL,                        NULL
+	},
+
+	/* Packetization Mode: Interleaved */ 
+	{
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 NULL,                        NULL,                        NULL, 
+		NULL,                 &STAP_BObj,                  &MTAP_16Obj,                 &MTAP_24Obj, 
+		&FU_AObj,             &FU_BObj,                    NULL,                        NULL
+	}
 };
 
 uint8_t NALUTypeBase::ParseNALUHeader_F(const uint8_t * rtp_payload) 
@@ -42,6 +75,28 @@ bool NALUTypeBase::IsPacketThisType(const uint8_t * rtp_payload)
 	uint8_t NalType = ParseNALUHeader_Type(rtp_payload);
 	return ((1 <= NalType) && (NalType <= 12));
 }
+
+size_t NALUTypeBase::CopyData(uint8_t * buf, uint8_t * data, size_t size) 
+{
+	size_t CopySize = 0;
+	if(!buf || !data) return 0;
+
+	EndFlag = IsPacketEnd(NULL);
+
+	// NALU start code: 0x00000001 
+	buf[0] = 0; buf[1] = 0; buf[2] = 0; buf[3] = 1;
+	CopySize += 4; 
+
+	memcpy(buf + CopySize, data, size);
+	CopySize += size;
+
+	return CopySize;
+}
+
+const uint8_t STAP_A::STAP_A_ID = 0x18; // decimal: 24
+const uint8_t STAP_B::STAP_B_ID = 0x19; // decimal: 25
+const uint8_t MTAP_16::MTAP_16_ID = 0x1A; // decimal: 26
+const uint8_t MTAP_24::MTAP_24_ID = 0x1B; // decimal: 27
 
 const uint8_t FU_A::FU_A_ID = 0x1C; // decimal: 28
 
@@ -111,3 +166,35 @@ bool FU_A::IsPacketReserved(const uint8_t * rtp_payload)
 
 	return (rtp_payload[1] & PacketR_Mask);
 }
+
+size_t FU_A::CopyData(uint8_t * buf, uint8_t * data, size_t size) 
+{
+	size_t CopySize = 0;
+	if(!buf || !data) return 0;
+
+	StartFlag = IsPacketStart(data);
+	EndFlag = IsPacketEnd(data);
+
+	uint8_t NALUHeader = 0;
+	NALUHeader = (  
+			ParseNALUHeader_F(data)      | 
+			ParseNALUHeader_NRI(data)    | 
+			ParseNALUHeader_Type(data)
+			);
+
+	if(StartFlag) {
+
+		// NALU start code size
+		buf[0] = 0; buf[1] = 0; buf[2] = 0; buf[3] = 1;
+		CopySize += 4; 
+		memcpy(buf + CopySize, &NALUHeader, sizeof(NALUHeader));
+		CopySize += sizeof(NALUHeader);
+	}
+	const int FU_A_HeaderSize = 2;
+	memcpy(buf + CopySize, data + FU_A_HeaderSize, size - FU_A_HeaderSize);
+	CopySize += size - FU_A_HeaderSize;
+
+	return CopySize;
+}
+
+const uint8_t FU_B::FU_B_ID = 0x1D; // decimal: 29

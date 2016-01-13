@@ -56,7 +56,7 @@ TEST(rtspClient, TMP_TEST)
 	int fd;
 	printf("*******************\n");
 	while(++packet_num < 100) {
-		const size_t BufSize = 4192;
+		const size_t BufSize = 8192;
 		uint8_t buf[BufSize];
 		size_t size = 0;
 		if(Client.GetMediaData("video", buf, &size, BufSize)) printf("recv %lu\n", size);

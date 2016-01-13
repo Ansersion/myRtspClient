@@ -16,6 +16,7 @@
 #include "rtspClient.h"
 #include "utils.h"
 #include "Base64.hh"
+#include "nalu_types.h"
 
 #include <sstream>
 #include <iostream>
@@ -86,6 +87,7 @@ ErrorType RtspClient::DoDESCRIBE(string uri)
 	else return RTSP_INVALID_URI;
 
 	Sockfd = CreateTcpSockfd(RtspUri);
+	if(Sockfd < 0) return RTSP_INVALID_URI;
 
 	string Cmd("DESCRIBE");
 	stringstream Msg("");
@@ -119,6 +121,7 @@ ErrorType RtspClient::DoOPTIONS(string uri)
 	else return RTSP_INVALID_URI;
 
 	Sockfd = CreateTcpSockfd(RtspUri);
+	if(Sockfd < 0) return RTSP_INVALID_URI;
 
 	string Cmd("OPTIONS");
 	stringstream Msg("");
@@ -161,6 +164,7 @@ ErrorType RtspClient::DoPAUSE(MediaSession * media_session)
 	int Sockfd = -1;
 
 	Sockfd = CreateTcpSockfd();
+	if(Sockfd < 0) return RTSP_INVALID_URI;
 	
 	string Cmd("PAUSE");
 	stringstream Msg("");
@@ -224,6 +228,7 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 	int Sockfd = -1;
 
 	Sockfd = CreateTcpSockfd();
+	if(Sockfd < 0) return RTSP_INVALID_URI;
 	
 	// "CreateUdpSockfd" is only for test. 
 	// We will use jrtplib instead later. 
@@ -299,6 +304,7 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session)
 	ErrorType Err = RTSP_NO_ERROR;
 	int Sockfd = -1;
 	Sockfd = CreateTcpSockfd();
+	if(Sockfd < 0) return RTSP_INVALID_URI;
 
 	string Cmd("PLAY");
 	stringstream Msg("");
@@ -370,6 +376,7 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session)
 	cout << "TEST: TEARDOWN: ###" << media_session->MediaType << "###" << endl;
 
 	Sockfd = CreateTcpSockfd();
+	if(Sockfd < 0) return RTSP_INVALID_URI;
 	
 	string Cmd("TEARDOWN");
 	stringstream Msg("");
@@ -495,6 +502,13 @@ int RtspClient::ParseSDP(string SDP)
 				SPS.assign(Group.front());
 				Group.pop_front();
 				PPS.assign(Group.front());
+
+				if(Regex.Regex(Value.c_str(), "packetization-mode=([0-2])", &Group)) {
+					Group.pop_front();
+					stringstream PacketizationMode;
+					PacketizationMode << Group.front();
+					PacketizationMode >> (*MediaSessionMap)[CurrentMediaSession].Packetization;
+				}
 			}
 		}
 	}
@@ -1043,12 +1057,14 @@ bool RtspClient::IsResponse_200_OK(ErrorType * err, string * response)
 	return Result;
 }
 
-uint8_t * RtspClient::GetMediaData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size) {
+uint8_t * RtspClient::GetMediaData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size) 
+{
 	if(!media_session) return NULL;
 	return media_session->GetMediaData(buf, size, max_size);
 }
 
-uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * size, size_t max_size) {
+uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * size, size_t max_size) 
+{
 	map<string, MediaSession>::iterator it;
 	bool IgnoreCase = true;
 	if(!buf) return NULL;
@@ -1068,27 +1084,26 @@ uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * si
 	return GetVideoData(&(it->second), buf, size, max_size);
 }
 
-uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size, bool get_sps_pps_periodly) {
+uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size, bool get_sps_pps_periodly) 
+{
 	if(!media_session || !buf || !size) return NULL;
 
-	const size_t GetSPS_PPS_Period = GET_SPS_PPS_PERIOD;
-	// GetVideoDataTime = 30;
+	*size = 0;
+
+	const size_t GetSPS_PPS_Period = GET_SPS_PPS_PERIOD; // 30 times
 	if(true == get_sps_pps_periodly) {
 		if(GetVideoDataCount >= GetSPS_PPS_Period) {
 			GetVideoDataCount = 0;
 
 			const size_t NALU_StartCodeSize = 4;
 			size_t SizeTmp = 0;
-			*size = 0;
 			if(!GetSPSNalu(buf + (*size), &SizeTmp) || SizeTmp <= NALU_StartCodeSize) {
 				fprintf(stderr, "\033[31mWARNING: No H264 SPS\033[0m\n");
-				// return buf;
 			} else {
 				*size += SizeTmp;
 			}
 			if(!GetPPSNalu(buf + (*size), &SizeTmp) || SizeTmp <= NALU_StartCodeSize) {
 				fprintf(stderr, "\033[31mWARNING: No H264 PPS\033[0m\n");
-				// return buf;
 			} else {
 				*size += SizeTmp;
 			}
@@ -1098,29 +1113,36 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 		}
 	}
 
-	*size = 4; // NALU start code size
-	buf[0] = 0; buf[1] = 0; buf[2] = 0; buf[3] = 1;
-
 	size_t SizeTmp = 0;
-	// bool NaluStart = true;
 	bool EndFlag = false;
-	bool StartFlag = true;
-	uint8_t NALUHeader = 0;
     NALUTypeBase * NALUType;
 
+	int PM = media_session->Packetization;
+	if(!IS_PACKET_MODE_VALID(PM)) {
+		cerr << "WARNING:Invalid Packetization Mode" << endl;
+		return NULL;
+	}
+
 	do {
+		EndFlag = true;
 		if(!media_session->GetMediaData(VideoBuffer, &SizeTmp)) return NULL;
 		if(0 == SizeTmp) {
 			cerr << "No RTP data" << endl;
 			return NULL;
 		}
-        if((NALUType = NALUType->NalUnitType[NaluBaseTypeObj.ParseNALUHeader_Type(VideoBuffer)]) == NULL) {
-            cerr << "Error: Unsupported RTP packet!" << endl;
+		int NT = NaluBaseTypeObj.ParseNALUHeader_Type(VideoBuffer);
+		if(!IS_NALU_TYPE_VALID(NT)) {
+			cerr << "WARNING:Invalid NALU" << endl;
+			return NULL;
+		}
+
+        if((NALUType = NALUType->NalUnitType[PM][NT]) == NULL) {
+            cerr << "Error: Unsupported RTP H264 payload type!" << endl;
             return NULL;
         }
 
         if(SizeTmp > sizeof(VideoBuffer)) {
-            cerr << "RTP Packet too large" << endl;
+            cerr << "Error: RTP Packet too large(" << SizeTmp << " bytes > " << sizeof(VideoBuffer) << "bytes)" << endl;
             return NULL;
         }
 
@@ -1129,34 +1151,16 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 			return buf;
 		}
 
-        if(NALUType->GetName() == "BaseType") {
-            memcpy(buf + (*size), VideoBuffer, SizeTmp);
-            *size += SizeTmp;
-            StartFlag = NALUType->IsPacketStart(VideoBuffer);
-            EndFlag = NALUType->IsPacketEnd(VideoBuffer);
-		} else if(NALUType->GetName() == "FU_A") {
-			/* FU_A Processing */
-			NALUHeader = (  
-					NALUType->ParseNALUHeader_F(VideoBuffer)      | 
-					NALUType->ParseNALUHeader_NRI(VideoBuffer)    | 
-					NALUType->ParseNALUHeader_Type(VideoBuffer)
-					);
-			StartFlag = NALUType->IsPacketStart(VideoBuffer);
-			EndFlag = NALUType->IsPacketEnd(VideoBuffer);
-			if(StartFlag) {
-				memcpy(buf + (*size), &NALUHeader, sizeof(NALUHeader));
-				*size += sizeof(NALUHeader);
-			}
-			const int FU_A_HeaderSize = 2;
-			memcpy(buf + (*size), VideoBuffer + FU_A_HeaderSize, SizeTmp - FU_A_HeaderSize);
-			*size += SizeTmp - FU_A_HeaderSize;
-		}
+		SizeTmp = NALUType->CopyData(buf + (*size), VideoBuffer, SizeTmp);
+		*size += SizeTmp;
+		EndFlag = NALUType->GetEndFlag();
 	} while(!EndFlag);
 
 	return buf;
 }
 
-uint8_t * RtspClient::GetMediaPacket(MediaSession * media_session, uint8_t * buf, size_t * size) {
+uint8_t * RtspClient::GetMediaPacket(MediaSession * media_session, uint8_t * buf, size_t * size) 
+{
 	if(!media_session) return NULL;
 	return media_session->GetMediaPacket(buf, size);
 }

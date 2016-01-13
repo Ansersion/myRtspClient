@@ -15,6 +15,7 @@
 
 #include "MediaSession.h"
 #include "myRtpSession.h"
+#include "nalu_types.h"
 
 #define MEDIA_SESSION_OK 		1
 #define MEDIA_SESSION_ERROR 	0
@@ -31,7 +32,9 @@ MediaSession::MediaSession():
 	// RTPSockfd(-1),
 	RTCPPort(0),
 	// RTCPSockfd(-1),
-	RTPInterface(NULL)
+	RTPInterface(NULL),
+	Packetization(PACKET_MODE_SINGAL_NAL)
+
 {
 }
 
