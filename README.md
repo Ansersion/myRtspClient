@@ -13,12 +13,16 @@ Compiling based on different os-platform, you NEED to configure the
 config.<os-platform> file. 
 For example: 
 Compiling based on x86, which configure use file 'config.linux':
+ 	
  	$ ./genMakefiles linux
+ 	
  	$ make
 
 (Configure your cross compile tool in 'config.armlinux' first)
 Compiling based on armlinux, which configure use file 'config.armlinux':
+	
 	$ ./genMakefiles armlinux
+	
 	$ make
 
 Features
