@@ -14,7 +14,10 @@
 //
 
 #include <stdio.h>
+#include <unistd.h>
 #include <sys/types.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 #include <regex.h>
 #include <memory.h>
 #include <stdlib.h>
@@ -26,6 +29,83 @@
 #include "nalu_types.h"
 
 using namespace std;
+
+TEST(NALUPayloadType, STAP_A_RegularInput_1)
+{
+
+	STAP_A STAPAType;
+
+	uint8_t buf1[1024];
+	size_t size_1;
+	memset(buf1, 0, 1024);
+	int fd1 = open("testMedia_nalu_type_STAP_A_1.stap", O_RDONLY);
+	if((size_1 = read(fd1, buf1, 1024)) <= 0) printf("read testMedia_nalu_type_STAP_A_1.stap error\n");
+
+	EXPECT_EQ(STAPAType.ParseNALUHeader_F(buf1), 0x00);
+	EXPECT_EQ(STAPAType.ParseNALUHeader_NRI(buf1), 0x60);
+	EXPECT_EQ(STAPAType.ParseNALUHeader_Type(buf1), STAP_A::STAP_A_ID);
+
+	EXPECT_EQ(STAPAType.IsPacketThisType(buf1), true);
+	EXPECT_EQ(STAPAType.IsPacketEnd(buf1), true);
+}
+
+TEST(NALUPayloadType, STAP_A_RegularInput_2)
+{
+	STAP_A STAPAType;
+
+	uint8_t buf[1024];
+	uint8_t writeBuf[1024];
+	int size_1, size_2;
+	int fdWrite;
+	int fdTest;
+	int fdOriginH264;
+	size_t sizeTmp;
+
+	memset(buf, 0, 1024);
+	memset(writeBuf, 0, 1024);
+
+	// copy STAP packet to h264
+	fdTest = open("testMedia_nalu_type_STAP_A_1.stap", O_RDONLY);
+	if((size_1 = read(fdTest, buf, 1024)) <= 0) printf("read testMedia_nalu_type_STAP_A_1.stap error\n");
+	sizeTmp = STAPAType.CopyData(writeBuf, buf, size_1);
+	fdWrite = open("writeSTAP_Packet1.h264", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR);
+	if(write(fdWrite, writeBuf, sizeTmp) < 0) perror("write"); 
+	close(fdWrite);
+	close(fdTest);
+
+	// Compare the h264 file from STAP packet and h264 original file
+	fdOriginH264 = open("testMedia_nalu_type_STAP_A_1.h264", O_RDONLY);
+	fdWrite = open("writeSTAP_Packet1.h264", O_RDONLY);
+
+	if((size_1 = read(fdOriginH264, buf, 1024)) <= 0) printf("read testMedia_nalu_type_STAP_A_1.h264 error\n");
+	if((size_2 = read(fdWrite, writeBuf, 1024)) <= 0) printf("read writeSTAP_Packet1.h264 error\n");
+
+	if(size_1 != size_2) EXPECT_TRUE(false);
+	for(int i = 0; i < size_1; i++) {
+		if(writeBuf[i] != buf[i]) EXPECT_TRUE(false);
+	}
+
+	// copy STAP packet to h264
+	fdTest = open("testMedia_nalu_type_STAP_A_2.stap", O_RDONLY);
+	if((size_1 = read(fdTest, buf, 1024)) <= 0) printf("read testMedia_nalu_type_STAP_A_2.stap error\n");
+	sizeTmp = STAPAType.CopyData(writeBuf, buf, size_1);
+	fdWrite = open("writeSTAP_Packet2.h264", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR);
+	if(write(fdWrite, writeBuf, sizeTmp) < 0) perror("write"); 
+	close(fdWrite);
+	close(fdTest);
+
+	// Compare the h264 file from STAP packet and h264 original file
+	fdOriginH264 = open("testMedia_nalu_type_STAP_A_2.h264", O_RDONLY);
+	fdWrite = open("writeSTAP_Packet2.h264", O_RDONLY);
+
+	if((size_1 = read(fdOriginH264, buf, 1024)) <= 0) printf("read testMedia_nalu_type_STAP_A_2.h264 error\n");
+	if((size_2 = read(fdWrite, writeBuf, 1024)) <= 0) printf("read writeSTAP_Packet2.h264 error\n");
+
+	if(size_1 != size_2) EXPECT_TRUE(false);
+	for(int i = 0; i < size_1; i++) {
+		if(writeBuf[i] != buf[i]) EXPECT_TRUE(false);
+	}
+}
 
 TEST(NALUPayloadType, FU_A_InvalidInput)
 {
@@ -83,3 +163,4 @@ TEST(NALUPayloadType, FU_A_RegularInput)
 	EXPECT_EQ(FUAType.IsPacketEnd(RegularInput), false);
 	EXPECT_EQ(FUAType.IsPacketReserved(RegularInput), false);
 }
+

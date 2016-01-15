@@ -5,12 +5,14 @@ cscope*
 .depend
 myTest
 capdir
-gtest/backup
+gtest/backup/*
+gtest/writeSTAP_Packet1.h264
+gtest/writeSTAP_Packet2.h264
 third_party/jrtplib-3.9.1/build
 third_party/jrtplib-3.9.1/build_2
 third_party/jrtplib-3.9.1/build_backup
 a.out
-*.h264
+# *.h264
 simple_example
 complete_example
 common_example

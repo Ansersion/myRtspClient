@@ -97,8 +97,59 @@ const uint8_t STAP_A::STAP_A_ID = 0x18; // decimal: 24
 const uint8_t STAP_B::STAP_B_ID = 0x19; // decimal: 25
 const uint8_t MTAP_16::MTAP_16_ID = 0x1A; // decimal: 26
 const uint8_t MTAP_24::MTAP_24_ID = 0x1B; // decimal: 27
-
 const uint8_t FU_A::FU_A_ID = 0x1C; // decimal: 28
+const uint8_t FU_B::FU_B_ID = 0x1D; // decimal: 29
+
+bool STAP_A::IsPacketStart(const uint8_t * rtp_payload) 
+{
+	return true;
+}
+
+bool STAP_A::IsPacketEnd(const uint8_t * rtp_payload)
+{
+	return true;
+}
+
+bool STAP_A::IsPacketThisType(const uint8_t * rtp_payload)
+{
+	if(!rtp_payload) return false;
+	return (STAP_A_ID == (rtp_payload[0] & STAP_A_ID));
+}
+
+size_t STAP_A::CopyData(uint8_t * buf, uint8_t * data, size_t size)
+{
+	size_t CopySize = 0;
+	uint16_t NALU_Size = 0;
+	uint8_t * DataPointer = data;
+
+	if(!buf || !data) return 0;
+
+	StartFlag = IsPacketStart(data);
+	EndFlag = IsPacketEnd(data);
+
+	uint8_t STAP_A_Header = 0;
+	const int STAP_A_HeaderSize = sizeof(STAP_A_Header);
+	DataPointer += STAP_A_HeaderSize;
+
+	do {
+		// Not enough data left or only padding data left;
+		if(DataPointer - data >= size - sizeof(NALU_Size)) break;
+
+		// Transform network byte order to host order
+		NALU_Size = (uint16_t)(*DataPointer); DataPointer++;
+		NALU_Size = (NALU_Size << 8) + (uint16_t)(*DataPointer); DataPointer++;
+		if(0 == NALU_Size) break;
+
+		// NALU start code: 0x00000001 
+		buf[CopySize + 0] = 0; buf[CopySize + 1] = 0; buf[CopySize + 2] = 0; buf[CopySize + 3] = 1;
+		CopySize += 4; 
+		memcpy(buf + CopySize, DataPointer, NALU_Size);
+		CopySize += NALU_Size;
+		DataPointer += NALU_Size;
+	} while(0 != NALU_Size);
+
+	return CopySize;
+}
 
 bool FU_A::IsPacketThisType(const uint8_t * rtp_payload)
 {
@@ -197,4 +248,3 @@ size_t FU_A::CopyData(uint8_t * buf, uint8_t * data, size_t size)
 	return CopySize;
 }
 
-const uint8_t FU_B::FU_B_ID = 0x1D; // decimal: 29

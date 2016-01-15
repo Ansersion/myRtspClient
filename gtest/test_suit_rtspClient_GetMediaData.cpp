@@ -53,7 +53,6 @@ TEST(rtspClient, TMP_TEST)
 	EXPECT_TRUE(Client.IsResponse_200_OK());
 
 	int packet_num = 0;
-	int fd;
 	printf("*******************\n");
 	while(++packet_num < 100) {
 		const size_t BufSize = 8192;

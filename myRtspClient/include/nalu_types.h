@@ -105,6 +105,11 @@ class STAP_A : public NALUTypeBase
 	public:
 		STAP_A() { Name.assign("STAP_A"); };
 		virtual ~STAP_A() {};
+
+		virtual bool IsPacketStart(const uint8_t * rtp_payload);
+		virtual bool IsPacketEnd(const uint8_t * rtp_payload);
+		virtual bool IsPacketThisType(const uint8_t * rtp_payload);
+		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size);
 	public:
 		static const uint8_t STAP_A_ID;
 };
