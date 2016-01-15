@@ -1,3 +1,6 @@
+2016.01.15:
+- Support payload type STAP_A
+
 2016.01.13:
 - Add characteristic of Packetization Mode
 - Add NALU Type Map
