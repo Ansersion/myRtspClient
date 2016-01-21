@@ -169,6 +169,7 @@ class RtspClient
 	protected:
 
 		uint8_t * GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size, bool get_sps_pps_periodly = true);
+		uint8_t * GetAudioData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size);
 
 		int CheckSockWritable(int sockfd, struct timeval * tval = NULL);
 		int CheckSockReadable(int sockfd, struct timeval * tval = NULL);

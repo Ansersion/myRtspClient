@@ -17,6 +17,7 @@
 #include "utils.h"
 #include "Base64.hh"
 #include "nalu_types.h"
+#include "mpeg_types.h"
 
 #include <sstream>
 #include <iostream>
@@ -39,8 +40,15 @@ using std::cerr;
 using std::endl;
 using std::pair;
 
-extern FU_A FU_AObj;
+extern STAP_A 		STAP_AObj;
+extern STAP_B 		STAP_BObj;
+extern MTAP_16 		MTAP_16Obj;
+extern MTAP_24 		MTAP_24Obj;
+extern FU_A 		FU_AObj;
+extern FU_B 		FU_BObj;
 extern NALUTypeBase NaluBaseTypeObj;
+
+extern MPEG_Audio MPEG_AudioObj;
 
 RtspClient::RtspClient():
 	RtspURI(""), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse(""), SDPStr(""), 
@@ -1081,7 +1089,9 @@ uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * si
 		return NULL;
 	}
 
-	return GetVideoData(&(it->second), buf, size, max_size);
+	if(it->second.MediaType == "video") return GetVideoData(&(it->second), buf, size, max_size);
+	if(it->second.MediaType == "audio") return GetAudioData(&(it->second), buf, size, max_size);
+	return NULL;
 }
 
 uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size, bool get_sps_pps_periodly) 
@@ -1155,6 +1165,39 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 		*size += SizeTmp;
 		EndFlag = NALUType->GetEndFlag();
 	} while(!EndFlag);
+
+	return buf;
+}
+
+uint8_t * RtspClient::GetAudioData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size)
+{
+	if(!media_session || !buf || !size) return NULL;
+
+	*size = 0;
+
+	size_t SizeTmp = 0;
+	MPEGTypeBase * MPEGType;
+
+	if(!media_session->GetMediaData(AudioBuffer, &SizeTmp)) return NULL;
+	if(0 == SizeTmp) {
+		cerr << "No RTP data" << endl;
+		return NULL;
+	}
+
+	MPEGType = &MPEG_AudioObj;
+
+	if(SizeTmp > sizeof(AudioBuffer)) {
+		cerr << "Error: RTP Packet too large(" << SizeTmp << " bytes > " << sizeof(AudioBuffer) << "bytes)" << endl;
+		return NULL;
+	}
+
+	if(*size + SizeTmp > max_size) {
+		fprintf(stderr, "\033[31mWARNING: NALU truncated because larger than buffer: %lu(NALU size) > %lu(Buffer size)\033[0m\n", *size + SizeTmp, max_size);
+		return buf;
+	}
+
+	SizeTmp = MPEGType->CopyData(buf + (*size), AudioBuffer, SizeTmp);
+	*size += SizeTmp;
 
 	return buf;
 }
