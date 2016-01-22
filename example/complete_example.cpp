@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 	}
 
 	printf("start PLAY\n");
-	/* Send PLAY command to play the 'video' session.
+	/* Send PLAY command to play only 'video' sessions.
 	 * note(FIXME): 
 	 * if there are several 'video' session 
 	 * refered in SDP, only play the first 'video' 

@@ -54,8 +54,7 @@ int main(int argc, char *argv[])
 	printf("start PLAY\n");
 	printf("SDP: %s\n", Client.GetSDP().c_str());
 
-	/* Send PLAY command to play all of the 'audio' and 
-	 * 'video' sessions.*/
+	/* Send PLAY command to play only 'video' sessions.*/
 	Client.DoPLAY("video");
 
 	/* Receive 1000 RTP 'video' packets
