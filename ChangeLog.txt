@@ -1,5 +1,8 @@
+2016.01.25:
+- Support MPA audio
+
 2016.01.15:
-- Support payload type STAP_A
+- Support payload type STAP_A for H.264
 
 2016.01.13:
 - Add characteristic of Packetization Mode

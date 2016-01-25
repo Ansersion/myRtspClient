@@ -28,7 +28,12 @@ Compiling based on armlinux, which configure use file 'config.armlinux':
 Features
 --------------------------------------------------------------------------------
 Video Codec Supported:
+
 	H264
+
+Audio Codec Supported:
+
+	MPA
 
 Cast Method Supported:
 	Unicast
