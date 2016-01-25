@@ -1,4 +1,4 @@
-//   Copyright 2015 Ansersion
+//   Copyright 2015-2016 Ansersion
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -197,6 +197,7 @@ ErrorType RtspClient::DoPAUSE(MediaSession * media_session)
 
 ErrorType RtspClient::DoPAUSE(string media_type)
 {
+	MyRegex Regex;
 	ErrorType Err = RTSP_NO_ERROR;
 	map<string, MediaSession>::iterator it;
 	bool IgnoreCase = true;
@@ -215,6 +216,7 @@ ErrorType RtspClient::DoPAUSE(string media_type)
 
 ErrorType RtspClient::DoSETUP()
 {
+	MyRegex Regex;
 	ErrorType Err = RTSP_NO_ERROR;
 	ErrorType ErrAll = RTSP_NO_ERROR;
 
@@ -272,6 +274,7 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 
 ErrorType RtspClient::DoSETUP(string media_type)
 {
+	MyRegex Regex;
 	ErrorType Err = RTSP_NO_ERROR;
 	map<string, MediaSession>::iterator it;
 	bool IgnoreCase = true;
@@ -337,6 +340,7 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session)
 
 ErrorType RtspClient::DoPLAY(string media_type)
 {
+	MyRegex Regex;
 	ErrorType Err = RTSP_NO_ERROR;
 	map<string, MediaSession>::iterator it;
 	bool IgnoreCase = true;
@@ -420,6 +424,7 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session)
 
 ErrorType RtspClient::DoTEARDOWN(string media_type)
 {
+	MyRegex Regex;
 	ErrorType Err = RTSP_NO_ERROR;
 	map<string, MediaSession>::iterator it;
 	bool IgnoreCase = true;
@@ -438,6 +443,7 @@ ErrorType RtspClient::DoTEARDOWN(string media_type)
 
 int RtspClient::ParseSDP(string SDP)
 {
+	MyRegex Regex;
 	string Response("");
 	int Result = 0; // don't have meaning yet
 
@@ -701,6 +707,7 @@ int RtspClient::SetAvailableRTPPort(MediaSession * media_session, uint16_t RTP_p
 in_addr_t RtspClient::GetIP(string uri)
 {
 	//### example uri: rtsp://192.168.15.100/test ###//
+	MyRegex Regex;
 	string RtspUri("");
 	string Pattern("rtsp://([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})\\b");
 	list<string> Groups;
@@ -723,6 +730,7 @@ in_addr_t RtspClient::GetIP(string uri)
 uint16_t RtspClient::GetPort(string uri)
 {
 	//### example uri: rtsp://192.168.15.100:554/test ###//
+	MyRegex Regex;
 	string RtspUri("");
 	string Pattern("rtsp://[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}:([0-9]+)");
 	list<string> Groups;
@@ -869,6 +877,7 @@ int RtspClient::SendRTSP(int fd, string msg)
 
 int RtspClient::RecvRTSP(int fd, char * msg, size_t maxlen)
 {
+	MyRegex Regex;
 	if(!msg || maxlen < 0) {
 		printf("Recv Argument Error\n");
 		return TRANS_ERROR;
@@ -969,6 +978,7 @@ int RtspClient::RecvSDP(int sockfd, char * msg, size_t size)
 
 int RtspClient::RecvSDP(int sockfd, string * msg)
 {
+	MyRegex Regex;
 	if(!msg) msg = &SDPStr;
 
 	char * Buf = (char *)calloc(RECV_BUF_SIZE, sizeof(char));
@@ -1013,6 +1023,7 @@ int RtspClient::Close(int sockfd)
 
 string RtspClient::ParseSessionID(string ResponseOfSETUP)
 {
+	MyRegex Regex;
 	string Response("");
 	string Result("");
 
@@ -1036,6 +1047,7 @@ bool RtspClient::IsResponse_200_OK(ErrorType * err, string * response)
 	// example: 
 	// "RTSP/1.0 200 OK"
 
+	MyRegex Regex;
 	string Pattern200("RTSP/[0-9]+\\.[0-9]+ +200");
 	string Pattern40x("RTSP/[0-9]+\\.[0-9]+ +40[0-9]");
 	string Pattern50x("RTSP/[0-9]+\\.[0-9]+ +50[0-9]");
@@ -1073,6 +1085,7 @@ uint8_t * RtspClient::GetMediaData(MediaSession * media_session, uint8_t * buf, 
 
 uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * size, size_t max_size) 
 {
+	MyRegex Regex;
 	map<string, MediaSession>::iterator it;
 	bool IgnoreCase = true;
 	if(!buf) return NULL;
@@ -1209,6 +1222,7 @@ uint8_t * RtspClient::GetMediaPacket(MediaSession * media_session, uint8_t * buf
 }
 
 uint8_t * RtspClient::GetMediaPacket(string media_type, uint8_t * buf, size_t * size) {
+	MyRegex Regex;
 	map<string, MediaSession>::iterator it;
 	bool IgnoreCase = true;
 

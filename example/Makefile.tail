@@ -1,18 +1,19 @@
 ##### End of variables to change
 
-EXAMPLES = simple_example$(EXE) complete_example$(EXE) common_example$(EXE)
+EXAMPLES = simple_example$(EXE) complete_example$(EXE) common_example$(EXE) recv_video_and_audio_example$(EXE)
 ALL = $(EXAMPLES)
 all: $(ALL)
 
 SIMPLE_EXAMPLE_OBJS = simple_example.$(OBJ)
 COMPLETE_EXAMPLE_OBJS = complete_example.$(OBJ)
 COMMON_EXAMPLE_OBJS = common_example.$(OBJ)
+RECV_VIDEO_AND_AUDIO_EXAMPLE_OBJS = recv_video_and_audio_example.$(OBJ)
 
 MY_RTSP_INCLUDE = ../myRtspClient/include
 MY_RTSP_LIB = ../myRtspClient/libmyRtspClient.$(libmyRtspClient_LIB_SUFFIX)
 
 INCLUDES = -I$(MY_RTSP_INCLUDE)
-LIBS 	= $(MY_RTSP_LIB)
+LIBS 	= $(MY_RTSP_LIB) -lpthread
 
 .$(C).$(OBJ):
 	$(C_COMPILER) -c $(C_FLAGS) $<       
@@ -26,8 +27,10 @@ complete_example$(EXE): $(COMPLETE_EXAMPLE_OBJS)
 	$(LINK) $@ $(CONSOLE_LINK_OPTS) $(COMPLETE_EXAMPLE_OBJS) $(LIBS)
 common_example$(EXE): $(COMMON_EXAMPLE_OBJS)
 	$(LINK) $@ $(CONSOLE_LINK_OPTS) $(COMMON_EXAMPLE_OBJS) $(LIBS)
+recv_video_and_audio_example$(EXE): $(RECV_VIDEO_AND_AUDIO_EXAMPLE_OBJS) $(LIBS)
+	$(LINK) $@ $(CONSOLE_LINK_OPTS) $(RECV_VIDEO_AND_AUDIO_EXAMPLE_OBJS) $(LIBS)
 clean:
-	-rm -rf $(SIMPLE_EXAMPLE_OBJS) $(COMPLETE_EXAMPLE_OBJS) $(COMMON_EXAMPLE_OBJS) $(ALL) core *.core *~ include/*~
+	-rm -rf $(SIMPLE_EXAMPLE_OBJS) $(COMPLETE_EXAMPLE_OBJS) $(COMMON_EXAMPLE_OBJS) $(RECV_VIDEO_AND_AUDIO_EXAMPLE_OBJS) $(ALL) core *.core *~ include/*~
 
 install:
 	@echo "install not supported\n"

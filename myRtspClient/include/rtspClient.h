@@ -1,4 +1,4 @@
-//   Copyright 2015 Ansersion
+//   Copyright 2015-2016 Ansersion
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -198,7 +198,7 @@ class RtspClient
 		string PPS;
 		bool CmdPLAYSent;
 
-		MyRegex Regex;
+		// MyRegex Regex;
 		uint8_t AudioBuffer[BUFSIZ];
 		uint8_t VideoBuffer[BUFSIZ];
 
