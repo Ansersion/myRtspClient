@@ -19,6 +19,12 @@
 #include <string>
 #include <stdint.h>
 
+#define NAL_UNIT_TYPE_BIT_NUM           6
+#define NUH_LAYER_ID_BIT_NUM            6
+#define NUH_TEMPORAL_ID_PLUS1_BIT_NUM   3
+
+#define FUs_H265_ERR 	0xFFFF
+
 /* More info refer to H265 'nal_unit_type' */
 #define IS_NALU_TYPE_VALID_H265(N) 		\
 	( \
@@ -68,9 +74,7 @@ class FUs_H265 : public NALUTypeBase_H265
 	public:
 		/* Function: "ParseNALUHeader_*":
 		 * 	Return 'FU_A_ERR'(0xFF) if error occurred */
-		uint16_t ParseNALUHeader_F(const uint8_t * rtp_payload);
-		uint16_t ParseNALUHeader_NRI(const uint8_t * rtp_payload);
-		uint16_t ParseNALUHeader_Type(const uint8_t * rtp_payload);
+		virtual uint16_t ParseNALUHeader_Type(const uint8_t * RTPPayload);
 		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size);
 	public:
 		static const uint16_t FUs_ID_H265;
@@ -84,9 +88,6 @@ class FUs_H265 : public NALUTypeBase_H265
 
 		/* Packet End Flag */
 		bool IsPacketEnd(const uint8_t * rtp_payload);
-
-		/* Reserved */
-		bool IsPacketReserved(const uint8_t * rtp_payload);
 
 };
 
