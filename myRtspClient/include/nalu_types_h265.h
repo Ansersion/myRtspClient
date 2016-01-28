@@ -20,7 +20,7 @@
 #include <stdint.h>
 
 /* More info refer to H265 'nal_unit_type' */
-#define IS_NALU_TYPE_VALID(N) 		\
+#define IS_NALU_TYPE_VALID_H265(N) 		\
 	( \
       ((N) >= 0 && (N) <= 40) || \
       ((N) == APs_H265::APs_ID_H265) || \

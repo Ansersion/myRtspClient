@@ -1,4 +1,4 @@
-//   Copyright 2015 Ansersion
+//   Copyright 2015-2016 Ansersion
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -148,7 +148,7 @@ size_t STAP_A::CopyData(uint8_t * buf, uint8_t * data, size_t size)
 
 	do {
 		// Not enough data left or only padding data left;
-		if(DataPointer - data >= size - sizeof(NALU_Size)) break;
+		if((size_t)(DataPointer - data) >= size - sizeof(NALU_Size)) break;
 
 		// Transform network byte order to host order
 		NALU_Size = (uint16_t)(*DataPointer); DataPointer++;

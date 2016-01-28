@@ -1,4 +1,4 @@
-//   Copyright 2015 Ansersion
+//   Copyright 2015-2016 Ansersion
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 		if(write(fd, buf, size) < 0) {
 			perror("write");
 		}
-		printf("recv %lu\n", size);
+		printf("recv %u\n", size);
 	}
 
 	printf("start TEARDOWN\n");

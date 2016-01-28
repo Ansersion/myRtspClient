@@ -100,7 +100,7 @@ void * audio(void * args)
 		if(write(fd, buf, size) < 0) {
 			perror("write");
 		}
-		printf("recv audio data %d: %lu bytes\n", packet_num, size);
+		printf("recv audio data %d: %u bytes\n", packet_num, size);
 	}
 	return NULL;
 }
@@ -128,7 +128,7 @@ void * video(void * args)
 		if(write(fd, buf, size) < 0) {
 			perror("write");
 		}
-		printf("recv video data %d: %lu bytes\n", packet_num, size);
+		printf("recv video data %d: %u bytes\n", packet_num, size);
 	}
 	return NULL;
 }

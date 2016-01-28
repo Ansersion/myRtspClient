@@ -1,4 +1,4 @@
-//   Copyright 2015 Ansersion
+//   Copyright 2015-2016 Ansersion
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@
 
 MediaSession::MediaSession():
 	MediaType(""),
-	EncodeType(""),
 	Protocol(""),
+	EncodeType(""),
 	TimeRate(0),
 	ControlURI(""),
 	SessionID(""),
@@ -32,8 +32,8 @@ MediaSession::MediaSession():
 	// RTPSockfd(-1),
 	RTCPPort(0),
 	// RTCPSockfd(-1),
-	RTPInterface(NULL),
-	Packetization(PACKET_MODE_SINGAL_NAL)
+	Packetization(PACKET_MODE_SINGAL_NAL),
+	RTPInterface(NULL)
 
 {
 }

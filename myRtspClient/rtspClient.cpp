@@ -1170,7 +1170,7 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
         }
 
 		if(*size + SizeTmp > max_size) {
-			fprintf(stderr, "\033[31mWARNING: NALU truncated because larger than buffer: %lu(NALU size) > %lu(Buffer size)\033[0m\n", *size + SizeTmp, max_size);
+			fprintf(stderr, "\033[31mWARNING: NALU truncated because larger than buffer: %u(NALU size) > %u(Buffer size)\033[0m\n", *size + SizeTmp, max_size);
 			return buf;
 		}
 
@@ -1205,7 +1205,7 @@ uint8_t * RtspClient::GetAudioData(MediaSession * media_session, uint8_t * buf, 
 	}
 
 	if(*size + SizeTmp > max_size) {
-		fprintf(stderr, "\033[31mWARNING: NALU truncated because larger than buffer: %lu(NALU size) > %lu(Buffer size)\033[0m\n", *size + SizeTmp, max_size);
+		fprintf(stderr, "\033[31mWARNING: NALU truncated because larger than buffer: %u(NALU size) > %u(Buffer size)\033[0m\n", *size + SizeTmp, max_size);
 		return buf;
 	}
 
