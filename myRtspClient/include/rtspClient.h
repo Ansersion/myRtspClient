@@ -24,6 +24,7 @@
 #include "myRegex.h"
 #include "MediaSession.h"
 #include "nalu_types.h"
+#include "nalu_types_h265.h"
 
 using std::map;
 using std::string;

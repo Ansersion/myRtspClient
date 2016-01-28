@@ -5,7 +5,7 @@ MY_RTSP_CLIENT_LIB = $(NAME).$(LIB_SUFFIX)
 ALL = $(MY_RTSP_CLIENT_LIB)
 all: $(ALL)
 
-OBJS = myRegex.$(OBJ) myRtpSession.$(OBJ) MediaSession.$(OBJ) nalu_types.$(OBJ) rtspClient.$(OBJ) utils.$(OBJ) mpeg_types.$(OBJ)
+OBJS = myRegex.$(OBJ) myRtpSession.$(OBJ) MediaSession.$(OBJ) nalu_types.$(OBJ) rtspClient.$(OBJ) utils.$(OBJ) mpeg_types.$(OBJ) nalu_types_h265.$(OBJ)
 
 $(MY_RTSP_CLIENT_LIB): $(OBJS) 
 	@rm -rf Base64 Jrtplib
@@ -21,13 +21,14 @@ $(MY_RTSP_CLIENT_LIB): $(OBJS)
 .$(CPP).$(OBJ):
 	$(CPLUSPLUS_COMPILER) -c $(CPLUSPLUS_FLAGS) $<
 
-include/rtspClient.h: include/myRegex.h  include/MediaSession.h include/nalu_types.h
+include/rtspClient.h: include/myRegex.h  include/MediaSession.h include/nalu_types.h include/nalu_types_h265.h
 include/myRtpSession.h: $(JRTPLIB_INCLUDE)/rtpsession.h $(JRTPLIB_INCLUDE)/rtppacket.h $(JRTPLIB_INCLUDE)/rtpudpv4transmitter.h $(JRTPLIB_INCLUDE)/rtpipv4address.h $(JRTPLIB_INCLUDE)/rtpsessionparams.h $(JRTPLIB_INCLUDE)/rtperrors.h $(JRTPLIB_INCLUDE)/rtpsourcedata.h
 myRegex.cpp: include/myRegex.h
 MediaSession.cpp: include/MediaSession.h include/myRtpSession.h 
 myRtpSession.cpp: include/myRtpSession.h include/MediaSession.h
 nalu_types.cpp: include/nalu_types.h
-rtspClient.cpp: include/rtspClient.h include/utils.h $(BASE64_INCLUDE)/Base64.hh include/nalu_types.h include/mpeg_types.h
+nalu_types_h265.cpp: include/nalu_types_h265.h
+rtspClient.cpp: include/rtspClient.h include/utils.h $(BASE64_INCLUDE)/Base64.hh include/nalu_types.h include/mpeg_types.h include/nalu_types_h265.h
 utils.cpp: include/utils.h
 
 clean:
