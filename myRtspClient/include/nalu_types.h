@@ -53,9 +53,9 @@ class NALUTypeBase
 		NALUTypeBase() {Name.assign("TypeBase");};
 		virtual ~NALUTypeBase() {};
 	public:
-		virtual uint8_t ParseNALUHeader_F(const uint8_t * RTPPayload);
-		virtual uint8_t ParseNALUHeader_NRI(const uint8_t * RTPPayload);
-		virtual uint8_t ParseNALUHeader_Type(const uint8_t * RTPPayload);
+		virtual uint16_t ParseNALUHeader_F(const uint8_t * RTPPayload);
+		virtual uint16_t ParseNALUHeader_NRI(const uint8_t * RTPPayload);
+		virtual uint16_t ParseNALUHeader_Type(const uint8_t * RTPPayload);
 		virtual bool IsPacketStart(const uint8_t * rtp_payload) {return true; }
 		virtual bool IsPacketEnd(const uint8_t * rtp_payload) { return true; }
 		virtual bool IsPacketReserved(const uint8_t * rtp_payload) { return false; }
@@ -68,104 +68,6 @@ class NALUTypeBase
 		std::string Name;
 		bool EndFlag;
 		bool StartFlag;
-};
-
-// class NonRTPPacketType : public NALUTypeBase
-// {
-// 	public: 
-// 		NonRTPPacketType() { Name.assign("NonRTPPacketType"); };
-// 		virtual ~NonRTPPacketType() {};
-// 	public:
-// 		uint8_t ParseNALUHeader_F(const uint8_t * RTPPayload) {return 0;};
-// 		uint8_t ParseNALUHeader_NRI(const uint8_t * RTPPayload) {return 0;};
-// 		uint8_t ParseNALUHeader_Type(const uint8_t * RTPPayload) {return 0;};
-// 		bool IsPacketStart(const uint8_t * rtp_payload) {return true;};
-// 		bool IsPacketEnd(const uint8_t * rtp_payload) {return true;};
-// 		bool IsPacketReserved(const uint8_t * rtp_payload) {return false;};
-// 		bool IsPacketThisType(const uint8_t * rtp_payload) {return true;};
-// };
-
-class STAP_A : public NALUTypeBase
-{
-	public:
-		STAP_A() { Name.assign("STAP_A"); };
-		virtual ~STAP_A() {};
-
-		virtual bool IsPacketStart(const uint8_t * rtp_payload);
-		virtual bool IsPacketEnd(const uint8_t * rtp_payload);
-		virtual bool IsPacketThisType(const uint8_t * rtp_payload);
-		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size);
-	public:
-		static const uint8_t STAP_A_ID;
-};
-
-class STAP_B : public NALUTypeBase
-{
-	public:
-		STAP_B() { Name.assign("STAP_B"); };
-		virtual ~STAP_B() {};
-	public:
-		static const uint8_t STAP_B_ID;
-};
-
-class MTAP_16 : public NALUTypeBase
-{
-	public:
-		MTAP_16() { Name.assign("MTAP_16"); };
-		virtual ~MTAP_16() {};
-	public:
-		static const uint8_t MTAP_16_ID;
-};
-
-class MTAP_24 : public NALUTypeBase
-{
-	public:
-		MTAP_24() { Name.assign("MTAP_24"); };
-		virtual ~MTAP_24() {};
-	public:
-		static const uint8_t MTAP_24_ID;
-};
-
-#define FU_A_ERR 	0xFF
-
-class FU_A : public NALUTypeBase
-{
-	public:
-		FU_A() { Name.assign("FU_A"); };
-		virtual ~FU_A() {};
-
-	public:
-		/* Function: "ParseNALUHeader_*":
-		 * 	Return 'FU_A_ERR'(0xFF) if error occurred */
-		uint8_t ParseNALUHeader_F(const uint8_t * rtp_payload);
-		uint8_t ParseNALUHeader_NRI(const uint8_t * rtp_payload);
-		uint8_t ParseNALUHeader_Type(const uint8_t * rtp_payload);
-		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size);
-	public:
-		static const uint8_t FU_A_ID;
-
-	public:
-		/* if FU_A payload type */
-		bool IsPacketThisType(const uint8_t * rtp_payload);
-
-		/* Packet Start Flag */
-		bool IsPacketStart(const uint8_t * rtp_payload);
-
-		/* Packet End Flag */
-		bool IsPacketEnd(const uint8_t * rtp_payload);
-
-		/* Reserved */
-		bool IsPacketReserved(const uint8_t * rtp_payload);
-
-};
-
-class FU_B : public NALUTypeBase
-{
-	public:
-		FU_B() { Name.assign("FU_B"); };
-		virtual ~FU_B() {};
-	public:
-		static const uint8_t FU_B_ID;
 };
 
 #endif

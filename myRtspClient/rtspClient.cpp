@@ -16,7 +16,7 @@
 #include "rtspClient.h"
 #include "utils.h"
 #include "Base64.hh"
-#include "nalu_types.h"
+#include "nalu_types_h264.h"
 #include "mpeg_types.h"
 
 #include <sstream>

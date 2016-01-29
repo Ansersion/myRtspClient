@@ -18,6 +18,7 @@
 
 #include <string>
 #include <stdint.h>
+#include "nalu_types.h"
 
 #define NAL_UNIT_TYPE_BIT_NUM           6
 #define NUH_LAYER_ID_BIT_NUM            6
@@ -33,7 +34,7 @@
       ((N) == FUs_H265::FUs_ID_H265) \
 	)
 
-class NALUTypeBase_H265
+class NALUTypeBase_H265 : public NALUTypeBase
 {
 	public:
 		NALUTypeBase_H265() { Name.assign("TypeBase_H265"); }

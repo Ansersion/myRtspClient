@@ -13,7 +13,7 @@
 //   limitations under the License.
 //
 
-#include "nalu_types.h"
+#include "nalu_types_h264.h"
 #include <string.h>
 
 STAP_A 	STAP_AObj;
@@ -63,31 +63,31 @@ NALUTypeBase * NALUTypeBase::NalUnitType[PACKETIZATION_MODE_NUM][NAL_UNIT_TYPE_N
 	}
 };
 
-uint8_t NALUTypeBase::ParseNALUHeader_F(const uint8_t * rtp_payload) 
+uint16_t NALUTypeBase::ParseNALUHeader_F(const uint8_t * rtp_payload) 
 {
 	if(!rtp_payload) return 0;
-	uint8_t NALUHeader_F_Mask = 0x80; // binary: 1000_0000
+	uint16_t NALUHeader_F_Mask = 0x0080; // binary: 1000_0000
 	return (rtp_payload[0] & NALUHeader_F_Mask);
 }
 
-uint8_t NALUTypeBase::ParseNALUHeader_NRI(const uint8_t * rtp_payload) 
+uint16_t NALUTypeBase::ParseNALUHeader_NRI(const uint8_t * rtp_payload) 
 {
 	if(!rtp_payload) return 0;
-	uint8_t NALUHeader_NRI_Mask = 0x60; // binary: 0110_0000
+	uint16_t NALUHeader_NRI_Mask = 0x0060; // binary: 0110_0000
 	return (rtp_payload[0] & NALUHeader_NRI_Mask);
 }
 
-uint8_t NALUTypeBase::ParseNALUHeader_Type(const uint8_t * rtp_payload) 
+uint16_t NALUTypeBase::ParseNALUHeader_Type(const uint8_t * rtp_payload) 
 {
 	if(!rtp_payload) return 0;
-	uint8_t NALUHeader_Type_Mask = 0x1F; // binary: 0001_1111
+	uint16_t NALUHeader_Type_Mask = 0x001F; // binary: 0001_1111
 	return (rtp_payload[0] & NALUHeader_Type_Mask);
 }
 
 bool NALUTypeBase::IsPacketThisType(const uint8_t * rtp_payload) 
 {
 	// NAL type is valid in the range of [1,12]
-	uint8_t NalType = ParseNALUHeader_Type(rtp_payload);
+	uint16_t NalType = ParseNALUHeader_Type(rtp_payload);
 	return ((1 <= NalType) && (NalType <= 12));
 }
 
@@ -172,35 +172,35 @@ bool FU_A::IsPacketThisType(const uint8_t * rtp_payload)
 	return (FU_A_ID == (rtp_payload[0] & FU_A_ID));
 }
 
-uint8_t FU_A::ParseNALUHeader_F(const uint8_t * rtp_payload)
+uint16_t FU_A::ParseNALUHeader_F(const uint8_t * rtp_payload)
 {
 	if(!rtp_payload) return FU_A_ERR;
 	if(FU_A_ID != (rtp_payload[0] & FU_A_ID)) return FU_A_ERR;
 
-	uint8_t NALUHeader_F_Mask = 0x80; // binary: 1000_0000
+	uint16_t NALUHeader_F_Mask = 0x0080; // binary: 1000_0000
 
 	// "F" at the byte of rtp_payload[0]
 	return (rtp_payload[0] & NALUHeader_F_Mask);
 }
 
-uint8_t FU_A::ParseNALUHeader_NRI(const uint8_t * rtp_payload)
+uint16_t FU_A::ParseNALUHeader_NRI(const uint8_t * rtp_payload)
 {
 	if(!rtp_payload) return FU_A_ERR;
 	if(FU_A_ID != (rtp_payload[0] & FU_A_ID)) return FU_A_ERR;
 
-	uint8_t NALUHeader_NRI_Mask = 0x60; // binary: 0110_0000
+	uint16_t NALUHeader_NRI_Mask = 0x0060; // binary: 0110_0000
 
 	// "NRI" at the byte of rtp_payload[0]
 	return (rtp_payload[0] & NALUHeader_NRI_Mask);
 
 }
 
-uint8_t FU_A::ParseNALUHeader_Type(const uint8_t * rtp_payload)
+uint16_t FU_A::ParseNALUHeader_Type(const uint8_t * rtp_payload)
 {
 	if(!rtp_payload) return FU_A_ERR;
 	if(FU_A_ID != (rtp_payload[0] & FU_A_ID)) return FU_A_ERR;
 
-	uint8_t NALUHeader_Type_Mask = 0x1F; // binary: 0001_1111
+	uint16_t NALUHeader_Type_Mask = 0x001F; // binary: 0001_1111
 
 	// "Type" at the byte of rtp_payload[0]
 	return (rtp_payload[1] & NALUHeader_Type_Mask);
@@ -242,7 +242,7 @@ size_t FU_A::CopyData(uint8_t * buf, uint8_t * data, size_t size)
 	EndFlag = IsPacketEnd(data);
 
 	uint8_t NALUHeader = 0;
-	NALUHeader = (  
+	NALUHeader = (uint8_t)(  
 			ParseNALUHeader_F(data)      | 
 			ParseNALUHeader_NRI(data)    | 
 			ParseNALUHeader_Type(data)
