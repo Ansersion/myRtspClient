@@ -48,22 +48,22 @@
 class NALUTypeBase
 {
 	public:
+		// NALU types map for h264 
 		static NALUTypeBase * NalUnitType[PACKETIZATION_MODE_NUM][NAL_UNIT_TYPE_NUM];
 	public:
-		NALUTypeBase() {Name.assign("TypeBase");};
 		virtual ~NALUTypeBase() {};
 	public:
-		virtual uint16_t ParseNALUHeader_F(const uint8_t * RTPPayload);
-		virtual uint16_t ParseNALUHeader_NRI(const uint8_t * RTPPayload);
-		virtual uint16_t ParseNALUHeader_Type(const uint8_t * RTPPayload);
-		virtual bool IsPacketStart(const uint8_t * rtp_payload) {return true; }
-		virtual bool IsPacketEnd(const uint8_t * rtp_payload) { return true; }
-		virtual bool IsPacketReserved(const uint8_t * rtp_payload) { return false; }
-		virtual bool IsPacketThisType(const uint8_t * rtp_payload);
-		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size);
-		virtual std::string GetName() const { return Name; }
-		virtual bool GetEndFlag() { return EndFlag; }
-		virtual bool GetStartFlag() { return StartFlag; }
+		virtual uint16_t ParseNALUHeader_F(const uint8_t * RTPPayload) = 0;
+		virtual uint16_t ParseNALUHeader_NRI(const uint8_t * RTPPayload) = 0;
+		virtual uint16_t ParseNALUHeader_Type(const uint8_t * RTPPayload) = 0;
+		virtual bool IsPacketStart(const uint8_t * rtp_payload) = 0;
+		virtual bool IsPacketEnd(const uint8_t * rtp_payload) = 0;
+		virtual bool IsPacketReserved(const uint8_t * rtp_payload) = 0;
+		virtual bool IsPacketThisType(const uint8_t * rtp_payload) = 0;
+		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size) = 0;
+		virtual std::string GetName() const = 0;
+		virtual bool GetEndFlag() = 0;
+		virtual bool GetStartFlag() = 0;
 	protected:
 		std::string Name;
 		bool EndFlag;

@@ -22,32 +22,32 @@ MTAP_16 MTAP_16Obj;
 MTAP_24 MTAP_24Obj;
 FU_A 	FU_AObj;
 FU_B 	FU_BObj;
-NALUTypeBase NaluBaseTypeObj;
+NALUTypeBase_H264 NaluBaseType_H264Obj;
 
 NALUTypeBase * NALUTypeBase::NalUnitType[PACKETIZATION_MODE_NUM][NAL_UNIT_TYPE_NUM] =
 {
 	/* Packetization Mode: Single NAL */ 
 	{
-		NULL,                 &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
-		&NaluBaseTypeObj,     &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
-		&NaluBaseTypeObj,     &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
-		&NaluBaseTypeObj,     NULL,                        NULL,                        NULL, 
-		NULL,                 NULL,                        NULL,                        NULL, 
-		NULL,                 NULL,                        NULL,                        NULL, 
-		NULL,                 NULL,                        NULL,                        NULL, 
-		NULL,                 NULL,                        NULL,                        NULL
+		NULL,                      &NaluBaseType_H264Obj,            &NaluBaseType_H264Obj,            &NaluBaseType_H264Obj, 
+		&NaluBaseType_H264Obj,     &NaluBaseType_H264Obj,            &NaluBaseType_H264Obj,            &NaluBaseType_H264Obj, 
+		&NaluBaseType_H264Obj,     &NaluBaseType_H264Obj,            &NaluBaseType_H264Obj,            &NaluBaseType_H264Obj, 
+		&NaluBaseType_H264Obj,     NULL,                             NULL,                             NULL, 
+		NULL,                      NULL,                             NULL,                             NULL, 
+		NULL,                      NULL,                             NULL,                             NULL, 
+		NULL,                      NULL,                             NULL,                             NULL, 
+		NULL,                      NULL,                             NULL,                             NULL
 	},
 
 	/* Packetization Mode: Non-interleaved */ 
 	{
-		NULL,                 &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
-		&NaluBaseTypeObj,     &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
-		&NaluBaseTypeObj,     &NaluBaseTypeObj,            &NaluBaseTypeObj,            &NaluBaseTypeObj, 
-		&NaluBaseTypeObj,     NULL,                        NULL,                        NULL, 
-		NULL,                 NULL,                        NULL,                        NULL, 
-		NULL,                 NULL,                        NULL,                        NULL, 
-		&STAP_AObj,           NULL,                        NULL,                        NULL, 
-		&FU_AObj,             NULL,                        NULL,                        NULL
+		NULL,                      &NaluBaseType_H264Obj,            &NaluBaseType_H264Obj,            &NaluBaseType_H264Obj, 
+		&NaluBaseType_H264Obj,     &NaluBaseType_H264Obj,            &NaluBaseType_H264Obj,            &NaluBaseType_H264Obj, 
+		&NaluBaseType_H264Obj,     &NaluBaseType_H264Obj,            &NaluBaseType_H264Obj,            &NaluBaseType_H264Obj, 
+		&NaluBaseType_H264Obj,     NULL,                             NULL,                             NULL, 
+		NULL,                      NULL,                             NULL,                             NULL, 
+		NULL,                      NULL,                             NULL,                             NULL, 
+		&STAP_AObj,                NULL,                             NULL,                             NULL, 
+		&FU_AObj,                  NULL,                             NULL,                             NULL
 	},
 
 	/* Packetization Mode: Interleaved */ 
@@ -63,35 +63,35 @@ NALUTypeBase * NALUTypeBase::NalUnitType[PACKETIZATION_MODE_NUM][NAL_UNIT_TYPE_N
 	}
 };
 
-uint16_t NALUTypeBase::ParseNALUHeader_F(const uint8_t * rtp_payload) 
+uint16_t NALUTypeBase_H264::ParseNALUHeader_F(const uint8_t * rtp_payload) 
 {
 	if(!rtp_payload) return 0;
 	uint16_t NALUHeader_F_Mask = 0x0080; // binary: 1000_0000
 	return (rtp_payload[0] & NALUHeader_F_Mask);
 }
 
-uint16_t NALUTypeBase::ParseNALUHeader_NRI(const uint8_t * rtp_payload) 
+uint16_t NALUTypeBase_H264::ParseNALUHeader_NRI(const uint8_t * rtp_payload) 
 {
 	if(!rtp_payload) return 0;
 	uint16_t NALUHeader_NRI_Mask = 0x0060; // binary: 0110_0000
 	return (rtp_payload[0] & NALUHeader_NRI_Mask);
 }
 
-uint16_t NALUTypeBase::ParseNALUHeader_Type(const uint8_t * rtp_payload) 
+uint16_t NALUTypeBase_H264::ParseNALUHeader_Type(const uint8_t * rtp_payload) 
 {
 	if(!rtp_payload) return 0;
 	uint16_t NALUHeader_Type_Mask = 0x001F; // binary: 0001_1111
 	return (rtp_payload[0] & NALUHeader_Type_Mask);
 }
 
-bool NALUTypeBase::IsPacketThisType(const uint8_t * rtp_payload) 
+bool NALUTypeBase_H264::IsPacketThisType(const uint8_t * rtp_payload) 
 {
 	// NAL type is valid in the range of [1,12]
 	uint16_t NalType = ParseNALUHeader_Type(rtp_payload);
 	return ((1 <= NalType) && (NalType <= 12));
 }
 
-size_t NALUTypeBase::CopyData(uint8_t * buf, uint8_t * data, size_t size) 
+size_t NALUTypeBase_H264::CopyData(uint8_t * buf, uint8_t * data, size_t size) 
 {
 	size_t CopySize = 0;
 	if(!buf || !data) return 0;
@@ -108,12 +108,165 @@ size_t NALUTypeBase::CopyData(uint8_t * buf, uint8_t * data, size_t size)
 	return CopySize;
 }
 
+std::string STAP_A::GetName() const 
+{
+	return NALUTypeBase_H264::GetName();
+}
+
+bool STAP_A::GetEndFlag()
+{
+	return NALUTypeBase_H264::GetEndFlag();
+}
+
+bool STAP_A::GetStartFlag()
+{
+	return NALUTypeBase_H264::GetStartFlag();
+}
+
+std::string STAP_B::GetName() const 
+{
+	return NALUTypeBase_H264::GetName();
+}
+
+bool STAP_B::GetEndFlag()
+{
+	return NALUTypeBase_H264::GetEndFlag();
+}
+
+bool STAP_B::GetStartFlag()
+{
+	return NALUTypeBase_H264::GetStartFlag();
+}
+
+
+uint16_t STAP_B::ParseNALUHeader_F(const uint8_t * RTPPayload)
+{
+    return 0;
+}
+
+uint16_t STAP_B::ParseNALUHeader_NRI(const uint8_t * RTPPayload)
+{
+    return 0;
+}
+
+uint16_t STAP_B::ParseNALUHeader_Type(const uint8_t * RTPPayload)
+{
+    return 0;
+}
+
+bool STAP_B::IsPacketStart(const uint8_t * rtp_payload)
+{
+    return 0;
+}
+
+bool STAP_B::IsPacketEnd(const uint8_t * rtp_payload)
+{
+    return 0;
+}
+
+bool STAP_B::IsPacketThisType(const uint8_t * rtp_payload)
+{
+    return 0;
+}
+
+size_t STAP_B::CopyData(uint8_t * buf, uint8_t * data, size_t size)
+{
+    return 0;
+}
+
+
+uint16_t MTAP_16::ParseNALUHeader_F(const uint8_t * RTPPayload)
+{
+    return 0;
+}
+
+uint16_t MTAP_16::ParseNALUHeader_NRI(const uint8_t * RTPPayload)
+{
+    return 0;
+}
+
+uint16_t MTAP_16::ParseNALUHeader_Type(const uint8_t * RTPPayload)
+{
+    return 0;
+}
+
+bool MTAP_16::IsPacketStart(const uint8_t * rtp_payload)
+{
+    return 0;
+}
+
+bool MTAP_16::IsPacketEnd(const uint8_t * rtp_payload)
+{
+    return 0;
+}
+
+bool MTAP_16::IsPacketThisType(const uint8_t * rtp_payload)
+{
+    return 0;
+}
+
+size_t MTAP_16::CopyData(uint8_t * buf, uint8_t * data, size_t size)
+{
+    return 0;
+}
+
+
+uint16_t MTAP_24::ParseNALUHeader_F(const uint8_t * RTPPayload)
+{
+    return 0;
+}
+
+uint16_t MTAP_24::ParseNALUHeader_NRI(const uint8_t * RTPPayload)
+{
+    return 0;
+}
+
+uint16_t MTAP_24::ParseNALUHeader_Type(const uint8_t * RTPPayload)
+{
+    return 0;
+}
+
+bool MTAP_24::IsPacketStart(const uint8_t * rtp_payload)
+{
+    return 0;
+}
+
+bool MTAP_24::IsPacketEnd(const uint8_t * rtp_payload)
+{
+    return 0;
+}
+
+bool MTAP_24::IsPacketThisType(const uint8_t * rtp_payload)
+{
+    return 0;
+}
+
+size_t MTAP_24::CopyData(uint8_t * buf, uint8_t * data, size_t size)
+{
+    return 0;
+}
+
 const uint8_t STAP_A::STAP_A_ID = 0x18; // decimal: 24
 const uint8_t STAP_B::STAP_B_ID = 0x19; // decimal: 25
 const uint8_t MTAP_16::MTAP_16_ID = 0x1A; // decimal: 26
 const uint8_t MTAP_24::MTAP_24_ID = 0x1B; // decimal: 27
 const uint8_t FU_A::FU_A_ID = 0x1C; // decimal: 28
 const uint8_t FU_B::FU_B_ID = 0x1D; // decimal: 29
+
+uint16_t STAP_A::ParseNALUHeader_F(const uint8_t * RTPPayload)
+{
+	return NALUTypeBase_H264::ParseNALUHeader_F(RTPPayload);
+}
+
+uint16_t STAP_A::ParseNALUHeader_NRI(const uint8_t * RTPPayload)
+{
+	return NALUTypeBase_H264::ParseNALUHeader_NRI(RTPPayload);
+}
+
+uint16_t STAP_A::ParseNALUHeader_Type(const uint8_t * RTPPayload)
+{
+	return NALUTypeBase_H264::ParseNALUHeader_Type(RTPPayload);
+}
 
 bool STAP_A::IsPacketStart(const uint8_t * rtp_payload) 
 {
@@ -261,5 +414,41 @@ size_t FU_A::CopyData(uint8_t * buf, uint8_t * data, size_t size)
 	CopySize += size - FU_A_HeaderSize;
 
 	return CopySize;
+}
+
+
+uint16_t FU_B::ParseNALUHeader_F(const uint8_t * RTPPayload)
+{
+    return 0;
+}
+
+uint16_t FU_B::ParseNALUHeader_NRI(const uint8_t * RTPPayload)
+{
+    return 0;
+}
+
+uint16_t FU_B::ParseNALUHeader_Type(const uint8_t * RTPPayload)
+{
+    return 0;
+}
+
+bool FU_B::IsPacketStart(const uint8_t * rtp_payload)
+{
+    return 0;
+}
+
+bool FU_B::IsPacketEnd(const uint8_t * rtp_payload)
+{
+    return 0;
+}
+
+bool FU_B::IsPacketThisType(const uint8_t * rtp_payload)
+{
+    return 0;
+}
+
+size_t FU_B::CopyData(uint8_t * buf, uint8_t * data, size_t size)
+{
+    return 0;
 }
 

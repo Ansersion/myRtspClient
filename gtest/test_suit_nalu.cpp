@@ -26,7 +26,7 @@
 #include <iostream>
 #include <gtest/gtest.h>
 
-#include "nalu_types.h"
+#include "nalu_types_h264.h"
 
 using namespace std;
 

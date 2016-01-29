@@ -46,7 +46,7 @@ extern MTAP_16 		MTAP_16Obj;
 extern MTAP_24 		MTAP_24Obj;
 extern FU_A 		FU_AObj;
 extern FU_B 		FU_BObj;
-extern NALUTypeBase NaluBaseTypeObj;
+extern NALUTypeBase_H264 NaluBaseType_H264Obj;
 
 extern MPEG_Audio MPEG_AudioObj;
 
@@ -1153,7 +1153,7 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 			cerr << "No RTP data" << endl;
 			return NULL;
 		}
-		int NT = NaluBaseTypeObj.ParseNALUHeader_Type(VideoBuffer);
+		int NT = NaluBaseType_H264Obj.ParseNALUHeader_Type(VideoBuffer);
 		if(!IS_NALU_TYPE_VALID(NT)) {
 			cerr << "WARNING:Invalid NALU" << endl;
 			return NULL;
