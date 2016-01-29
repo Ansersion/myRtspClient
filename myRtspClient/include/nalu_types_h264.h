@@ -60,6 +60,10 @@ class NALUTypeBase_H264 : public NALUTypeBase
 		virtual std::string GetName() const { return Name; }
 		virtual bool GetEndFlag() { return EndFlag; }
 		virtual bool GetStartFlag() { return StartFlag; }
+
+		// H265 interface with no use
+		virtual uint16_t ParseNALUHeader_Layer_ID(const uint8_t * RTPPayload) {return 0;}
+		virtual uint16_t ParseNALUHeader_Temp_ID_Plus_1(const uint8_t * RTPPayload) {return 0;}
 	public:
 		virtual ~NALUTypeBase_H264() {};
 };

@@ -21,6 +21,8 @@
 #include <stdint.h>
 #include <vector>
 
+#include "nalu_types.h"
+
 #define TIMEOUT_MICROSECONDS 	1000000 // wait for a packet at most 1 second
 
 class MyRTPSession;
@@ -87,6 +89,9 @@ class MediaSession
 
 	protected:
 		MyRTPSession * RTPInterface;
+
+	public:
+		NALUTypeBase *** NalUnitType;
 };
  
 #endif

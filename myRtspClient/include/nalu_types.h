@@ -49,13 +49,17 @@ class NALUTypeBase
 {
 	public:
 		// NALU types map for h264 
-		static NALUTypeBase * NalUnitType[PACKETIZATION_MODE_NUM][NAL_UNIT_TYPE_NUM];
+		static NALUTypeBase * NalUnitType_H264[PACKETIZATION_MODE_NUM][NAL_UNIT_TYPE_NUM];
 	public:
 		virtual ~NALUTypeBase() {};
 	public:
 		virtual uint16_t ParseNALUHeader_F(const uint8_t * RTPPayload) = 0;
-		virtual uint16_t ParseNALUHeader_NRI(const uint8_t * RTPPayload) = 0;
 		virtual uint16_t ParseNALUHeader_Type(const uint8_t * RTPPayload) = 0;
+
+		virtual uint16_t ParseNALUHeader_NRI(const uint8_t * RTPPayload) = 0; // only for h264
+		virtual uint16_t ParseNALUHeader_Layer_ID(const uint8_t * RTPPayload) = 0; // only for h265
+		virtual uint16_t ParseNALUHeader_Temp_ID_Plus_1(const uint8_t * RTPPayload) = 0; // only for h265
+		
 		virtual bool IsPacketStart(const uint8_t * rtp_payload) = 0;
 		virtual bool IsPacketEnd(const uint8_t * rtp_payload) = 0;
 		virtual bool IsPacketReserved(const uint8_t * rtp_payload) = 0;

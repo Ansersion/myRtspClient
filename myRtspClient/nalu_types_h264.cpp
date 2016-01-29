@@ -24,7 +24,7 @@ FU_A 	FU_AObj;
 FU_B 	FU_BObj;
 NALUTypeBase_H264 NaluBaseType_H264Obj;
 
-NALUTypeBase * NALUTypeBase::NalUnitType[PACKETIZATION_MODE_NUM][NAL_UNIT_TYPE_NUM] =
+NALUTypeBase * NALUTypeBase::NalUnitType_H264[PACKETIZATION_MODE_NUM][NAL_UNIT_TYPE_NUM] =
 {
 	/* Packetization Mode: Single NAL */ 
 	{
@@ -52,14 +52,14 @@ NALUTypeBase * NALUTypeBase::NalUnitType[PACKETIZATION_MODE_NUM][NAL_UNIT_TYPE_N
 
 	/* Packetization Mode: Interleaved */ 
 	{
-		NULL,                 NULL,                        NULL,                        NULL, 
-		NULL,                 NULL,                        NULL,                        NULL, 
-		NULL,                 NULL,                        NULL,                        NULL, 
-		NULL,                 NULL,                        NULL,                        NULL, 
-		NULL,                 NULL,                        NULL,                        NULL, 
-		NULL,                 NULL,                        NULL,                        NULL, 
-		NULL,                 &STAP_BObj,                  &MTAP_16Obj,                 &MTAP_24Obj, 
-		&FU_AObj,             &FU_BObj,                    NULL,                        NULL
+		NULL,                      NULL,                             NULL,                             NULL, 
+		NULL,                      NULL,                             NULL,                             NULL, 
+		NULL,                      NULL,                             NULL,                             NULL, 
+		NULL,                      NULL,                             NULL,                             NULL, 
+		NULL,                      NULL,                             NULL,                             NULL, 
+		NULL,                      NULL,                             NULL,                             NULL, 
+		NULL,                      &STAP_BObj,                       &MTAP_16Obj,                      &MTAP_24Obj, 
+		&FU_AObj,                  &FU_BObj,                         NULL,                             NULL
 	}
 };
 

@@ -1159,7 +1159,8 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 			return NULL;
 		}
 
-        if((NALUType = NALUType->NalUnitType[PM][NT]) == NULL) {
+        // if((NALUType = NALUType->NalUnitType[PM][NT]) == NULL) {
+        if((NALUType = NALUTypeBase::NalUnitType_H264[PM][NT]) == NULL) {
             cerr << "Error: Unsupported RTP H264 payload type!" << endl;
             return NULL;
         }

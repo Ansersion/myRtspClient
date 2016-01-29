@@ -33,7 +33,8 @@ MediaSession::MediaSession():
 	RTCPPort(0),
 	// RTCPSockfd(-1),
 	Packetization(PACKET_MODE_SINGAL_NAL),
-	RTPInterface(NULL)
+	RTPInterface(NULL),
+	NalUnitType(NULL)
 
 {
 }
