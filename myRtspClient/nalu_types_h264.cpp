@@ -24,7 +24,7 @@ FU_A 	FU_AObj;
 FU_B 	FU_BObj;
 NALUTypeBase_H264 NaluBaseType_H264Obj;
 
-NALUTypeBase * NALUTypeBase::NalUnitType_H264[PACKETIZATION_MODE_NUM][NAL_UNIT_TYPE_NUM] =
+NALUTypeBase * NALUTypeBase::NalUnitType_H264[PACKETIZATION_MODE_NUM_H264][NAL_UNIT_TYPE_NUM_H264] =
 {
 	/* Packetization Mode: Single NAL */ 
 	{

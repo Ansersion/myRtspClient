@@ -23,51 +23,45 @@
 #include <string>
 #include <stdint.h>
 
-#define NAL_UNIT_TYPE_NUM 		32
-#define PACKETIZATION_MODE_NUM 	3
+#define NAL_UNIT_TYPE_NUM_H264          32
+#define PACKETIZATION_MODE_NUM_H264     3
 
-#define PACKET_MODE_SINGAL_NAL 			0
-#define PACKET_MODE_NON_INTERLEAVED 	1
-#define PACKET_MODE_INTERLEAVED 		2
+#define NAL_UNIT_TYPE_NUM_H265          64
 
-#define IS_PACKET_MODE_VALID(P) 	\
+#define PACKET_MODE_SINGAL_NAL          0
+#define PACKET_MODE_NON_INTERLEAVED     1
+#define PACKET_MODE_INTERLEAVED         2
+
+#define IS_PACKET_MODE_VALID_H264(P) 	\
 	((P) >= PACKET_MODE_SINGAL_NAL && (P) <= PACKET_MODE_INTERLEAVED)
 
 /* More info refer to H264 'nal_unit_type' */
-#define IS_NALU_TYPE_VALID(N) 		\
-	( \
-      ((N) >= 1 && (N) <= 12) || \
-      ((N) == STAP_A::STAP_A_ID) || \
-      ((N) == STAP_B::STAP_B_ID) || \
-      ((N) == MTAP_16::MTAP_16_ID) || \
-      ((N) == MTAP_24::MTAP_24_ID) || \
-      ((N) == FU_A::FU_A_ID) || \
-      ((N) == FU_B::FU_B_ID) \
-	)
 
 class NALUTypeBase
 {
 	public:
 		// NALU types map for h264 
-		static NALUTypeBase * NalUnitType_H264[PACKETIZATION_MODE_NUM][NAL_UNIT_TYPE_NUM];
+		static NALUTypeBase * NalUnitType_H264[PACKETIZATION_MODE_NUM_H264][NAL_UNIT_TYPE_NUM_H264];
+		// NALU types map for h265 
+		static NALUTypeBase * NalUnitType_H265[1][NAL_UNIT_TYPE_NUM_H265];
 	public:
 		virtual ~NALUTypeBase() {};
 	public:
 		virtual uint16_t ParseNALUHeader_F(const uint8_t * RTPPayload) = 0;
 		virtual uint16_t ParseNALUHeader_Type(const uint8_t * RTPPayload) = 0;
 
-		virtual uint16_t ParseNALUHeader_NRI(const uint8_t * RTPPayload) = 0; // only for h264
-		virtual uint16_t ParseNALUHeader_Layer_ID(const uint8_t * RTPPayload) = 0; // only for h265
-		virtual uint16_t ParseNALUHeader_Temp_ID_Plus_1(const uint8_t * RTPPayload) = 0; // only for h265
+		virtual uint16_t ParseNALUHeader_NRI(const uint8_t * RTPPayload) {return 0;} // only for h264
+		virtual uint16_t ParseNALUHeader_Layer_ID(const uint8_t * RTPPayload) {return 0;} // only for h265
+		virtual uint16_t ParseNALUHeader_Temp_ID_Plus_1(const uint8_t * RTPPayload) {return 0;} // only for h265
 		
 		virtual bool IsPacketStart(const uint8_t * rtp_payload) = 0;
 		virtual bool IsPacketEnd(const uint8_t * rtp_payload) = 0;
-		virtual bool IsPacketReserved(const uint8_t * rtp_payload) = 0;
+		virtual bool IsPacketReserved(const uint8_t * rtp_payload) { return false;}
 		virtual bool IsPacketThisType(const uint8_t * rtp_payload) = 0;
 		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size) = 0;
-		virtual std::string GetName() const = 0;
-		virtual bool GetEndFlag() = 0;
-		virtual bool GetStartFlag() = 0;
+		virtual std::string GetName() const { return Name; }
+		virtual bool GetEndFlag() { return EndFlag; }
+		virtual bool GetStartFlag() { return StartFlag; }
 	protected:
 		std::string Name;
 		bool EndFlag;

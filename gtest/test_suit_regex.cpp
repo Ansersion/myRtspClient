@@ -1,4 +1,4 @@
-//   Copyright 2015 Ansersion
+//   Copyright 2015-2016 Ansersion
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -122,4 +122,21 @@ TEST(myRegex, RegexLine_RegularInput)
 	    group.pop_front(); // pop the group
 	}
     }
+}
+
+TEST(myRegex, SDP)
+{
+    MyRegex Regex;
+
+	string str("a=fmtp:96 profile-space=0;profile-id=0;tier-flag=0;level-id=0;interop-constraints=000000000000;sprop-vps=QAEMAf//AIAAAAMAAAMAAAMAAAMAALUCQA==;sprop-sps=QgEBAIAAAAMAAAMAAAMAAAMAAKACgIAtH+W1kkbQzkkktySqSfKSyA==;sprop-pps=RAHBpVgeSA==");
+	string PatternFmtp_H265("fmtp:.*sprop-vps=([A-Za-z0-9+/=]+);.*sprop-sps=([A-Za-z0-9+/=]+);.*sprop-pps=([A-Za-z0-9+/=]+)");
+    list<string> group;
+
+    EXPECT_EQ(Regex.Regex(str.c_str(), PatternFmtp_H265.c_str(), &group), MyRegex::REGEX_SUCCESS);
+	group.pop_front();
+	EXPECT_EQ(group.front() == "QAEMAf//AIAAAAMAAAMAAAMAAAMAALUCQA==", true);
+	group.pop_front();
+	EXPECT_EQ(group.front() == "QgEBAIAAAAMAAAMAAAMAAAMAAKACgIAtH+W1kkbQzkkktySqSfKSyA==", true);
+	group.pop_front();
+	EXPECT_EQ(group.front() == "RAHBpVgeSA==", true);
 }

@@ -50,9 +50,11 @@ extern NALUTypeBase_H264 NaluBaseType_H264Obj;
 
 extern MPEG_Audio MPEG_AudioObj;
 
+extern NALUTypeBase_H265 NaluBaseType_H265Obj;
+
 RtspClient::RtspClient():
 	RtspURI(""), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse(""), SDPStr(""), 
-	SPS(""), PPS(""), CmdPLAYSent(false), GetVideoDataCount(GET_SPS_PPS_PERIOD)
+	VPS(""), SPS(""), PPS(""), CmdPLAYSent(false), GetVideoDataCount(GET_SPS_PPS_PERIOD)
 {
 	// SDPInfo = new multimap<string, string>;
 	MediaSessionMap = new map<string, MediaSession>;
@@ -63,7 +65,7 @@ RtspClient::RtspClient():
 
 RtspClient::RtspClient(string uri):
 	RtspURI(uri), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse(""), SDPStr(""),
-	SPS(""), PPS(""), CmdPLAYSent(false), GetVideoDataCount(GET_SPS_PPS_PERIOD)
+	VPS(""), SPS(""), PPS(""), CmdPLAYSent(false), GetVideoDataCount(GET_SPS_PPS_PERIOD)
 {
 	// SDPInfo = new multimap<string, string>;
 	MediaSessionMap = new map<string, MediaSession>;
@@ -485,7 +487,8 @@ int RtspClient::ParseSDP(string SDP)
 		}
 		if("a" == Key) {
 			string PatternRtpmap("rtpmap:.* +([0-9A-Za-z]+)/([0-9]+)");
-			string PatternFmtp("fmtp:.*sprop-parameter-sets=([A-Za-z0-9+/=]+),([A-Za-z0-9+/=]+)");
+			string PatternFmtp_H264("fmtp:.*sprop-parameter-sets=([A-Za-z0-9+/=]+),([A-Za-z0-9+/=]+)");
+			string PatternFmtp_H265("fmtp:.*sprop-vps=([A-Za-z0-9+/=]+);.*sprop-sps=([A-Za-z0-9+/=]+);.*sprop-pps=([A-Za-z0-9+/=]+)");
 			string PatternControl("control:(.+)");
 			if(CurrentMediaSession.length() == 0) {
 				continue;
@@ -511,7 +514,7 @@ int RtspClient::ParseSDP(string SDP)
 				ControlURITmp += Group.front();
 				printf("Control: %s\n", ControlURITmp.c_str());
 				(*MediaSessionMap)[CurrentMediaSession].ControlURI.assign(ControlURITmp);
-			} else if(Regex.Regex(Value.c_str(), PatternFmtp.c_str(), &Group)) {
+			} else if(Regex.Regex(Value.c_str(), PatternFmtp_H264.c_str(), &Group)) {
 				Group.pop_front();
 				SPS.assign(Group.front());
 				Group.pop_front();
@@ -523,6 +526,13 @@ int RtspClient::ParseSDP(string SDP)
 					PacketizationMode << Group.front();
 					PacketizationMode >> (*MediaSessionMap)[CurrentMediaSession].Packetization;
 				}
+			} else if(Regex.Regex(Value.c_str(), PatternFmtp_H265.c_str(), &Group)) {
+				Group.pop_front();
+				VPS.assign(Group.front());
+				Group.pop_front();
+				SPS.assign(Group.front());
+				Group.pop_front();
+				PPS.assign(Group.front());
 			}
 		}
 	}
@@ -1107,26 +1117,31 @@ uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * si
 	return NULL;
 }
 
-uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size, bool get_sps_pps_periodly) 
+uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size, bool get_vps_sps_pps_periodly) 
 {
 	if(!media_session || !buf || !size) return NULL;
 
 	*size = 0;
 
 	const size_t GetSPS_PPS_Period = GET_SPS_PPS_PERIOD; // 30 times
-	if(true == get_sps_pps_periodly) {
+	if(true == get_vps_sps_pps_periodly) {
 		if(GetVideoDataCount >= GetSPS_PPS_Period) {
 			GetVideoDataCount = 0;
 
 			const size_t NALU_StartCodeSize = 4;
 			size_t SizeTmp = 0;
+			if(!GetVPSNalu(buf + (*size), &SizeTmp) || SizeTmp <= NALU_StartCodeSize) {
+				// fprintf(stderr, "\033[31mWARNING: No H264 VPS\033[0m\n");
+			} else {
+				*size += SizeTmp;
+			}
 			if(!GetSPSNalu(buf + (*size), &SizeTmp) || SizeTmp <= NALU_StartCodeSize) {
-				fprintf(stderr, "\033[31mWARNING: No H264 SPS\033[0m\n");
+				fprintf(stderr, "\033[31mWARNING: No SPS\033[0m\n");
 			} else {
 				*size += SizeTmp;
 			}
 			if(!GetPPSNalu(buf + (*size), &SizeTmp) || SizeTmp <= NALU_StartCodeSize) {
-				fprintf(stderr, "\033[31mWARNING: No H264 PPS\033[0m\n");
+				fprintf(stderr, "\033[31mWARNING: No PPS\033[0m\n");
 			} else {
 				*size += SizeTmp;
 			}
@@ -1153,17 +1168,35 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 			cerr << "No RTP data" << endl;
 			return NULL;
 		}
-		int NT = NaluBaseType_H264Obj.ParseNALUHeader_Type(VideoBuffer);
-		if(!IS_NALU_TYPE_VALID(NT)) {
-			cerr << "WARNING:Invalid NALU" << endl;
+		int NT; 
+		if(media_session->EncodeType == "H264") {
+			NT = NaluBaseType_H264Obj.ParseNALUHeader_Type(VideoBuffer);
+			if(!IS_NALU_TYPE_VALID_H264(NT)) {
+				cerr << "WARNING:Invalid H264 NALU" << endl;
+				return NULL;
+			}
+
+			if((NALUType = NALUTypeBase::NalUnitType_H264[PM][NT]) == NULL) {
+				cerr << "Error: Unsupported RTP H264 payload type!" << endl;
+				return NULL;
+			}
+		} else if(media_session->EncodeType == "H265") {
+			NT = NaluBaseType_H265Obj.ParseNALUHeader_Type(VideoBuffer);
+			NT = NT >> 9;
+
+			if(!IS_NALU_TYPE_VALID_H265(NT)) {
+				cerr << "WARNING:Invalid H265 NALU" << endl;
+				return NULL;
+			}
+
+			if((NALUType = NALUTypeBase::NalUnitType_H265[PM][NT]) == NULL) {
+				cerr << "Error: Unsupported RTP H265 payload type!" << endl;
+				return NULL;
+			}
+		} else {
+			printf("Unknown NALU Type: %s\n", media_session->EncodeType.c_str());
 			return NULL;
 		}
-
-        // if((NALUType = NALUType->NalUnitType[PM][NT]) == NULL) {
-        if((NALUType = NALUTypeBase::NalUnitType_H264[PM][NT]) == NULL) {
-            cerr << "Error: Unsupported RTP H264 payload type!" << endl;
-            return NULL;
-        }
 
         if(SizeTmp > sizeof(VideoBuffer)) {
             cerr << "Error: RTP Packet too large(" << SizeTmp << " bytes > " << sizeof(VideoBuffer) << "bytes)" << endl;
@@ -1239,6 +1272,26 @@ uint8_t * RtspClient::GetMediaPacket(string media_type, uint8_t * buf, size_t * 
 	return it->second.GetMediaPacket(buf, size);
 }
 
+uint8_t * RtspClient::GetVPSNalu(uint8_t * buf, size_t * size)
+{
+	if(!buf) return NULL;
+	if(!size) return NULL;
+
+	*size = 0;
+
+	buf[0] = 0; buf[1] = 0; buf[2] = 0; buf[3] = 1;
+	*size += 4;
+
+	unsigned int VpsSize = 0;
+	unsigned char * Vps = base64Decode(VPS.c_str(), VpsSize, true);
+	memcpy(buf + (*size), Vps, VpsSize);
+	*size += VpsSize;
+	delete[] Vps;
+	Vps = NULL;
+
+	return buf;
+}
+
 uint8_t * RtspClient::GetSPSNalu(uint8_t * buf, size_t * size)
 {
 	if(!buf) return NULL;
@@ -1250,7 +1303,7 @@ uint8_t * RtspClient::GetSPSNalu(uint8_t * buf, size_t * size)
 	*size += 4;
 
 	unsigned int SpsSize = 0;
-	unsigned char * Sps = base64Decode(SPS.c_str(), SpsSize, false);
+	unsigned char * Sps = base64Decode(SPS.c_str(), SpsSize, true);
 	memcpy(buf + (*size), Sps, SpsSize);
 	*size += SpsSize;
 	delete[] Sps;
@@ -1271,7 +1324,7 @@ uint8_t * RtspClient::GetPPSNalu(uint8_t * buf, size_t * size)
 	*size += 4;
 
 	unsigned int PpsSize = 0;
-	unsigned char * Pps = base64Decode(PPS.c_str(), PpsSize, false);
+	unsigned char * Pps = base64Decode(PPS.c_str(), PpsSize, true);
 	memcpy(buf + (*size), Pps, PpsSize);
 	*size += PpsSize;
 	delete[] Pps;

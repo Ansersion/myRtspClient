@@ -15,6 +15,34 @@
 
 #include "nalu_types_h265.h"
 #include <string.h>
+#include <stdio.h>
+#include <arpa/inet.h>
+
+APs_H265 APs_H265Obj;
+FUs_H265 FUs_H265Obj;
+NALUTypeBase_H265 NaluBaseType_H265Obj;
+
+NALUTypeBase * NALUTypeBase::NalUnitType_H265[1][NAL_UNIT_TYPE_NUM_H265] =
+{
+	{
+		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj, 
+		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj, 
+		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj, 
+		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj, 
+		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj, 
+		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj, 
+		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj, 
+		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,
+		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj, 
+		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,
+		&NaluBaseType_H265Obj, 	   NULL,                             NULL,                             NULL,                
+        NULL,                      NULL,                             NULL,                             NULL, 
+        &APs_H265Obj,               &FUs_H265Obj,                    NULL,                             NULL, 
+        NULL,                      NULL,                             NULL,                             NULL, 
+        NULL,                      NULL,                             NULL,                             NULL, 
+        NULL,                      NULL,                             NULL,                             NULL
+	}
+};
 
 uint16_t NALUTypeBase_H265::ParseNALUHeader_F(const uint8_t * rtp_payload)
 {
@@ -84,10 +112,32 @@ size_t NALUTypeBase_H265::CopyData(uint8_t * buf, uint8_t * data, size_t size)
 const uint16_t APs_H265::APs_ID_H265 = 0x30; // decimal: 48;
 const uint16_t FUs_H265::FUs_ID_H265 = 0x31; // decimal: 49;
 
+
+bool APs_H265::IsPacketStart(const uint8_t * rtp_payload)
+{
+	return 0;
+}
+
+bool APs_H265::IsPacketEnd(const uint8_t * rtp_payload)
+{
+	return 0;
+}
+
+bool APs_H265::IsPacketThisType(const uint8_t * rtp_payload)
+{
+	return 0;
+}
+
+size_t APs_H265::CopyData(uint8_t * buf, uint8_t * data, size_t size)
+{
+	return 0;
+}
+
+
 uint16_t FUs_H265::ParseNALUHeader_Type(const uint8_t * rtp_payload)
 {
 	if(!rtp_payload) return FUs_H265_ERR;
-	if(FUs_ID_H265 != (rtp_payload[3] & FUs_ID_H265)) return FUs_H265_ERR;
+	// if(FUs_ID_H265 != (rtp_payload[3] & FUs_ID_H265)) return FUs_H265_ERR;
 
 	uint8_t NALUHeader_Type_Mask = 0x3F; // binary: 0011_1111
 	uint16_t NALUHeader_Type = 0;
@@ -111,6 +161,7 @@ size_t FUs_H265::CopyData(uint8_t * buf, uint8_t * data, size_t size)
 			ParseNALUHeader_Layer_ID(data) 	|
 			ParseNALUHeader_Temp_ID_Plus_1(data)
 			);
+	NALUHeader = htons(NALUHeader);
 
 	if(StartFlag) {
 

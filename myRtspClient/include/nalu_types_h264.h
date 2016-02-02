@@ -24,8 +24,8 @@
 #include <stdint.h>
 #include "nalu_types.h"
 
-#define NAL_UNIT_TYPE_NUM 		32
-#define PACKETIZATION_MODE_NUM 	3
+// #define NAL_UNIT_TYPE_NUM 		32
+// #define PACKETIZATION_MODE_NUM 	3
 
 #define PACKET_MODE_SINGAL_NAL 			0
 #define PACKET_MODE_NON_INTERLEAVED 	1
@@ -35,7 +35,7 @@
 	((P) >= PACKET_MODE_SINGAL_NAL && (P) <= PACKET_MODE_INTERLEAVED)
 
 /* More info refer to H264 'nal_unit_type' */
-#define IS_NALU_TYPE_VALID(N) 		\
+#define IS_NALU_TYPE_VALID_H264(N) 		\
 	( \
       ((N) >= 1 && (N) <= 12) || \
       ((N) == STAP_A::STAP_A_ID) || \

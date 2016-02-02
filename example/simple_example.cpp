@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
 	 * refered in SDP, only receive packets of the first 
 	 * 'video' session, the same as 'audio'.*/
 	int packet_num = 0;
-	const size_t BufSize = 65534;
+	const size_t BufSize = 98304;
 	uint8_t buf[BufSize];
 	size_t size = 0;
 

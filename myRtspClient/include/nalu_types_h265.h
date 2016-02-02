@@ -44,7 +44,7 @@ class NALUTypeBase_H265 : public NALUTypeBase
 		virtual uint16_t ParseNALUHeader_Type(const uint8_t * RTPPayload);
 		virtual uint16_t ParseNALUHeader_Layer_ID(const uint8_t * RTPPayload);
 		virtual uint16_t ParseNALUHeader_Temp_ID_Plus_1(const uint8_t * RTPPayload);
-		virtual bool IsPacketStart(const uint8_t * rtp_payload) {return true; }
+		virtual bool IsPacketStart(const uint8_t * rtp_payload) { return true; }
 		virtual bool IsPacketEnd(const uint8_t * rtp_payload) { return true; }
 		virtual bool IsPacketThisType(const uint8_t * rtp_payload);
 		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size);
@@ -62,6 +62,12 @@ class APs_H265 : public NALUTypeBase_H265
 	public:
 		APs_H265() { Name.assign("APs_H265"); };
 		virtual ~APs_H265() {};
+
+	public:
+		virtual bool IsPacketStart(const uint8_t * rtp_payload);
+		virtual bool IsPacketEnd(const uint8_t * rtp_payload);
+		virtual bool IsPacketThisType(const uint8_t * rtp_payload);
+		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size);
 
 	public:
 		static const uint16_t APs_ID_H265;

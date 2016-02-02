@@ -165,11 +165,12 @@ class RtspClient
 		uint8_t * GetMediaPacket(MediaSession * media_session, uint8_t * buf, size_t * size);
 		uint8_t * GetMediaPacket(string media_type, uint8_t * buf, size_t * size);
 
+		uint8_t * GetVPSNalu(uint8_t * buf, size_t * size);
 		uint8_t * GetSPSNalu(uint8_t * buf, size_t * size);
 		uint8_t * GetPPSNalu(uint8_t * buf, size_t * size);
 	protected:
 
-		uint8_t * GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size, bool get_sps_pps_periodly = true);
+		uint8_t * GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size, bool get_vps_sps_pps_periodly = true);
 		uint8_t * GetAudioData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size);
 
 		int CheckSockWritable(int sockfd, struct timeval * tval = NULL);
@@ -195,6 +196,7 @@ class RtspClient
 		string SDPStr;
 		map<string, MediaSession> *MediaSessionMap;
 
+		string VPS;
 		string SPS;
 		string PPS;
 		bool CmdPLAYSent;

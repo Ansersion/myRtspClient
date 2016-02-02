@@ -58,7 +58,9 @@ INCLUDE_DIR += -I$(USER_DIR)/include
 
 # ORSRCS := $(patsubst $(EXCLUDE_MAIN),, $(SRCS))
 
-# THIRD_PATRY := ../third_party
+THIRD_PATRY := ../third_party
+BASE64_DIR = -I$(THIRD_PATRY)/Base64_live555/include
+CXXFLAGS += $(BASE64_DIR)
 # 
 # JRTP := $(THIRD_PATRY)/jrtplib-3.9.1/build
 # 
@@ -78,7 +80,7 @@ CXXFLAGS += $(INCLUDE_DIR)
 $(TESTS): $(OBJS) gtest_main.a
 	# (cd ..; make;)
 	# rm -f $(USER_OBJ_DIR)/$(USER_MAIN_OBJ)
-	$(CXX) $(CXXFLAGS) -o $(TESTS) $(USER_OBJ_DIR)/*.o $(OBJS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $(TESTS) $(USER_OBJ_DIR)/*.o $(OBJS) $(LIBS) 
 
 sinclude .depend
 
