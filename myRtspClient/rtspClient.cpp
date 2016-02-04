@@ -1153,11 +1153,21 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 
 	size_t SizeTmp = 0;
 	bool EndFlag = false;
-    NALUTypeBase * NALUType;
+	NALUTypeBase * NALUTypeBaseTmp = NULL;
+	NALUTypeBase * NALUType;
 
 	int PM = media_session->Packetization;
 	if(!IS_PACKET_MODE_VALID(PM)) {
 		cerr << "WARNING:Invalid Packetization Mode" << endl;
+		return NULL;
+	}
+	if(media_session->EncodeType == "H264") {
+		NALUTypeBaseTmp = &NaluBaseType_H264Obj;
+	} else if (media_session->EncodeType == "H265") {
+		NALUTypeBaseTmp = &NaluBaseType_H265Obj;
+	} else {
+		// Unknown Nalu type
+		printf("Unsupported codec type: %s\n", media_session->EncodeType.c_str());
 		return NULL;
 	}
 
@@ -1169,39 +1179,17 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 			return NULL;
 		}
 		int NT; 
-		if(media_session->EncodeType == "H264") {
-			NT = NaluBaseType_H264Obj.ParseNALUHeader_Type(VideoBuffer);
-			if(!IS_NALU_TYPE_VALID_H264(NT)) {
-				cerr << "WARNING:Invalid H264 NALU" << endl;
-				return NULL;
-			}
-
-			if((NALUType = NALUTypeBase::NalUnitType_H264[PM][NT]) == NULL) {
-				cerr << "Error: Unsupported RTP H264 payload type!" << endl;
-				return NULL;
-			}
-		} else if(media_session->EncodeType == "H265") {
-			NT = NaluBaseType_H265Obj.ParseNALUHeader_Type(VideoBuffer);
-			NT = NT >> 9;
-
-			if(!IS_NALU_TYPE_VALID_H265(NT)) {
-				cerr << "WARNING:Invalid H265 NALU" << endl;
-				return NULL;
-			}
-
-			if((NALUType = NALUTypeBase::NalUnitType_H265[PM][NT]) == NULL) {
-				cerr << "Error: Unsupported RTP H265 payload type!" << endl;
-				return NULL;
-			}
-		} else {
+		NT = NALUTypeBaseTmp->ParseNALUHeader_Type(VideoBuffer);
+		NALUType = NALUTypeBaseTmp->GetNaluRtpType(PM, NT);
+		if(NULL == NALUType) {
 			printf("Unknown NALU Type: %s\n", media_session->EncodeType.c_str());
 			return NULL;
 		}
 
-        if(SizeTmp > sizeof(VideoBuffer)) {
-            cerr << "Error: RTP Packet too large(" << SizeTmp << " bytes > " << sizeof(VideoBuffer) << "bytes)" << endl;
-            return NULL;
-        }
+		if(SizeTmp > sizeof(VideoBuffer)) {
+			cerr << "Error: RTP Packet too large(" << SizeTmp << " bytes > " << sizeof(VideoBuffer) << "bytes)" << endl;
+			return NULL;
+		}
 
 		if(*size + SizeTmp > max_size) {
 			fprintf(stderr, "\033[31mWARNING: NALU truncated because larger than buffer: %u(NALU size) > %u(Buffer size)\033[0m\n", *size + SizeTmp, max_size);

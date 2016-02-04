@@ -15,7 +15,7 @@
 
 #include "nalu_types_h265.h"
 #include <string.h>
-#include <stdio.h>
+// #include <stdio.h>
 #include <arpa/inet.h>
 
 APs_H265 APs_H265Obj;
@@ -107,6 +107,17 @@ size_t NALUTypeBase_H265::CopyData(uint8_t * buf, uint8_t * data, size_t size)
 	CopySize += size;
 
 	return CopySize;
+}
+
+NALUTypeBase * NALUTypeBase_H265::GetNaluRtpType(int packetization, int nalu_type_id)
+{
+	nalu_type_id = nalu_type_id >> (NUH_LAYER_ID_BIT_NUM + NUH_TEMPORAL_ID_PLUS1_BIT_NUM);
+
+	if(!IS_NALU_TYPE_VALID_H265(nalu_type_id)) {
+		return NULL;
+	}
+
+	return NALUTypeBase::NalUnitType_H265[packetization][nalu_type_id];
 }
 
 const uint16_t APs_H265::APs_ID_H265 = 0x30; // decimal: 48;

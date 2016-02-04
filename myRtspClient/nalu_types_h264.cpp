@@ -15,6 +15,7 @@
 
 #include "nalu_types_h264.h"
 #include <string.h>
+// #include <stdio.h>
 
 STAP_A 	STAP_AObj;
 STAP_B 	STAP_BObj;
@@ -106,6 +107,15 @@ size_t NALUTypeBase_H264::CopyData(uint8_t * buf, uint8_t * data, size_t size)
 	CopySize += size;
 
 	return CopySize;
+}
+
+NALUTypeBase * NALUTypeBase_H264::GetNaluRtpType(int packetization, int nalu_type_id)
+{
+	if(!IS_NALU_TYPE_VALID_H264(nalu_type_id)) {
+		return NULL;
+	}
+
+	return NALUTypeBase::NalUnitType_H264[packetization][nalu_type_id];
 }
 
 std::string STAP_A::GetName() const 

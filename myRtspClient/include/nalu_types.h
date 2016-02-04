@@ -59,6 +59,7 @@ class NALUTypeBase
 		virtual bool IsPacketReserved(const uint8_t * rtp_payload) { return false;}
 		virtual bool IsPacketThisType(const uint8_t * rtp_payload) = 0;
 		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size) = 0;
+		virtual NALUTypeBase * GetNaluRtpType(int packetization, int nalu_type_id) = 0;
 		virtual std::string GetName() const { return Name; }
 		virtual bool GetEndFlag() { return EndFlag; }
 		virtual bool GetStartFlag() { return StartFlag; }

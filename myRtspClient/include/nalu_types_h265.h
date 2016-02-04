@@ -48,6 +48,7 @@ class NALUTypeBase_H265 : public NALUTypeBase
 		virtual bool IsPacketEnd(const uint8_t * rtp_payload) { return true; }
 		virtual bool IsPacketThisType(const uint8_t * rtp_payload);
 		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size);
+		NALUTypeBase * GetNaluRtpType(int packetization, int nalu_type_id);
 		virtual std::string GetName() const { return Name; }
 		virtual bool GetEndFlag() { return EndFlag; }
 		virtual bool GetStartFlag() { return StartFlag; }
