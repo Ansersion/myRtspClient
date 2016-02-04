@@ -30,6 +30,7 @@ Features
 Video Codec Supported:
 
 	H264
+	H265
 
 Audio Codec Supported:
 
