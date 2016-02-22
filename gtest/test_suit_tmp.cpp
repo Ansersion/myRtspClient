@@ -26,32 +26,26 @@
 #include "myRegex.h"
 #include "rtspClient.h"
 #include "MediaSession.h"
+
+using namespace std;
 // #include "myRtpSession.h"
 
-// using namespace std;
-// using namespace jrtplib;
-
-// TEST(rtspClient, TMP_TEST)
+// TEST(myRegex, Regex_InvalidInput)
 // {
+//     MyRegex Regex;
 // 
-// 	MediaSession Ms;
-// 	Ms.RTPPort = 20020;
-// 	Ms.TimeRate = 8000;
+// 	// char str[] = "audio 0 RTP/AVP 14 16 18\r\n";
+// 	char str[] = "audio 0 RTP/AVP 14\r\n";
+// 	char pattern[] = "([a-zA-Z]+) +([0-9/]+) +([A-Za-z/]+) +\\b([0-9]+)\\b";
+//     list<string> group;
+//     bool IgnoreCase = true;
 // 
-// 	MyRTPSession Mrs;
-// 	if(!Mrs.MyRTP_SetUp(&Ms)) {
-// 		printf("Msr Setup Error");
-// 		return;
+// 
+//     EXPECT_EQ(Regex.Regex(str, pattern, &group, IgnoreCase), MyRegex::REGEX_SUCCESS);
+// 
+// 	int i = 0;
+// 	for(list<string>::iterator it = group.begin(); it != group.end(); it++) {
+// 		i++;
+// 		cout << i << ": " << *it << endl;
 // 	}
-// 
-// 	uint8_t buf[4192];
-// 	size_t size = 0;
-// 	int num = 100;
-// 
-// 	for (int i = 1 ; i <= num ; i++)
-// 	{
-// 	 	Mrs.GetMyRTPData(buf, &size);
-// 	 	printf("size: %lu\n", size);
-// 	}
-// 	EXPECT_EQ(true, true);
 // }

@@ -16,9 +16,44 @@
 #include "MediaSession.h"
 #include "myRtpSession.h"
 #include "nalu_types.h"
+#include <vector>
+
+using std::vector;
 
 #define MEDIA_SESSION_OK 		1
 #define MEDIA_SESSION_ERROR 	0
+
+/*
+   Refer to RTP PayloadType list
+   "0" means that the item is reserved
+   */
+int PT2TimeRateMap[] =
+{
+	8000, 
+	0, 
+	0, 
+	8000,
+	8000,
+	8000,
+	16000,
+	8000,
+	8000,
+	8000,
+	44100, 
+	44100, 
+	8000,
+	8000,
+	90000,
+	8000,
+	11025, 
+	22050, 
+	8000, 
+	0, 
+	0, 
+	0, 
+	0, 
+	0
+};
 
 MediaSession::MediaSession():
 	MediaType(""),
@@ -87,4 +122,23 @@ uint8_t * MediaSession::GetMediaData(uint8_t * buf, size_t * size, unsigned long
 uint8_t * MediaSession::GetMediaPacket(uint8_t * buf, size_t * size, unsigned long timeout) {
 	if(!RTPInterface) return NULL;
 	return  RTPInterface->GetMyRTPPacket(buf, size, timeout);
+}
+
+int MediaSession::MediaInfoCheck()
+{
+	// Check "PayloadType"
+	if(PayloadType.size() == 0) {
+		printf("WARNING: invalid PayloadType\n");
+		return -1;
+	}
+	for(vector<int>::iterator it = PayloadType.begin(); it != PayloadType.end(); it++) {
+		if(*it < 0) {
+			printf("WARNING: invalid PayloadType\n");
+			return -1;
+		}
+	}	
+	if(TimeRate <= 0) {
+		TimeRate = PT2TimeRateMap[*(PayloadType.begin())]; // FIXME: only use the first PayloadType
+		printf("MediaInfoCheck: %d\n", TimeRate);
+	}
 }

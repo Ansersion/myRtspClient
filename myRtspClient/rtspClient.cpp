@@ -470,18 +470,30 @@ int RtspClient::ParseSDP(string SDP)
 		if(Key == "s") CollectMediaInfo = false;
 		if(!CollectMediaInfo) continue;
 
-		if(Key == "m") {
-			string PatternTmp("([a-zA-Z]+) +.+ +(.+) +.*");
+		if(Key == "m") { 
+            /* Pattern: (MediaType) +(Ports) +(Protocol) +(PayloadType)"
+               Example: "(audio) (0) (RTP/AVP) (14)"
+			   */
+			// string PatternTmp("([a-zA-Z]+) +.+ +(.+) +.*");
+			string PatternTmp("([a-zA-Z]+) +([0-9/]+) +([A-Za-z/]+) +\\b([0-9]+)\\b");
 			if(!Regex.Regex(Value.c_str(), PatternTmp.c_str(), &Group)) {
 				continue;
 			}
 			Group.pop_front();
 			CurrentMediaSession.assign(Group.front());
 			Group.pop_front();
+			Group.pop_front(); // FIXME: Ports are ignored
 			string Protocol(Group.front());
+			Group.pop_front();
+			int PayloadTypeTmp = -1;
+			stringstream ssPayloadType;
+			ssPayloadType << Group.front();
+			ssPayloadType >> PayloadTypeTmp;
+
 			MediaSession NewMediaSession;
 			NewMediaSession.MediaType.assign(CurrentMediaSession);
 			NewMediaSession.Protocol.assign(Protocol);
+			NewMediaSession.PayloadType.push_back(PayloadTypeTmp);
 			(*MediaSessionMap)[CurrentMediaSession] = NewMediaSession;
 
 		}
@@ -535,6 +547,10 @@ int RtspClient::ParseSDP(string SDP)
 				PPS.assign(Group.front());
 			}
 		}
+	}
+	
+	for(map<string, MediaSession>::iterator it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
+		it->second.MediaInfoCheck();
 	}
 
 	return Result;

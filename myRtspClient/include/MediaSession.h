@@ -32,7 +32,7 @@ class StreamParameters // ###2015-01-11### //
 {
 	public:
 		/* For general media session */
-		unsigned int PayloadNum;
+		unsigned int PayloadType;
 		std::string EncodeType;
 		unsigned int TimeRate;
 
@@ -68,12 +68,14 @@ class MediaSession
 		 * */
 		uint8_t * GetMediaPacket(uint8_t * buf, size_t * size, unsigned long timeout_ms = TIMEOUT_MICROSECONDS);
 
+		int MediaInfoCheck();
+
 	public:
 		std::string MediaType;
 		std::vector<uint16_t> Ports; // RTP and RTCP ports, -1 indicate none. ###2015-01-11### //
 		std::string Protocol;
 
-		std::vector<int> PayloadNum; // ###2015-01-11### //
+		std::vector<int> PayloadType; // ###2015-01-11### //
 		std::string EncodeType;
 		unsigned int TimeRate;
 		// std::map<unsigned int, StreamParameters> StreamParams;
