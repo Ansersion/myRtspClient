@@ -141,4 +141,5 @@ int MediaSession::MediaInfoCheck()
 		TimeRate = PT2TimeRateMap[*(PayloadType.begin())]; // FIXME: only use the first PayloadType
 		printf("MediaInfoCheck: %d\n", TimeRate);
 	}
+	return 0;
 }

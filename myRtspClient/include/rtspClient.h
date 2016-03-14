@@ -79,6 +79,11 @@ typedef struct PPS_t {
 	size_t Size;
 } PPS_t;
 
+typedef struct Buffer_t {
+	uint8_t * Buf;
+	size_t Size;
+} Buffer_t;
+
 class RtspClient
 {
 	public:
@@ -201,9 +206,10 @@ class RtspClient
 		string PPS;
 		bool CmdPLAYSent;
 
-		// MyRegex Regex;
-		uint8_t AudioBuffer[BUFSIZ];
-		uint8_t VideoBuffer[BUFSIZ];
+		// uint8_t AudioBuffer[BUFSIZ];
+		// uint8_t VideoBuffer[BUFSIZ];
+		Buffer_t AudioBuffer;
+		Buffer_t VideoBuffer;
 
 		// NALUTypeBase * NALUType;
 		size_t GetVideoDataCount;

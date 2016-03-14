@@ -58,6 +58,12 @@ RtspClient::RtspClient():
 {
 	// SDPInfo = new multimap<string, string>;
 	MediaSessionMap = new map<string, MediaSession>;
+	AudioBuffer.Size = 0;
+	VideoBuffer.Size = 0;
+	if((AudioBuffer.Buf = (uint8_t *)malloc(BUFSIZ)))
+		AudioBuffer.Size = BUFSIZ;
+	if((VideoBuffer.Buf = (uint8_t *)malloc(BUFSIZ)))
+		VideoBuffer.Size = BUFSIZ;
 
 	/* Temporary only FU_A supported */
 	// NALUType = new FU_A;
@@ -69,6 +75,12 @@ RtspClient::RtspClient(string uri):
 {
 	// SDPInfo = new multimap<string, string>;
 	MediaSessionMap = new map<string, MediaSession>;
+	AudioBuffer.Size = 0;
+	VideoBuffer.Size = 0;
+	if((AudioBuffer.Buf = (uint8_t *)malloc(BUFSIZ)))
+		AudioBuffer.Size = BUFSIZ;
+	if((VideoBuffer.Buf = (uint8_t *)malloc(BUFSIZ)))
+		VideoBuffer.Size = BUFSIZ;
 
 	/* Temporary only FU_A supported */
 	// NALUType = new FU_A;
@@ -79,6 +91,18 @@ RtspClient::~RtspClient()
 	// delete SDPInfo;
 	delete MediaSessionMap;
 	MediaSessionMap = NULL;
+
+	if(AudioBuffer.Buf) {
+		free(AudioBuffer.Buf);
+		AudioBuffer.Buf = NULL;
+		AudioBuffer.Size = 0;
+	}
+
+	if(VideoBuffer.Buf) {
+		free(VideoBuffer.Buf);
+		VideoBuffer.Buf = NULL;
+		VideoBuffer.Size = 0;
+	}
 
 	// delete NALUType;
 	// NALUType = NULL;
@@ -1189,21 +1213,21 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 
 	do {
 		EndFlag = true;
-		if(!media_session->GetMediaData(VideoBuffer, &SizeTmp)) return NULL;
+		if(!media_session->GetMediaData(VideoBuffer.Buf, &SizeTmp)) return NULL;
 		if(0 == SizeTmp) {
 			cerr << "No RTP data" << endl;
 			return NULL;
 		}
 		int NT; 
-		NT = NALUTypeBaseTmp->ParseNALUHeader_Type(VideoBuffer);
+		NT = NALUTypeBaseTmp->ParseNALUHeader_Type(VideoBuffer.Buf);
 		NALUType = NALUTypeBaseTmp->GetNaluRtpType(PM, NT);
 		if(NULL == NALUType) {
 			printf("Unknown NALU Type: %s\n", media_session->EncodeType.c_str());
 			return NULL;
 		}
 
-		if(SizeTmp > sizeof(VideoBuffer)) {
-			cerr << "Error: RTP Packet too large(" << SizeTmp << " bytes > " << sizeof(VideoBuffer) << "bytes)" << endl;
+		if(SizeTmp > VideoBuffer.Size) {
+			cerr << "Error: RTP Packet too large(" << SizeTmp << " bytes > " << VideoBuffer.Size << "bytes)" << endl;
 			return NULL;
 		}
 
@@ -1212,7 +1236,7 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 			return buf;
 		}
 
-		SizeTmp = NALUType->CopyData(buf + (*size), VideoBuffer, SizeTmp);
+		SizeTmp = NALUType->CopyData(buf + (*size), VideoBuffer.Buf, SizeTmp);
 		*size += SizeTmp;
 		EndFlag = NALUType->GetEndFlag();
 	} while(!EndFlag);
@@ -1229,7 +1253,7 @@ uint8_t * RtspClient::GetAudioData(MediaSession * media_session, uint8_t * buf, 
 	size_t SizeTmp = 0;
 	MPEGTypeBase * MPEGType;
 
-	if(!media_session->GetMediaData(AudioBuffer, &SizeTmp)) return NULL;
+	if(!media_session->GetMediaData(AudioBuffer.Buf, &SizeTmp)) return NULL;
 	if(0 == SizeTmp) {
 		cerr << "No RTP data" << endl;
 		return NULL;
@@ -1237,8 +1261,8 @@ uint8_t * RtspClient::GetAudioData(MediaSession * media_session, uint8_t * buf, 
 
 	MPEGType = &MPEG_AudioObj;
 
-	if(SizeTmp > sizeof(AudioBuffer)) {
-		cerr << "Error: RTP Packet too large(" << SizeTmp << " bytes > " << sizeof(AudioBuffer) << "bytes)" << endl;
+	if(SizeTmp > AudioBuffer.Size) {
+		cerr << "Error: RTP Packet too large(" << SizeTmp << " bytes > " << AudioBuffer.Size << "bytes)" << endl;
 		return NULL;
 	}
 
@@ -1247,7 +1271,7 @@ uint8_t * RtspClient::GetAudioData(MediaSession * media_session, uint8_t * buf, 
 		return buf;
 	}
 
-	SizeTmp = MPEGType->CopyData(buf + (*size), AudioBuffer, SizeTmp);
+	SizeTmp = MPEGType->CopyData(buf + (*size), AudioBuffer.Buf, SizeTmp);
 	*size += SizeTmp;
 
 	return buf;
