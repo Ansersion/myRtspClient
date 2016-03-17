@@ -24,7 +24,7 @@ include(CheckCXXSourceCompiles)
 include(TestBigEndian)
 include(${PROJECT_SOURCE_DIR}/cmake/Macros.cmake)
 
-# Uncomment the following to enable JThread probing
+# Disable jthread(myRtspClient not support jthread now)
 # find_package(JThread)
 
 set(JRTPLIB_LINK_LIBS "")
