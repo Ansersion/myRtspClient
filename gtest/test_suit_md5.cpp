@@ -13,31 +13,28 @@
 //   limitations under the License.
 //
 
-#ifndef UTILS_H
-#define UTILS_H
+#include <stdio.h>
+#include <sys/types.h>
+#include <regex.h>
+#include <memory.h>
+#include <stdlib.h>
+#include <string>
+#include <list>
+#include <iostream>
+#include <gtest/gtest.h>
 
-#include <unistd.h>
-#include <errno.h>
+#include "myRegex.h"
+#include "utils.h"
 
-/* Read line by line.
- * See also:
- * <<Unix Network Programming>>*/
-ssize_t ReadLine(int fd, void * buf, size_t maxlen);
+using namespace std;
 
-/* Read n bytes
- * See also:
- * <<Unix Network Programming>>*/
-ssize_t Readn(int fd, void *vptr, size_t n);
+TEST(MD5, MD5_RegularInput)
+{
+	char str[] = "a";
+	char output[33];
+	char a_md5[] = "0cc175b9c0f1b6a831c399e269772661";
 
-/* Write n bytes.
- * See also:
- * <<Unix Network Programming>>*/
-ssize_t Writen(int fd, const void *vptr, size_t n);
-
-/*
-param: 
-output: must sizeof(output) >= 32
-   */
-int Md5sum32(void * input, unsigned char * output, size_t input_size, size_t output_size);
-
-#endif
+	output[32] = '\0';
+	EXPECT_EQ(Md5sum32((void *)str, (unsigned char *)output, 1, 33), 0);
+	EXPECT_EQ(strncmp(output, a_md5, 32), 0);
+}

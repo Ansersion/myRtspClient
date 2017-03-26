@@ -10,6 +10,10 @@ then
     usage $*
 fi
 
+if [ -f "Makefile" ]; then
+	make clean
+fi
+
 cd myRtspClient
 /bin/rm -f Makefile
 cat Makefile.head ../config.$1 Makefile.tail > Makefile
@@ -21,6 +25,11 @@ cat Makefile.head ../config.$1 Makefile.tail > Makefile
 chmod a-w Makefile
 
 cd ../third_party/Base64_live555
+/bin/rm -f Makefile
+cat Makefile.head ../../config.$1 Makefile.tail > Makefile
+chmod a-w Makefile
+
+cd ../../third_party/md5
 /bin/rm -f Makefile
 cat Makefile.head ../../config.$1 Makefile.tail > Makefile
 chmod a-w Makefile

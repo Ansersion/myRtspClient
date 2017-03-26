@@ -24,24 +24,23 @@
 #include <gtest/gtest.h>
 
 #include "myRegex.h"
-#include "rtspClient.h"
-#include "MediaSession.h"
+#include "utils.h"
 
 using namespace std;
 // #include "myRtpSession.h"
 
-// TEST(myRegex, Regex_InvalidInput)
+// TEST(myRegex, Regex)
 // {
-//     MyRegex Regex;
+// 	MyRegex Regex;
 // 
 // 	// char str[] = "audio 0 RTP/AVP 14 16 18\r\n";
-// 	char str[] = "audio 0 RTP/AVP 14\r\n";
-// 	char pattern[] = "([a-zA-Z]+) +([0-9/]+) +([A-Za-z/]+) +\\b([0-9]+)\\b";
-//     list<string> group;
-//     bool IgnoreCase = true;
+// 	char str[] = "WWW-Authenticate:Digest  realm=\"HipcamRealServer\", nonce=\"3b27a446bfa49b0c48c3edb83139543d\"";
+// 	char pattern[] = "WWW-Authenticate:Digest +realm=(\"[a-zA-Z_0-9 ]+\"), +nonce=(\"[a-zA-Z0-9]+\")";
+// 	list<string> group;
+// 	bool IgnoreCase = true;
 // 
 // 
-//     EXPECT_EQ(Regex.Regex(str, pattern, &group, IgnoreCase), MyRegex::REGEX_SUCCESS);
+// 	EXPECT_EQ(Regex.Regex(str, pattern, &group, IgnoreCase), MyRegex::REGEX_SUCCESS);
 // 
 // 	int i = 0;
 // 	for(list<string>::iterator it = group.begin(); it != group.end(); it++) {
@@ -49,3 +48,26 @@ using namespace std;
 // 		cout << i << ": " << *it << endl;
 // 	}
 // }
+
+TEST(MD5, MD5_32)
+{
+	MyRegex Regex;
+
+	// char str[] = "audio 0 RTP/AVP 14 16 18\r\n";
+	char str[] = "a";
+	char output[33];
+	output[32] = '\0';
+	// char pattern[] = "WWW-Authenticate:Digest +realm=(\"[a-zA-Z_0-9 ]+\"), +nonce=(\"[a-zA-Z0-9]+\")";
+	// list<string> group;
+	// bool IgnoreCase = true;
+	EXPECT_EQ(Md5sum32((void *)str, (unsigned char *)output, 1, 33), 0);
+
+
+	// EXPECT_EQ(Regex.Regex(str, pattern, &group, IgnoreCase), MyRegex::REGEX_SUCCESS);
+
+	// int i = 0;
+	// for(list<string>::iterator it = group.begin(); it != group.end(); it++) {
+	// 	i++;
+	// 	cout << i << ": " << *it << endl;
+	// }
+}

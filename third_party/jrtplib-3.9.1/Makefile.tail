@@ -6,7 +6,7 @@ all:
 	(cd $(JRTPLIB_BUILD_DIR); rm -f Makefile; cmake ..; make)
 
 clean:
-	(cd $(JRTPLIB_BUILD_DIR); make clean)
+	(test -d $(JRTPLIB_BUILD_DIR) || exit 1; cd $(JRTPLIB_BUILD_DIR); make clean)
 
 install:
 	@echo "install not supported\n"

@@ -14,7 +14,7 @@
 
 # Points to the root of Google Test, relative to where this file is.
 # Remember to tweak this if you move this file.
-GTEST_DIR = /home/ansersion/study/rtsp/gtest-1.7.0
+GTEST_DIR = /home/hub/Desktop/gtest/gtest-1.7.0
 
 # Where to find user code.
 USER_DIR = ../myRtspClient
@@ -60,7 +60,8 @@ INCLUDE_DIR += -I$(USER_DIR)/include
 
 THIRD_PATRY := ../third_party
 BASE64_DIR = -I$(THIRD_PATRY)/Base64_live555/include
-CXXFLAGS += $(BASE64_DIR)
+MD5_DIR = -I$(THIRD_PATRY)/md5/include
+CXXFLAGS += $(BASE64_DIR) $(MD5_DIR)
 # 
 # JRTP := $(THIRD_PATRY)/jrtplib-3.9.1/build
 # 
@@ -72,7 +73,7 @@ CXXFLAGS += $(BASE64_DIR)
 # JRTP_INCLUDE += -I$(JRTP)/../src
 # 
 # INCLUDE_DIR += $(JRTP_INCLUDE)
-# LIBS += $(JRTP_LIB)
+# LIBS += $(THIRD_PATRY)/md5/libmd5.a
 
 
 CXXFLAGS += $(INCLUDE_DIR)

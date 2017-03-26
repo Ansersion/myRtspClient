@@ -1,0 +1,27 @@
+##### End of variables to change
+
+NAME = libmd5
+MD5_LIB = $(NAME).$(LIB_SUFFIX)
+ALL = $(MD5_LIB)
+all: $(ALL)
+
+OBJS = md5.$(OBJ)
+
+$(MD5_LIB): $(OBJS)
+	$(LIBRARY_LINK) $@ $(LIBRARY_LINK_OPTS) $(OBJS)
+
+.$(C).$(OBJ):
+	$(C_COMPILER) -c $(C_FLAGS) $<       
+
+.$(CPP).$(OBJ):
+	$(CPLUSPLUS_COMPILER) -c $(CPLUSPLUS_FLAGS) $<
+
+md5.cpp: include/md5.h
+
+clean:
+	-rm -rf *.$(OBJ) $(ALL) core *.core *~ include/*~
+
+install:
+	@echo "install not supported\n"
+
+##### Any additional, platform-specific rules come here:

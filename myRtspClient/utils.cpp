@@ -1,4 +1,4 @@
-//   Copyright 2015 Ansersion
+//   Copyright 2015-2017 Ansersion
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -14,6 +14,9 @@
 //
 
 #include "utils.h"
+#include "md5.h"
+#include <string.h>
+#include <stdio.h>
 
 ssize_t	ReadLine(int fd, void *vptr, size_t maxlen)
 {   
@@ -92,3 +95,28 @@ ssize_t Readn(int fd, void *vptr, size_t n)
 	return(n - nleft);      /* return >= 0 */
 }
 /* end readn */
+
+int Md5sum32(void * input, unsigned char * output, size_t input_size, size_t output_size)
+{
+	unsigned char decrypt[16];
+	unsigned char decrypt_ascii[33];
+	if(!input) {
+		return -1;
+	}	
+	if(!output) {
+		return -1;
+	}
+	if(output_size < 32) {
+		return -1;
+	}
+	MD5_CTX md5;  
+	MD5Init(&md5);                
+	MD5Update(&md5,(unsigned char *)input,input_size);  
+	MD5Final(&md5,decrypt);          
+	for(int i = 0; i < 16; i++) {
+		sprintf((char *)&decrypt_ascii[i*2], "%02x",decrypt[i]);  
+	}
+	decrypt_ascii[32] = '\0';
+	memcpy(output, decrypt_ascii, 32);
+	return 0;
+}

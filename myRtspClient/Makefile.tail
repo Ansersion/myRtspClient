@@ -8,12 +8,13 @@ all: $(ALL)
 OBJS = myRegex.$(OBJ) myRtpSession.$(OBJ) MediaSession.$(OBJ) nalu_types_h264.$(OBJ) rtspClient.$(OBJ) utils.$(OBJ) mpeg_types.$(OBJ) nalu_types_h265.$(OBJ)
 
 $(MY_RTSP_CLIENT_LIB): $(OBJS) 
-	@rm -rf Base64 Jrtplib
-	@mkdir -p Base64 Jrtplib
+	@rm -rf Base64 Md5 Jrtplib
+	@mkdir -p Base64 Md5 Jrtplib
 	@(cd Base64; ar x ../$(BASE64_LIB))
+	@(cd Md5; ar x ../$(MD5_LIB))
 	@(cd Jrtplib; ar x ../$(JRTPLIB_LIB))
-	$(LIBRARY_LINK) $@ $(LIBRARY_LINK_OPTS) $(OBJS) Base64/*.o Jrtplib/*.o
-	@rm -rf Base64 Jrtplib
+	$(LIBRARY_LINK) $@ $(LIBRARY_LINK_OPTS) $(OBJS) Base64/*.o Md5/*.o Jrtplib/*.o
+	@rm -rf Base64 Md5 Jrtplib
 
 .$(C).$(OBJ):
 	$(C_COMPILER) -c $(C_FLAGS) $<       
@@ -31,7 +32,7 @@ myRtpSession.cpp: include/myRtpSession.h include/MediaSession.h
 nalu_types_h264.cpp: include/nalu_types.h include/nalu_types_h264.h
 nalu_types_h265.cpp: include/nalu_types.h include/nalu_types_h265.h
 rtspClient.cpp: include/rtspClient.h include/utils.h $(BASE64_INCLUDE)/Base64.hh include/nalu_types.h include/mpeg_types.h include/nalu_types_h264.h include/nalu_types_h265.h
-utils.cpp: include/utils.h
+utils.cpp: include/utils.h $(MD5_INCLUDE)/md5.h
 
 clean:
 	-rm -rf *.$(OBJ) $(ALL) core *.core *~ include/*~

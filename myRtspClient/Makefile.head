@@ -12,10 +12,15 @@ INCLUDES += -I$(JRTPLIB_INCLUDE_BUILD)
 BASE64_INCLUDE = ../third_party/Base64_live555/include
 BASE64_BUILD = ../third_party/Base64_live555
 
+MD5_INCLUDE = ../third_party/md5/include
+MD5_BUILD = ../third_party/md5
+
 INCLUDES += -I$(BASE64_INCLUDE)
+INCLUDES += -I$(MD5_INCLUDE)
 
 JRTPLIB_LIB = $(JRTPLIB_INCLUDE_BUILD)/libjrtp.a
 BASE64_LIB = $(BASE64_BUILD)/libBase64.a
+MD5_LIB = $(MD5_BUILD)/libmd5.a
 # THIRD_PARTY_LIBS = $(JRTPLIB_INCLUDE_BUILD)/libjrtp.a
 # THIRD_PARTY_LIBS = $(BASE64_BUILD)/libBase64.a
 
