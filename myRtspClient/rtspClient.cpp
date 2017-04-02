@@ -54,7 +54,8 @@ extern NALUTypeBase_H265 NaluBaseType_H265Obj;
 
 RtspClient::RtspClient():
 	RtspURI(""), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse(""), SDPStr(""), 
-	VPS(""), SPS(""), PPS(""), CmdPLAYSent(false), GetVideoDataCount(GET_SPS_PPS_PERIOD)
+	VPS(""), SPS(""), PPS(""), CmdPLAYSent(false), GetVideoDataCount(GET_SPS_PPS_PERIOD),
+	Username(""), Password("")
 {
 	// SDPInfo = new multimap<string, string>;
 	MediaSessionMap = new map<string, MediaSession>;
@@ -136,6 +137,11 @@ ErrorType RtspClient::DoDESCRIBE(string uri)
 	if(!RecvRTSP(Sockfd, &RtspResponse)) {
 		close(Sockfd);
 		return RTSP_RECV_ERROR;
+	}
+	// check username and password, if any
+	if(CheckAuth() != CHECK_OK) {
+		close(Sockfd);
+		return RTSP_RESPONSE_401;
 	}
 	RecvSDP(Sockfd, &SDPStr);
 	close(Sockfd);
@@ -1099,6 +1105,7 @@ bool RtspClient::IsResponse_200_OK(ErrorType * err, string * response)
 
 	MyRegex Regex;
 	string Pattern200("RTSP/[0-9]+\\.[0-9]+ +200");
+	string Pattern401("RTSP/[0-9]+\\.[0-9]+ +401");
 	string Pattern40x("RTSP/[0-9]+\\.[0-9]+ +40[0-9]");
 	string Pattern50x("RTSP/[0-9]+\\.[0-9]+ +50[0-9]");
 
@@ -1115,6 +1122,10 @@ bool RtspClient::IsResponse_200_OK(ErrorType * err, string * response)
 		Result = true;
 		if(!err) return Result;
 		*err = RTSP_RESPONSE_200;
+	} else if(Regex.Regex(Response.c_str(), Pattern401.c_str(), &Groups, IgnoreCase)) {
+		Result = false;
+		if(!err) return Result;
+		*err = RTSP_RESPONSE_401;
 	} else if(Regex.Regex(Response.c_str(), Pattern40x.c_str(), &Groups, IgnoreCase)) {
 		Result = false;
 		if(!err) return Result;
@@ -1359,5 +1370,44 @@ uint8_t * RtspClient::GetPPSNalu(uint8_t * buf, size_t * size)
 	Pps = NULL;
 
 	return buf;
+}
+
+uint32_t RtspClient::CheckAuth()
+{
+	ErrorType err;
+	IsResponse_200_OK(&err);
+	if(err != RTSP_RESPONSE_401) {
+		return CHECK_OK;
+	}
+	if(Username.length() == 0) {
+		return CHECK_ERROR;
+	}
+	// Response e.g:
+	// 	RTSP/1.0 401 Unauthorized
+	// 	Server: HiIpcam/V100R003 VodServer/1.0.0
+	//	Cseq: 2
+	// 	WWW-Authenticate:Digest  realm="HipcamRealServer", nonce="3b27a446bfa49b0c48c3edb83139543d"
+	MyRegex Regex;
+	list<string> Group;
+	string PatternDigest("WWW-Authenticate:Digest +realm=(\"[a-zA-Z_0-9 ]+\"), +nonce=(\"[a-zA-Z0-9]+\")");
+	string PatternBasic = "WWW-Authenticate:Digest +realm=(\"[a-zA-Z_0-9 ]+\")";
+	string tmp("");
+	string RealmTmp("");
+	string NonceTmp("");
+
+	if(Regex.Regex(RtspResponse.c_str(), PatternDigest.c_str(), &Group)) {
+		Group.pop_front();
+		RealmTmp.assign(Group.front());
+		Group.pop_front();
+		NonceTmp.assign(Group.front());
+	} else if(Regex.Regex(RtspResponse.c_str(), PatternBasic.c_str(), &Group)) {
+		Group.pop_front();
+		RealmTmp.assign(Group.front());
+		// Not supported now
+		// TODO:
+		cout << "BASIC Authentication not supported now" << endl;
+		return CHECK_ERROR;
+	}
+	return CHECK_OK;
 }
 

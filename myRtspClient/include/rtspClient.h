@@ -164,6 +164,7 @@ class RtspClient
 		bool IsResponse_200_OK(ErrorType * err = NULL, string * response = NULL);
 		map<string, MediaSession> GetMediaSessions() const { return *MediaSessionMap; }
 
+	public:
 		uint8_t * GetMediaData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size);
 		uint8_t * GetMediaData(string media_type, uint8_t * buf, size_t * size, size_t max_size);
 
@@ -173,6 +174,9 @@ class RtspClient
 		uint8_t * GetVPSNalu(uint8_t * buf, size_t * size);
 		uint8_t * GetSPSNalu(uint8_t * buf, size_t * size);
 		uint8_t * GetPPSNalu(uint8_t * buf, size_t * size);
+
+		uint32_t CheckAuth();
+
 	protected:
 
 		uint8_t * GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size, bool get_vps_sps_pps_periodly = true);
@@ -213,6 +217,10 @@ class RtspClient
 
 		// NALUTypeBase * NALUType;
 		size_t GetVideoDataCount;
+
+		// Authentication
+		string Username;
+		string Password;
 };
 
 #endif
