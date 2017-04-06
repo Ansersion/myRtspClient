@@ -19,6 +19,9 @@
 #include <unistd.h>
 #include <errno.h>
 
+#define MD5_SIZE 	32
+#define MD5_BUF_SIZE 	(MD5_SIZE + sizeof('\0'))
+
 /* Read line by line.
  * See also:
  * <<Unix Network Programming>>*/

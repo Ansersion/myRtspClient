@@ -175,7 +175,10 @@ class RtspClient
 		uint8_t * GetSPSNalu(uint8_t * buf, size_t * size);
 		uint8_t * GetPPSNalu(uint8_t * buf, size_t * size);
 
-		uint32_t CheckAuth();
+		uint32_t CheckAuth(int sockfd, string cmd, string uri);
+		string MakeMd5DigestResp(string realm, string cmd, string uri, string nonce, string username = "", string password = "");
+		void SetUsername(string username) {Username.assign(username);}
+		void SetPassword(string password) {Password.assign(password);}
 
 	protected:
 
@@ -221,6 +224,8 @@ class RtspClient
 		// Authentication
 		string Username;
 		string Password;
+		string Realm;
+		string Nonce;
 };
 
 #endif

@@ -31,7 +31,7 @@ using namespace std;
 
 TEST(rtspClient, TMP_TEST)
 {
-	string RtspUri("rtsp://127.0.0.1/ansersion");
+	string RtspUri("rtsp://192.168.81.157:8554/ansersion");
     RtspClient Client(RtspUri);
 
 	EXPECT_EQ(Client.DoOPTIONS(), RTSP_NO_ERROR);

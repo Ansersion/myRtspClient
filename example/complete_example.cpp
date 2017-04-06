@@ -38,6 +38,12 @@ int main(int argc, char *argv[])
 
 	RtspClient Client(RtspUri);
 
+	/* Set rtsp access username */
+	// Client.SetUsername("Ansersion");
+
+	/* Set rtsp access password */
+	// Client.SetPassword("AnsersionPassword");
+
 	/* Send OPTIONS command to server */
 	if(Client.DoOPTIONS() != RTSP_NO_ERROR) {
 		printf("DoOPTIONS error\n");

@@ -40,6 +40,12 @@ int main(int argc, char *argv[])
 
 	/* Set up rtsp server resource URI */
 	Client.SetURI(RtspUri);
+
+	// /* Set rtsp access username */
+	// Client.SetUsername("Ansersion");
+
+	// /* Set rtsp access password */
+	// Client.SetPassword("AnsersionPassword");
 	
 	/* Send DESCRIBE command to server */
 	Client.DoDESCRIBE();

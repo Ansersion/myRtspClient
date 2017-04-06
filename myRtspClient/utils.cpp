@@ -104,10 +104,10 @@ int Md5sum32(void * input, unsigned char * output, size_t input_size, size_t out
 		return -1;
 	}	
 	if(!output) {
-		return -1;
+		return -2;
 	}
 	if(output_size < 32) {
-		return -1;
+		return -3;
 	}
 	MD5_CTX md5;  
 	MD5Init(&md5);                

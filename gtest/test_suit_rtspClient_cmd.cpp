@@ -44,9 +44,12 @@ TEST(rtspClient, DoOPTIONS_InvalidInput)
 
 TEST(rtspClient, DoOPTIONS_RegularInput)
 {
-	string RtspUri1("rtsp://127.0.0.1/ansersion");
-	string RtspUri2("rtsp://127.0.0.1/ansersion");
-	string RtspUri3("rtsp://127.0.0.1:554/ansersion");
+	// string RtspUri1("rtsp://127.0.0.1/ansersion");
+	// string RtspUri2("rtsp://127.0.0.1/ansersion");
+	// string RtspUri3("rtsp://127.0.0.1:554/ansersion");
+	string RtspUri1("rtsp://192.168.81.157:8554/ansersion");
+	string RtspUri2("rtsp://192.168.81.157:8554/ansersion");
+	string RtspUri3("rtsp://192.168.81.157:8554/ansersion");
     RtspClient Client1;
     RtspClient Client2(RtspUri2);
     RtspClient Client3(RtspUri3);
@@ -74,9 +77,12 @@ TEST(rtspClient, DoDESCRIBE_InvalidInput)
 
 TEST(rtspClient, DoDESCRIBE_RegularInput)
 {
-	string RtspUri1("rtsp://127.0.0.1/ansersion");
-	string RtspUri2("rtsp://127.0.0.1/ansersion");
-	string RtspUri3("rtsp://127.0.0.1:554/ansersion");
+	// string RtspUri1("rtsp://127.0.0.1/ansersion");
+	// string RtspUri2("rtsp://127.0.0.1/ansersion");
+	// string RtspUri3("rtsp://127.0.0.1:554/ansersion");
+	string RtspUri1("rtsp://192.168.81.157:8554/ansersion");
+	string RtspUri2("rtsp://192.168.81.157:8554/ansersion");
+	string RtspUri3("rtsp://192.168.81.157:8554/ansersion");
     RtspClient Client1;
     RtspClient Client2(RtspUri2);
     RtspClient Client3(RtspUri3);
@@ -97,7 +103,8 @@ TEST(rtspClient, DoSETUP_InvalidInput)
 
 TEST(rtspClient, DoSETUP_RegularInput)
 {
-	string RtspUri("rtsp://127.0.0.1/ansersion");
+	// string RtspUri("rtsp://127.0.0.1/ansersion");
+	string RtspUri("rtsp://192.168.81.157:8554/ansersion");
     RtspClient Client(RtspUri);
 
 	EXPECT_EQ(Client.DoOPTIONS(), RTSP_NO_ERROR); 
@@ -114,7 +121,8 @@ TEST(rtspClient, DoSETUP_RegularInput)
 
 TEST(rtspClient, DoPLAY_InvalidInput)
 {
-	string RtspUri("rtsp://127.0.0.1/ansersion");
+	// string RtspUri("rtsp://127.0.0.1/ansersion");
+	string RtspUri("rtsp://192.168.81.157:8554/ansersion");
     RtspClient Client(RtspUri);
 
 	EXPECT_EQ(Client.DoOPTIONS(), RTSP_NO_ERROR);
@@ -137,7 +145,8 @@ TEST(rtspClient, DoPLAY_InvalidInput)
 
 TEST(rtspClient, DoPLAY_RegularInput)
 {
-	string RtspUri("rtsp://127.0.0.1/ansersion");
+	// string RtspUri("rtsp://127.0.0.1/ansersion");
+	string RtspUri("rtsp://192.168.81.157:8554/ansersion");
     RtspClient Client(RtspUri);
 
 	EXPECT_EQ(Client.DoOPTIONS(), RTSP_NO_ERROR);
