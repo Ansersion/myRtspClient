@@ -1,3 +1,6 @@
+2017.04.13:
+- Support MD5 Digest authentication
+
 2016.02.01:
 - Basicly support payload type FUs for H.265
 
