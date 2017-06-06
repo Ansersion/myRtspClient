@@ -23,3 +23,12 @@ LIB_SUFFIX =			a
 LIBS_FOR_CONSOLE_APPLICATION =
 LIBS_FOR_GUI_APPLICATION =
 EXE =
+###############################
+# For crosscompiling to set 
+# RTP endian
+# LITTLE_ENDIAN as default 
+###############################
+# RTP_ENDIAN = BIG_ENDIAN
+# OR
+# RTP_ENDIAN = LITTLE_ENDIAN
+RTP_ENDIAN = LITTLE_ENDIAN

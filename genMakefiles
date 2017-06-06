@@ -39,9 +39,9 @@ cd ../../third_party/jrtplib-3.9.1
 /bin/rm -f myRtspClientConfig/cmake_config_build.$1 
 mkdir -p build
 cd myRtspClientConfig
-perl config_$1\.pl ../../../config.$1
+perl config_$1\.pl ../../../config.$1 ../CMakeLists.txt_backup
 cd ..
-cat myRtspClientConfig/cmake_config_build.$1 CMakeLists.txt_backup > CMakeLists.txt
+# cat myRtspClientConfig/cmake_config_build.$1 CMakeLists.txt_backup > CMakeLists.txt
 cat Makefile.head ../../config.$1 Makefile.tail > Makefile
 chmod a-w Makefile
 

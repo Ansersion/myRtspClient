@@ -1,11 +1,16 @@
 #!/usr/bin/perl
 
-&usage, exit 1 if ($#ARGV+1) != 1;
+&usage, exit 1 if ($#ARGV+1) != 2;
 
 my $ConfigFile = shift;
+my $CMakeListFile = shift;
+my $CMakeListFile_Tmp = "CMakeLists.txt_tmp";
+my $CMakeListFile_Build = "CMakeLists.txt_build";
 my %CompileParameter = {};
 my $Key;
 my $Value;
+my $Endian = "BIG";
+my $Cmd;
 
 open CONFIG, "<$ConfigFile" or die "Cannot open $ConfigFile: $!";
 while(<CONFIG>) {
@@ -18,6 +23,15 @@ while(<CONFIG>) {
 		}
 	}
 }
+
+foreach $k (keys %CompileParameter) {
+	if($k =~ /RTP_ENDIAN/) {
+		if($CompileParameter{$k} =~ /LITTLE/) {
+			$Endian = "LITTLE";
+		}
+	}
+}
+
 close CONFIG;
 my $CmakeConfig = "./cmake_config.armlinux";
 my $CmakeConfigBuild = "./cmake_config_build.armlinux";
@@ -32,6 +46,28 @@ while(<CONFIG_CMAKE>) {
 }
 close CONFIG_CMAKE;
 close CONFIG_CMAKE_BUILD;
+
+$Cmd = "cat $CmakeConfigBuild $CMakeListFile > $CMakeListFile_Tmp";
+system($Cmd);
+
+open CMAKE_LIST_FILE_TMP, "<$CMakeListFile_Tmp" or die "Cannot open $CMakeListFile_Tmp: $!";
+open CMAKE_LIST_FILE_BUILD, ">$CMakeListFile_Build" or die "Cannot open $CMakeListFile_Build: $!";
+
+while(<CMAKE_LIST_FILE_TMP>) {
+	my $l = $_;
+	if($Endian =~ "LITTLE") {
+		if($l =~ "#define RTP_BIG_ENDIAN") {
+			$l = "# $l";
+		}
+	}
+	print CMAKE_LIST_FILE_BUILD $l;
+}
+
+close CMAKE_LIST_FILE_TMP;
+close CMAKE_LIST_FILE_BUILD;
+$Cmd = "cp $CMakeListFile_Build ../CMakeLists.txt";
+system($Cmd);
+unlink $CMakeListFile_Tmp, $CMakeListFile_Build;
 
 sub usage {
 	print "perl config_armlinux.pl config.<os-platform>\n";
