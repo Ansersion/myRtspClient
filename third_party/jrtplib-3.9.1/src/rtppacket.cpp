@@ -46,6 +46,8 @@
 
 #include "rtpdebug.h"
 
+#include <stdio.h>
+
 namespace jrtplib
 {
 
@@ -102,6 +104,8 @@ RTPPacket::RTPPacket(uint8_t payloadtype,const void *payloaddata,size_t payloadl
 
 int RTPPacket::ParseRawPacket(RTPRawPacket &rawpack)
 {
+	static bool prompt_flag_for_myRtspClient = false;
+
 	uint8_t *packetbytes;
 	size_t packetlen;
 	uint8_t payloadtype;
@@ -126,8 +130,14 @@ int RTPPacket::ParseRawPacket(RTPRawPacket &rawpack)
 	rtpheader = (RTPHeader *)packetbytes;
 	
 	// The version number should be correct
-	if (rtpheader->version != RTP_VERSION)
+	if (rtpheader->version != RTP_VERSION) {
+		if(!prompt_flag_for_myRtspClient) {
+			printf("***Maybe you need to change 'RTP_ENDIAN' in config.xxx***\n");
+			printf("***when running genMakefiles(only for cross-compiling)***\n");
+			prompt_flag_for_myRtspClient = true;
+		}
 		return ERR_RTP_PACKET_INVALIDPACKET;
+	}
 	
 	// We'll check if this is possibly a RTCP packet. For this to be possible
 	// the marker bit and payload type combined should be either an SR or RR
