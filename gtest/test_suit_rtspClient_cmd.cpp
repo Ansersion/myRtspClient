@@ -163,10 +163,14 @@ TEST(rtspClient, DoPLAY_RegularInput)
 	printf("start PLAY\n");
 	EXPECT_EQ(Client.DoPLAY("video"), RTSP_NO_ERROR);
 	EXPECT_TRUE(Client.IsResponse_200_OK());
+	EXPECT_EQ(Client.DoPLAY("audio"), RTSP_NO_ERROR);
+	EXPECT_TRUE(Client.IsResponse_200_OK());
 
 	sleep(3);
 	printf("start TEARDOWN\n");
 	EXPECT_EQ(Client.DoTEARDOWN("video"), RTSP_NO_ERROR);
+	EXPECT_TRUE(Client.IsResponse_200_OK());
+	EXPECT_EQ(Client.DoTEARDOWN("audio"), RTSP_NO_ERROR);
 	EXPECT_TRUE(Client.IsResponse_200_OK());
 	sleep(3);
 }

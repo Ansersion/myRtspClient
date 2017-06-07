@@ -29,7 +29,7 @@
 #include "rtspClient.h"
 using namespace std;
 
-TEST(rtspClient, TMP_TEST)
+TEST(rtspClient, GET_MEDIA_DATA_TEST)
 {
 	string RtspUri("rtsp://192.168.81.157:8554/ansersion");
     RtspClient Client(RtspUri);
