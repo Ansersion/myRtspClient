@@ -14,7 +14,7 @@ my $Cmd;
 
 open CONFIG, "<$ConfigFile" or die "Cannot open $ConfigFile: $!";
 while(<CONFIG>) {
-	if(/(\w+)\s*=\s*([^\s]+)\n$/) {
+	if(/^\s*(\w+)\s*=\s*([^\s]+)\n$/) {
 		$Key = $1;
 		$Value = $2;
 		$CompileParameter{$Key} = $Value;
