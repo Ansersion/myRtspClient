@@ -18,6 +18,7 @@
 #include "Base64.hh"
 #include "nalu_types_h264.h"
 #include "mpeg_types.h"
+#include "pcmu_types.h"
 
 #include <sstream>
 #include <iostream>
@@ -49,6 +50,7 @@ extern FU_B 		FU_BObj;
 extern NALUTypeBase_H264 NaluBaseType_H264Obj;
 
 extern MPEG_Audio MPEG_AudioObj;
+extern PCMU_Audio PCMU_AudioObj;
 
 extern NALUTypeBase_H265 NaluBaseType_H265Obj;
 
@@ -459,6 +461,7 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session)
 {
 	if(!media_session) {
 		return RTSP_INVALID_MEDIA_SESSION;
+		// return RTSP_NO_ERROR;
 	}
 	ErrorType Err = RTSP_NO_ERROR;
 	int Sockfd = -1;
@@ -588,7 +591,8 @@ int RtspClient::ParseSDP(string SDP)
 
 		}
 		if("a" == Key) {
-			string PatternRtpmap("rtpmap:.* +([0-9A-Za-z]+)/([0-9]+)");
+			// string PatternRtpmap("rtpmap:.* +([0-9A-Za-z]+)/([0-9]+)");
+			string PatternRtpmap("rtpmap:.* +([0-9A-Za-z]+)/([0-9]+)/?([0-9])?");
 			string PatternFmtp_H264("fmtp:.*sprop-parameter-sets=([A-Za-z0-9+/=]+),([A-Za-z0-9+/=]+)");
 			string PatternFmtp_H265("fmtp:.*sprop-vps=([A-Za-z0-9+/=]+);.*sprop-sps=([A-Za-z0-9+/=]+);.*sprop-pps=([A-Za-z0-9+/=]+)");
 			string PatternControl("control:(.+)");
@@ -602,6 +606,13 @@ int RtspClient::ParseSDP(string SDP)
 				stringstream TimeRate;
 				TimeRate << Group.front();
 				TimeRate >> (*MediaSessionMap)[CurrentMediaSession].TimeRate;
+                Group.pop_front();
+                if(!Group.empty()) {
+                    stringstream ChannelNum;
+                    ChannelNum << Group.front();
+                    ChannelNum >> (*MediaSessionMap)[CurrentMediaSession].ChannelNum;
+                }
+
 			} else if(Regex.Regex(Value.c_str(), PatternControl.c_str(), &Group)) {
 				Group.pop_front();
 				string ControlURITmp("");
@@ -1335,7 +1346,7 @@ uint8_t * RtspClient::GetAudioData(MediaSession * media_session, uint8_t * buf, 
 	*size = 0;
 
 	size_t SizeTmp = 0;
-	MPEGTypeBase * MPEGType;
+	AudioTypeBase * AudioType;
 
 	if(!media_session->GetMediaData(AudioBuffer.Buf, &SizeTmp)) return NULL;
 	if(0 == SizeTmp) {
@@ -1343,7 +1354,13 @@ uint8_t * RtspClient::GetAudioData(MediaSession * media_session, uint8_t * buf, 
 		return NULL;
 	}
 
-	MPEGType = &MPEG_AudioObj;
+
+	MyRegex Regex;
+    if(Regex.Regex(media_session->EncodeType.c_str(), "PCMU", true)) {
+        AudioType = &PCMU_AudioObj;
+    } else {
+        AudioType = &MPEG_AudioObj;
+    }
 
 	if(SizeTmp > AudioBuffer.Size) {
 		cerr << "Error: RTP Packet too large(" << SizeTmp << " bytes > " << AudioBuffer.Size << "bytes)" << endl;
@@ -1355,7 +1372,7 @@ uint8_t * RtspClient::GetAudioData(MediaSession * media_session, uint8_t * buf, 
 		return buf;
 	}
 
-	SizeTmp = MPEGType->CopyData(buf + (*size), AudioBuffer.Buf, SizeTmp);
+	SizeTmp = AudioType->CopyData(buf + (*size), AudioBuffer.Buf, SizeTmp);
 	*size += SizeTmp;
 
 	return buf;

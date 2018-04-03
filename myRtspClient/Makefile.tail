@@ -29,9 +29,9 @@ include/nalu_types_h265.h: include/nalu_types.h
 myRegex.cpp: include/myRegex.h
 MediaSession.cpp: include/MediaSession.h include/myRtpSession.h 
 myRtpSession.cpp: include/myRtpSession.h include/MediaSession.h
-nalu_types_h264.cpp: include/nalu_types.h include/nalu_types_h264.h
-nalu_types_h265.cpp: include/nalu_types.h include/nalu_types_h265.h
-pcmu_types.cpp: include/pcmu_types.h
+nalu_types_h264.cpp: include/nalu_types.h include/nalu_types_h264.h include/audio_type_base.h
+nalu_types_h265.cpp: include/nalu_types.h include/nalu_types_h265.h include/audio_type_base.h
+pcmu_types.cpp: include/pcmu_types.h include/audio_type_base.h
 rtspClient.cpp: include/rtspClient.h include/utils.h $(BASE64_INCLUDE)/Base64.hh include/nalu_types.h include/mpeg_types.h include/nalu_types_h264.h include/nalu_types_h265.h
 utils.cpp: include/utils.h $(MD5_INCLUDE)/md5.h
 

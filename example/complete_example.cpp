@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
 	 * if there are several 'video' session 
 	 * refered in SDP, only play the first 'video' 
 	 * session, the same as 'audio'.*/
-	if(Client.DoPLAY("video") != RTSP_NO_ERROR) {
+	if(Client.DoPLAY("audio") != RTSP_NO_ERROR) {
 		printf("DoPLAY error\n");
 		return 0;
 	}
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 	int fd = open("test_packet_recv.h264", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR);
 
 	while(++packet_num < 1000) {
-		if(!Client.GetMediaData("video", buf, &size, BufSize)) continue;
+		if(!Client.GetMediaData("audio", buf, &size, BufSize)) continue;
 		if(write(fd, buf, size) < 0) {
 			perror("write");
 		}
@@ -131,9 +131,10 @@ int main(int argc, char *argv[])
 	}
 
 	printf("start TEARDOWN\n");
+    int err = Client.DoTEARDOWN();
 	/* Send TEARDOWN command to teardown all of the sessions */
-	if(Client.DoTEARDOWN() != RTSP_NO_ERROR) {
-		printf("DoTEARDOWN error\n");
+	if(err != RTSP_NO_ERROR && err != RTSP_INVALID_MEDIA_SESSION) {
+		printf("DoTEARDOWN error: %d\n", err);
 		return 0;
 	}
 

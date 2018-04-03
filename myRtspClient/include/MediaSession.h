@@ -78,6 +78,7 @@ class MediaSession
 		std::vector<int> PayloadType; // ###2015-01-11### //
 		std::string EncodeType;
 		unsigned int TimeRate;
+		unsigned int ChannelNum;
 		// std::map<unsigned int, StreamParameters> StreamParams;
 
 		std::string ControlURI;

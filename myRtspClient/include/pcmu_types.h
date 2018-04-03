@@ -18,8 +18,9 @@
 
 #include <string>
 #include <stdint.h>
+#include <audio_type_base.h>
 
-class PCMUTypeBase
+class PCMUTypeBase : public AudioTypeBase
 {
 	public:
 		PCMUTypeBase() {Name.assign("PCMUTypeBase");};
@@ -29,8 +30,8 @@ class PCMUTypeBase
 		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size) { return 0;};
 		virtual int GetFlagOffset(const uint8_t * RTPPayload) { return -1; };
 
-	protected:
-		std::string Name;
+	// protected:
+	// 	std::string Name;
 };
 
 

@@ -22,10 +22,11 @@
 
 #include <string>
 #include <stdint.h>
+#include <audio_type_base.h>
 
 #define MPEG_AUDIO_RTP_HEADER_SIZE 	4
 
-class MPEGTypeBase
+class MPEGTypeBase : public AudioTypeBase
 {
 	public:
 		MPEGTypeBase() {Name.assign("MPEGTypeBase");};
@@ -35,8 +36,8 @@ class MPEGTypeBase
 		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size) { return 0;};
 		virtual int GetFlagOffset(const uint8_t * RTPPayload) { return -1; };
 
-	protected:
-		std::string Name;
+	// protected:
+	// 	std::string Name;
 };
 
 class MPEG_Audio : public MPEGTypeBase
