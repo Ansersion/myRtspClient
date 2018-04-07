@@ -1252,6 +1252,39 @@ uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * si
 	return NULL;
 }
 
+int RtspClient::GetTimeRate(string media_type)
+{
+	MyRegex Regex;
+	map<string, MediaSession>::iterator it;
+	bool IgnoreCase = true;
+
+	for(it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
+		if(Regex.Regex(it->first.c_str(), media_type.c_str(), IgnoreCase)) break;
+	}
+
+	if(it == MediaSessionMap->end()) {
+		return -1;
+	}
+	return it->second.TimeRate;
+}
+
+int RtspClient::GetChannelNum(string media_type)
+{
+	MyRegex Regex;
+	map<string, MediaSession>::iterator it;
+	bool IgnoreCase = true;
+
+	for(it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
+		if(Regex.Regex(it->first.c_str(), media_type.c_str(), IgnoreCase)) break;
+	}
+
+	if(it == MediaSessionMap->end()) {
+		return -1;
+	}
+	return it->second.ChannelNum;
+}
+
+
 uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size, bool get_vps_sps_pps_periodly) 
 {
 	if(!media_session || !buf || !size) return NULL;

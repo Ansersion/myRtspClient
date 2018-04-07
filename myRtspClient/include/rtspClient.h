@@ -137,6 +137,9 @@ class RtspClient
 		 * */
 		ErrorType DoTEARDOWN(string media_type);
 
+		int GetTimeRate(string media_type);
+		int GetChannelNum(string media_type);
+
 		int ParseSDP(string SDP = "");
 		string ParseSessionID(string ResponseOfSETUP = "");
 		const MediaSession * GetVideoSession();
