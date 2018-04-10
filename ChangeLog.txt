@@ -1,3 +1,6 @@
+2018.04.10:
+- Support g711(mu-law)
+
 2017.04.13:
 - Support MD5 Digest authentication
 

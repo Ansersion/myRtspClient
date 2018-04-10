@@ -35,6 +35,7 @@ Video Codec Supported:
 Audio Codec Supported:
 
 	MPA
+    g711(mu-law)
 
 Cast Method Supported:
 	Unicast
