@@ -72,6 +72,7 @@ MediaSession::MediaSession():
 	NalUnitType(NULL)
 
 {
+	ChannelNum = 1;
 }
 
 MediaSession::~MediaSession()
