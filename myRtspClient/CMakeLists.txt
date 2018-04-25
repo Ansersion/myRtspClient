@@ -14,4 +14,15 @@ include_directories(../third_party/JRTPLIB/src)
 file(GLOB SOURCES "*.cpp")
 
 add_library(myRtspClient STATIC ${SOURCES})
+
+add_library(libmd5 STATIC IMPORTED)
+SET_PROPERTY(TARGET libmd5 PROPERTY IMPORTED_LOCATION ./md5)
+
+add_library(libbase64_live555 STATIC IMPORTED)
+SET_PROPERTY(TARGET libbase64_live555 PROPERTY IMPORTED_LOCATION ./base64_live555)
+
+add_library(librtp STATIC IMPORTED)
+SET_PROPERTY(TARGET librtp PROPERTY IMPORTED_LOCATION ./jrtplib/src)
+
+target_link_libraries(myRtspClient libmd5 libbase64_live555 librtp)
 #install(TARGETS myRtspClient DESTINATION /usr/lib)
