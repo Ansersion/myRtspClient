@@ -26,3 +26,7 @@ example/recv_video_and_audio_example
 example/test_audio_recv.mp3
 example/test_video_recv.h264
 test.txt
+third_party/*/CMakeFiles/
+third_party/*/cmake_install.cmake
+third_party/*/CMakeCache.txt
+third_party/JRTPLIB/*
