@@ -30,3 +30,9 @@ third_party/*/CMakeFiles/
 third_party/*/cmake_install.cmake
 third_party/*/CMakeCache.txt
 third_party/JRTPLIB/*
+myRtspClient/CMakeFiles/
+myRtspClient/cmake_install.cmake
+myRtspClient/CMakeCache.txt
+base64_live555/
+md5/
+jrtplib/
