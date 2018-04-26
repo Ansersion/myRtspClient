@@ -28,9 +28,7 @@ include_directories(../third_party/md5/include)
 include_directories(jrtplib/src)
 include_directories(../third_party/JRTPLIB/src)
 
-file(GLOB SOURCES "../third_party/Base64_live555/*.cpp")
-file(GLOB SOURCES "../third_party/md5/*.cpp")
-file(GLOB SOURCES "*.cpp") 
+file(GLOB SOURCES "*.cpp" "../third_party/Base64_live555/*.cpp" "../third_party/md5/*.cpp") 
 
 #add_library(libmd5 STATIC IMPORTED)
 #SET_PROPERTY(TARGET libmd5 PROPERTY IMPORTED_LOCATION md5/libmd5.a)
