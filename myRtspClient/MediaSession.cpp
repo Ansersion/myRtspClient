@@ -144,3 +144,9 @@ int MediaSession::MediaInfoCheck()
 	}
 	return 0;
 }
+
+void MediaSession::SetRtpDestroiedClbk(void (*clbk)()) { 
+	if(RTPInterface) {
+		RTPInterface->SetDestroiedClbk(clbk);
+	}
+}

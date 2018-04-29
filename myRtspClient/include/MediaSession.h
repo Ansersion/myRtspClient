@@ -69,6 +69,7 @@ class MediaSession
 		uint8_t * GetMediaPacket(uint8_t * buf, size_t * size, unsigned long timeout_ms = TIMEOUT_MICROSECONDS);
 
 		int MediaInfoCheck();
+		void SetRtpDestroiedClbk(void (*clbk)());
 
 	public:
 		std::string MediaType;

@@ -24,6 +24,13 @@
 using std::cout;
 using std::endl;
 
+bool ByeFromServerFlag = false;
+void ByeFromServerClbk()
+{
+	cout << "Server send BYE" << endl;
+	ByeFromServerFlag = true;
+}
+
 int main(int argc, char *argv[])
 {
 	if(argc != 2) {
@@ -126,6 +133,9 @@ int main(int argc, char *argv[])
 		if(!Client.GetMediaData("audio", buf, &size, BufSize)) continue;
 		if(write(fd, buf, size) < 0) {
 			perror("write");
+		}
+		if(ByeFromServerFlag) {
+			break;
 		}
 		printf("recv %u\n", size);
 	}

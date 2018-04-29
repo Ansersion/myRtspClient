@@ -44,6 +44,8 @@ using std::multimap;
 #define RECV_BUF_SIZE 			8192
 #define SEARCH_PORT_RTP_FROM 	10330 // '10330' is chosen at random(must be a even number)
 
+typedef void (*DESTROIED_CLBK) ();
+
 enum SessionType {
     VIDEO_SESSION = 0, 
     AUDIO_SESSION
@@ -183,6 +185,12 @@ class RtspClient
 		void SetUsername(string username) {Username.assign(username);}
 		void SetPassword(string password) {Password.assign(password);}
 
+	public:
+		void SetDestroiedClbk(MediaSession * media_session, DESTROIED_CLBK clbk);
+		void SetDestroiedClbk(string media_type, DESTROIED_CLBK clbk);
+		void SetAudioByeFromServerClbk(DESTROIED_CLBK clbk);
+		void SetVideoByeFromServerClbk(DESTROIED_CLBK clbk);
+
 	protected:
 
 		uint8_t * GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size, bool get_vps_sps_pps_periodly = true);
@@ -229,6 +237,8 @@ class RtspClient
 		string Password;
 		string Realm;
 		string Nonce;
+		DESTROIED_CLBK ByeFromServerAudioClbk;
+		DESTROIED_CLBK ByeFromServerVideoClbk;
 };
 
 #endif

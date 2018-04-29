@@ -31,6 +31,9 @@
 #include <iostream>
 #include <string>
 
+
+typedef void (*DESTROIED_RTP_CLBK) ();
+
 using namespace jrtplib;
 class MediaSession;
 
@@ -39,6 +42,7 @@ int checkerror(int rtperr);
 class MyRTPSession : public RTPSession
 {
 	public:
+		MyRTPSession();
 		int MyRTP_SetUp(MediaSession * media_session);
 
 		/* Wait 1 second for TEARDOWN at default */
@@ -46,11 +50,16 @@ class MyRTPSession : public RTPSession
 		uint8_t * GetMyRTPData(uint8_t * data_buf, size_t * size, unsigned long timeout_ms);
 		uint8_t * GetMyRTPPacket(uint8_t * packet_buf, size_t * size, unsigned long timeout_ms);
 
+		void SetDestroiedClbk(void (*clbk)()) {DestroiedClbk = clbk;}
+
 	protected:
 		int IsError(int rtperr);
 		void OnNewSource(RTPSourceData *dat);
 		void OnBYEPacket(RTPSourceData *dat);
 		void OnRemoveSource(RTPSourceData *dat);
+
+	private:
+		void (*DestroiedClbk)();
 
 };
 

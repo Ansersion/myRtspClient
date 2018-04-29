@@ -24,6 +24,13 @@
 using std::cout;
 using std::endl;
 
+bool ByeFromServerFlag = false;
+void ByeFromServerClbk()
+{
+	cout << "Server send BYE" << endl;
+	ByeFromServerFlag = true;
+}
+
 int main(int argc, char *argv[])
 {
 	if(argc != 2) {
@@ -56,6 +63,7 @@ int main(int argc, char *argv[])
 	/* Send SETUP command to set up all 'audio' and 'video' 
 	 * sessions which SDP refers. */
 	Client.DoSETUP();
+	Client.SetVideoByeFromServerClbk(ByeFromServerClbk);
 
 	printf("start PLAY\n");
 	printf("SDP: %s\n", Client.GetSDP().c_str());
@@ -81,6 +89,9 @@ int main(int argc, char *argv[])
 		if(!Client.GetMediaData("video", buf, &size, BufSize)) continue;
 		if(write(fd, buf, size) < 0) {
 			perror("write");
+		}
+		if(ByeFromServerFlag) {
+			break;
 		}
 		printf("recv %u\n", size);
 	}

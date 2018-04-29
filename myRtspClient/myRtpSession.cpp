@@ -31,6 +31,13 @@ using namespace jrtplib;
 // message and exists.
 //
 
+MyRTPSession::MyRTPSession():
+	RTPSession(), 
+	DestroiedClbk(NULL)
+{
+
+}
+
 int MyRTPSession::IsError(int rtperr)
 {
 	if (rtperr < 0)
@@ -151,6 +158,9 @@ void MyRTPSession::OnBYEPacket(RTPSourceData *dat)
 	struct in_addr inaddr;
 	inaddr.s_addr = htonl(ip);
 	std::cout << "Deleting destination " << std::string(inet_ntoa(inaddr)) << ":" << port << std::endl;
+	if(DestroiedClbk) {
+		DestroiedClbk();
+	} 
 }
 
 void MyRTPSession::OnRemoveSource(RTPSourceData *dat)
@@ -184,6 +194,9 @@ void MyRTPSession::OnRemoveSource(RTPSourceData *dat)
 	struct in_addr inaddr;
 	inaddr.s_addr = htonl(ip);
 	std::cout << "Deleting destination " << std::string(inet_ntoa(inaddr)) << ":" << port << std::endl;
+	if(DestroiedClbk) {
+		DestroiedClbk();
+	}
 }
 
 uint8_t * MyRTPSession::GetMyRTPData(uint8_t * data_buf, size_t * size, unsigned long timeout_ms)

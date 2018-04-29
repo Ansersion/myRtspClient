@@ -68,6 +68,9 @@ RtspClient::RtspClient():
 	if((VideoBuffer.Buf = (uint8_t *)malloc(BUFSIZ)))
 		VideoBuffer.Size = BUFSIZ;
 
+	ByeFromServerAudioClbk = NULL;
+	ByeFromServerVideoClbk = NULL;
+
 	/* Temporary only FU_A supported */
 	// NALUType = new FU_A;
 }
@@ -87,6 +90,8 @@ RtspClient::RtspClient(string uri):
 
 	/* Temporary only FU_A supported */
 	// NALUType = new FU_A;
+	ByeFromServerAudioClbk = NULL;
+	ByeFromServerVideoClbk = NULL;
 }
 
 RtspClient::~RtspClient()
@@ -327,6 +332,8 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 	// }
 	media_session->SessionID = ParseSessionID(RtspResponse);
 	media_session->RTP_SetUp();
+	SetDestroiedClbk("audio", ByeFromServerAudioClbk);
+	SetDestroiedClbk("video", ByeFromServerVideoClbk);
 
 	// media_session->RTSPSockfd = Sockfd;
 	// close(Sockfd);
@@ -1284,6 +1291,39 @@ int RtspClient::GetChannelNum(string media_type)
 	return it->second.ChannelNum;
 }
 
+void RtspClient::SetAudioByeFromServerClbk(DESTROIED_CLBK clbk)
+{
+	ByeFromServerAudioClbk = clbk;
+	SetDestroiedClbk("audio", clbk);
+}
+
+void RtspClient::SetVideoByeFromServerClbk(DESTROIED_CLBK clbk)
+{
+	ByeFromServerVideoClbk = clbk;
+	SetDestroiedClbk("video", clbk);
+}
+
+void RtspClient::SetDestroiedClbk(MediaSession * media_session, DESTROIED_CLBK clbk)
+{
+	if(media_session) {
+		media_session->SetRtpDestroiedClbk(clbk);
+	}
+}
+
+void RtspClient::SetDestroiedClbk(string media_type, DESTROIED_CLBK clbk)
+{
+	MyRegex Regex;
+	map<string, MediaSession>::iterator it;
+	bool IgnoreCase = true;
+	for(it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
+		if(Regex.Regex(it->first.c_str(), media_type.c_str(), IgnoreCase)) break;
+	}
+	if(it == MediaSessionMap->end()) {
+		// fprintf(stderr, "%s: No such media session\n", __func__);
+		return;
+	}
+	it->second.SetRtpDestroiedClbk(clbk);
+}
 
 uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size, bool get_vps_sps_pps_periodly) 
 {
