@@ -39,6 +39,9 @@ int main(int argc, char *argv[])
 		cout << argv[0] << " rtsp://127.0.0.1/ansersion" << endl;
 		return 1;
 	}
+	float scale = -1;
+	float start_time = 70.5;
+	float end_time = 50.5;
 	cout << "Start play " << argv[1] << endl;
 	cout << "Then put video data into test_packet_recv.h264" << endl;
 	string RtspUri(argv[1]);
@@ -102,7 +105,7 @@ int main(int argc, char *argv[])
 	 * if there are several 'video' session 
 	 * refered in SDP, only play the first 'video' 
 	 * session, the same as 'audio'.*/
-	if(Client.DoPLAY("audio") != RTSP_NO_ERROR) {
+	if(Client.DoPLAY("audio", &scale, &start_time, &end_time) != RTSP_NO_ERROR) {
 		printf("DoPLAY error\n");
 		return 0;
 	}
@@ -120,6 +123,7 @@ int main(int argc, char *argv[])
 	 * refered in SDP, only receive packets of the first 
 	 * 'video' session, the same as 'audio'.*/
 	int packet_num = 0;
+	int try_times = 0;
 	const size_t BufSize = 98304;
 	uint8_t buf[BufSize];
 	size_t size = 0;
@@ -129,14 +133,22 @@ int main(int argc, char *argv[])
 	// int fd = open("test_packet_recv.h264", O_CREAT | O_RDWR, 0);
 	int fd = open("test_packet_recv.h264", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR);
 
-	while(++packet_num < 1000) {
-		if(!Client.GetMediaData("audio", buf, &size, BufSize)) continue;
+	while(true) {
+		if(!Client.GetMediaData("audio", buf, &size, BufSize)) {
+			if(try_times > 5) {
+				break;
+			}
+			try_times++;
+			continue;
+		}
 		if(write(fd, buf, size) < 0) {
 			perror("write");
 		}
 		if(ByeFromServerFlag) {
 			break;
 		}
+
+		try_times = 0;
 		printf("recv %u\n", size);
 	}
 

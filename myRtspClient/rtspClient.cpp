@@ -374,7 +374,7 @@ ErrorType RtspClient::DoPLAY()
 	return ErrAll;
 }
 
-ErrorType RtspClient::DoPLAY(MediaSession * media_session)
+ErrorType RtspClient::DoPLAY(MediaSession * media_session, float * scale, float * start_time, float * end_time)
 {
 	if(!media_session) {
 		return RTSP_INVALID_MEDIA_SESSION;
@@ -388,6 +388,25 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session)
 	string Cmd("PLAY");
 	stringstream Msg("");
 	Msg << Cmd << " " << RtspURI << " " << "RTSP/" << VERSION_RTSP << "\r\n";
+	if(scale) {
+		char floatChar[32];
+		sprintf(floatChar, "%.1f", *scale);
+		Msg << "Scale: " << floatChar << "\r\n";
+	}
+	if(start_time || end_time) {
+		char floatChar[32];
+		Msg << "Range: npt=";
+		if(start_time) {
+			sprintf(floatChar, "%.1f", *start_time);
+			Msg << floatChar;
+		}
+		Msg << "-";
+		if(end_time) {
+			sprintf(floatChar, "%.1f", *end_time);
+			Msg << floatChar;
+		}
+		Msg << "\r\n";
+	}
 	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
 	Msg << "Session: " << media_session->SessionID << "\r\n";
 	if(Realm.length() > 0 && Nonce.length() > 0) {
@@ -403,6 +422,7 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session)
 			<< "\", response=\"" << Md5Response << "\"\r\n";
 	}
 	Msg << "\r\n";
+	std::cout << Msg.str();
 
 	if(RTSP_NO_ERROR == Err && !SendRTSP(Sockfd, Msg.str())) {
 		Close(Sockfd);
@@ -425,7 +445,7 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session)
 	return RTSP_NO_ERROR;
 }
 
-ErrorType RtspClient::DoPLAY(string media_type)
+ErrorType RtspClient::DoPLAY(string media_type, float * scale, float * start_time, float * end_time)
 {
 	MyRegex Regex;
 	ErrorType Err = RTSP_NO_ERROR;
@@ -437,7 +457,7 @@ ErrorType RtspClient::DoPLAY(string media_type)
 	}
 
 	if(it != MediaSessionMap->end()) {
-		Err = DoPLAY(&(it->second));
+		Err = DoPLAY(&(it->second), scale, start_time, end_time);
 		return Err;
 	}
 	Err = RTSP_INVALID_MEDIA_SESSION;

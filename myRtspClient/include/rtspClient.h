@@ -109,13 +109,31 @@ class RtspClient
 		/* To play all of the media sessions in SDP */
 		ErrorType DoPLAY();
 		
-		/* To play the media sessions */
-		ErrorType DoPLAY(MediaSession * media_session);
+		/* To play the media sessions 
+		 * media_session: 
+		 * 	the media session
+		 * scale: 
+		 *	playing speed, such as 1.5 means 1.5 times of the normal speed, default NULL=normal speed
+		 * start_time: 
+		 *	start playing point, such as 20.5 means starting to play at 20.5 seconds, default NULL=play from 0 second or the PAUSE point
+		 * end_time: 
+		 *	end playing point, such as 20.5 means ending play at 20.5 seconds, default NULL=play to the end
+		 * */
+		ErrorType DoPLAY(MediaSession * media_session, float * scale = NULL, float * start_time = NULL, float * end_time = NULL);
 
 		/* Example: DoPLAY("video");
 		 * To play the first video session in SDP
+		 * media_type: 
+		 * "audio"/"video"
+		 * scale: 
+		 *	playing speed, such as 1.5 means 1.5 times of the normal speed, default NULL=normal speed
+		 * start_time: 
+		 *	start playing point, such as 20.5 means starting to play at 20.5 seconds, default NULL=play from 0 second or the PAUSE point
+		 * end_time: 
+		 *	end playing point, such as 20.5 means ending play at 20.5 seconds, default NULL=play to the end
+		 * 
 		 * */
-		ErrorType DoPLAY(string media_type);
+		ErrorType DoPLAY(string media_type, float * scale = NULL, float * start_time = NULL, float * end_time = NULL);
 
 		/* To pause all of the media sessions in SDP */
 		ErrorType DoPAUSE();
