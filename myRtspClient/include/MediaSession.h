@@ -90,6 +90,7 @@ class MediaSession
 		uint16_t RTCPPort;
 		// int RTCPSockfd;
 		int Packetization;
+		int Timeout;
 
 	protected:
 		MyRTPSession * RTPInterface;

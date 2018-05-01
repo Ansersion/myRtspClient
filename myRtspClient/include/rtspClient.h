@@ -146,6 +146,19 @@ class RtspClient
 		 * */
 		ErrorType DoPAUSE(string media_type);
 
+		/* To get parameters all of the media sessions in SDP 
+		* The most general use is to keep the RTSP session alive: 
+		* Invoke this function periodly within TIMEOUT(see: GetSessionTimeout()) */
+		ErrorType DoGET_PARAMETER();
+
+		/* To get parameters of the media sessions */
+		ErrorType DoGET_PARAMETER(MediaSession * media_session);
+
+		/* Example: DoGET_PARAMETER("video");
+		 * To get parameters of the first video session in SDP
+		 * */
+		ErrorType DoGET_PARAMETER(string media_type);
+
 		/* To teardown all of the media sessions in SDP */
 		ErrorType DoTEARDOWN();
 
@@ -162,6 +175,7 @@ class RtspClient
 
 		int ParseSDP(string SDP = "");
 		string ParseSessionID(string ResponseOfSETUP = "");
+		int ParseTimeout(string ResponseOfSETUP = "");
 		const MediaSession * GetVideoSession();
 		const MediaSession * GetAudioSession();
 
@@ -208,6 +222,9 @@ class RtspClient
 		void SetDestroiedClbk(string media_type, DESTROIED_CLBK clbk);
 		void SetAudioByeFromServerClbk(DESTROIED_CLBK clbk);
 		void SetVideoByeFromServerClbk(DESTROIED_CLBK clbk);
+
+		int GetSessionTimeout(string media_type);
+		int GetSessionTimeout(MediaSession * media_session);
 
 	protected:
 
@@ -257,6 +274,7 @@ class RtspClient
 		string Nonce;
 		DESTROIED_CLBK ByeFromServerAudioClbk;
 		DESTROIED_CLBK ByeFromServerVideoClbk;
+		int Timeout;
 };
 
 #endif

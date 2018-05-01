@@ -261,6 +261,73 @@ ErrorType RtspClient::DoPAUSE(string media_type)
 	return Err;
 }
 
+ErrorType RtspClient::DoGET_PARAMETER()
+{
+	ErrorType Err = RTSP_NO_ERROR;
+	ErrorType ErrAll = RTSP_NO_ERROR;
+
+	for(map<string, MediaSession>::iterator it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
+		Err = DoGET_PARAMETER(&(it->second));
+		if(RTSP_NO_ERROR == ErrAll) ErrAll = Err; // Remeber the first error
+		printf("GET_PARAMETER Session %s: %s\n", it->first.c_str(), ParseError(Err).c_str());
+	}
+
+	return ErrAll;
+}
+
+ErrorType RtspClient::DoGET_PARAMETER(MediaSession * media_session)
+{
+	if(!media_session) {
+		return RTSP_INVALID_MEDIA_SESSION;
+	}
+	ErrorType Err = RTSP_NO_ERROR;
+	int Sockfd = -1;
+
+	Sockfd = CreateTcpSockfd();
+	if(Sockfd < 0) return RTSP_INVALID_URI;
+	
+	string Cmd("GET_PARAMETER");
+	stringstream Msg("");
+	Msg << Cmd << " " << RtspURI << " " << "RTSP/" << VERSION_RTSP << "\r\n";
+	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
+	Msg << "Session: " << media_session->SessionID << "\r\n";
+	Msg << "\r\n";
+
+	if(RTSP_NO_ERROR == Err && !SendRTSP(Sockfd, Msg.str())) {
+		Close(Sockfd);
+		// close(Sockfd);
+		Sockfd = -1;
+		Err = RTSP_SEND_ERROR;
+	}
+	if(RTSP_NO_ERROR == Err && !RecvRTSP(Sockfd, &RtspResponse)) {
+		Close(Sockfd);
+		// close(Sockfd);
+		Sockfd = -1;
+		Err = RTSP_RECV_ERROR;
+	}
+	// close(Sockfd);
+	return Err;
+}
+
+ErrorType RtspClient::DoGET_PARAMETER(string media_type)
+{
+	MyRegex Regex;
+	ErrorType Err = RTSP_NO_ERROR;
+	map<string, MediaSession>::iterator it;
+	bool IgnoreCase = true;
+
+	for(it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
+		if(Regex.Regex(it->first.c_str(), media_type.c_str(), IgnoreCase)) break;
+	}
+
+	if(it != MediaSessionMap->end()) {
+		Err = DoGET_PARAMETER(&(it->second));
+		return Err;
+	}
+	Err = RTSP_INVALID_MEDIA_SESSION;
+	return Err;
+}
+
 ErrorType RtspClient::DoSETUP()
 {
 	MyRegex Regex;
@@ -331,6 +398,13 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 	// 	return RTSP_RESPONSE_401;
 	// }
 	media_session->SessionID = ParseSessionID(RtspResponse);
+	int timeout = ParseTimeout(RtspResponse);
+	if(timeout <= 0) {
+		// default 60
+		media_session->Timeout = 60;
+	}
+	media_session->Timeout = timeout;
+
 	media_session->RTP_SetUp();
 	SetDestroiedClbk("audio", ByeFromServerAudioClbk);
 	SetDestroiedClbk("video", ByeFromServerVideoClbk);
@@ -442,7 +516,7 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session, float * scale, float 
 	// 	return RTSP_RESPONSE_401;
 	// }
 	// close(Sockfd);
-	return RTSP_NO_ERROR;
+	return Err;
 }
 
 ErrorType RtspClient::DoPLAY(string media_type, float * scale, float * start_time, float * end_time)
@@ -1209,6 +1283,27 @@ string RtspClient::ParseSessionID(string ResponseOfSETUP)
 	return Result;
 }
 
+int RtspClient::ParseTimeout(string ResponseOfSETUP)
+{
+	MyRegex Regex;
+	string Response("");
+	int Result = -1;
+
+	if(ResponseOfSETUP.length() != 0) Response.assign(ResponseOfSETUP);
+	else if(RtspResponse.length() != 0) Response.assign(RtspResponse);
+	else return Result;
+
+	// Session: 970756dc30b3a638;timeout=60
+	string Pattern("Session:.*timeout=([1-9][0-9]*)");
+	list<string> Group;
+	bool IgnoreCase = true;
+	if(Regex.Regex(Response.c_str(), Pattern.c_str(), &Group, IgnoreCase)) {
+		Group.pop_front();
+		Result =  atoi(Group.front().c_str());
+	}
+	return Result;
+}
+
 bool RtspClient::IsResponse_200_OK(ErrorType * err, string * response)
 {
 	// example: 
@@ -1321,6 +1416,29 @@ void RtspClient::SetVideoByeFromServerClbk(DESTROIED_CLBK clbk)
 {
 	ByeFromServerVideoClbk = clbk;
 	SetDestroiedClbk("video", clbk);
+}
+
+int RtspClient::GetSessionTimeout(string media_type)
+{
+	MyRegex Regex;
+	map<string, MediaSession>::iterator it;
+	bool IgnoreCase = true;
+	for(it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
+		if(Regex.Regex(it->first.c_str(), media_type.c_str(), IgnoreCase)) break;
+	}
+	if(it == MediaSessionMap->end()) {
+		// fprintf(stderr, "%s: No such media session\n", __func__);
+		return 0;
+	}
+	return it->second.Timeout;
+}
+
+int RtspClient::GetSessionTimeout(MediaSession * media_session)
+{
+	if(!media_session) {
+		return 0;
+	}
+	return media_session->Timeout;
 }
 
 void RtspClient::SetDestroiedClbk(MediaSession * media_session, DESTROIED_CLBK clbk)
