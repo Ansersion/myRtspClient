@@ -66,7 +66,7 @@ int MyRegex::Regex(const char * str, const char * pattern, list<string> * groups
 		return REGEX_FAILURE;
 	}
 	ErrNo = regexec(pReg, str, GroupNum, pMatch, 0);
-	if(ErrNo != REG_NOERROR) {
+	if(ErrNo != 0) { //REG_NOERROR is problematic in many systems 
 		regfree(pReg);free(pReg);free(pMatch);
 		pReg = NULL; pMatch = NULL;
 		return REGEX_FAILURE;
