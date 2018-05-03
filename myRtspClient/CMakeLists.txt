@@ -21,12 +21,12 @@ project(myRtspClient)
 #add_subdirectory(../third_party/JRTPLIB jrtplib)
 #add_dependencies(jrtplib)
 
-add_subdirectory(../third_party/JRTPLIB ../third_party/JRTPLIB)
+add_subdirectory(../third_party/JRTPLIB jrtplib)
+#ExternalProject_Add(jrtplib SOURCE_DIR ../third_party/JRTPLIB BINARY_DIR jrtplib_ INSTALL_DIR jrtplib)
 include_directories(include)
 include_directories(../third_party/Base64_live555/include)
 include_directories(../third_party/md5/include)
-include_directories(jrtplib/src)
-include_directories(../third_party/JRTPLIB/src)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/jrtplib/src)
 
 file(GLOB SOURCES "*.cpp" "../third_party/Base64_live555/*.cpp" "../third_party/md5/*.cpp") 
 
@@ -38,11 +38,14 @@ file(GLOB SOURCES "*.cpp" "../third_party/Base64_live555/*.cpp" "../third_party/
 #SET_PROPERTY(TARGET libbase64_live555 PROPERTY IMPORTED_LOCATION base64_live555/libbase64_live555.a)
 #SET_PROPERTY(TARGET libbase64_live555 PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-#add_library(libjrtp STATIC IMPORTED)
+#add_library(libjrtp STATIC IMPORTED) 
 #SET_PROPERTY(TARGET libjrtp PROPERTY IMPORTED_LOCATION jrtplib/src/libjrtp.a)
 #SET_PROPERTY(TARGET libjrtp PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-add_library(myRtspClient STATIC ${SOURCES})
+add_library(myRtspClient SHARED ${SOURCES})
+add_dependencies(myRtspClient jrtplib-shared)
+
+#target_link_libraries(myRtspClient)
 
 #target_link_libraries(myRtspClient libmd5 libbase64_live555)# libjrtp)
 #install(TARGETS myRtspClient DESTINATION /usr/lib)
