@@ -26,6 +26,8 @@ add_subdirectory(../third_party/JRTPLIB jrtplib)
 include_directories(include)
 include_directories(../third_party/Base64_live555/include)
 include_directories(../third_party/md5/include)
+include_directories(../third_party/JRTPLIB/src)
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/jrtplib/src)
 
 file(GLOB SOURCES "*.cpp" "../third_party/Base64_live555/*.cpp" "../third_party/md5/*.cpp") 
