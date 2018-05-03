@@ -42,3 +42,5 @@ myRtspClient/jrtplib/CMakeFiles/progress.marks
 myRtspClient/jrtplib/CMakeFiles/CMakeDirectoryInformation.cmake
 myRtspClient/jrtplib/cmake_install.cmake
 myRtspClient/jrtplib/src/cmake_install.cmake
+myRtspClient/libmyRtspClient.so
+myRtspClient/jrtplib/examples/example[0-9]
