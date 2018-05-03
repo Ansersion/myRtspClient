@@ -29,3 +29,16 @@ third_party/*/CMakeCache.txt
 myRtspClient/CMakeFiles/
 myRtspClient/cmake_install.cmake
 myRtspClient/CMakeCache.txt
+myRtspClient/jrtplib/cmake/*
+myRtspClient/jrtplib/examples/CMakeFiles/
+myRtspClient/jrtplib/src/CMakeFiles/
+myRtspClient/jrtplib/src/rtpconfig.h
+myRtspClient/jrtplib/src/rtplibraryversioninternal.h
+myRtspClient/jrtplib/src/rtptypes.h
+myRtspClient/jrtplib/src/libjrtp.so*
+myRtspClient/jrtplib/pkgconfig/jrtplib.pc
+myRtspClient/jrtplib/examples/cmake_install.cmake
+myRtspClient/jrtplib/CMakeFiles/progress.marks
+myRtspClient/jrtplib/CMakeFiles/CMakeDirectoryInformation.cmake
+myRtspClient/jrtplib/cmake_install.cmake
+myRtspClient/jrtplib/src/cmake_install.cmake

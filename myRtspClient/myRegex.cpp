@@ -19,7 +19,6 @@
 
 const int MyRegex::REGEX_FAILURE = 0;
 const int MyRegex::REGEX_SUCCESS = 1;
-const int REG_NOERROR = 0;
 
 MyRegex::MyRegex():
 	pReg(NULL), pMatch(NULL), NextPos(string::npos), LastStr(NULL)
