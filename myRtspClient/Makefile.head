@@ -1,9 +1,9 @@
 INCLUDES = -Iinclude
 
-JRTPLIB_INCLUDE = ../third_party/jrtplib-3.9.1/src
+JRTPLIB_INCLUDE = ../third_party/JRTPLIB/src
 JRTPLIB_DIR = $(JRTPLIB_INCLUDE)
 
-JRTPLIB_INCLUDE_BUILD = ../third_party/jrtplib-3.9.1/build/src
+JRTPLIB_INCLUDE_BUILD = ../third_party/JRTPLIB/build/src
 JRTPLIB_BUILD_DIR = $(JRTPLIB_INCLUDE_BUILD)
 
 INCLUDES += -I$(JRTPLIB_INCLUDE)

@@ -34,7 +34,7 @@ cd ../../third_party/md5
 cat Makefile.head ../../config.$1 Makefile.tail > Makefile
 chmod a-w Makefile
 
-cd ../../third_party/jrtplib-3.9.1
+cd ../../third_party/JRTPLIB
 /bin/rm -f Makefile
 /bin/rm -f myRtspClientConfig/cmake_config_build.$1 
 mkdir -p build
