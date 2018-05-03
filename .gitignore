@@ -8,9 +8,6 @@ capdir
 gtest/backup/*
 gtest/writeSTAP_Packet1.h264
 gtest/writeSTAP_Packet2.h264
-third_party/jrtplib-3.9.1/build
-third_party/jrtplib-3.9.1/build_2
-third_party/jrtplib-3.9.1/build_backup
 a.out
 # *.h264
 simple_example
@@ -29,10 +26,6 @@ test.txt
 third_party/*/CMakeFiles/
 third_party/*/cmake_install.cmake
 third_party/*/CMakeCache.txt
-third_party/JRTPLIB/*
 myRtspClient/CMakeFiles/
 myRtspClient/cmake_install.cmake
 myRtspClient/CMakeCache.txt
-base64_live555/
-md5/
-jrtplib/
