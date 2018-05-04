@@ -8,6 +8,9 @@ capdir
 gtest/backup/*
 gtest/writeSTAP_Packet1.h264
 gtest/writeSTAP_Packet2.h264
+third_party/JRTPLIB/build
+third_party/JRTPLIB/build_2
+third_party/JRTPLIB/build_backup
 a.out
 # *.h264
 simple_example
