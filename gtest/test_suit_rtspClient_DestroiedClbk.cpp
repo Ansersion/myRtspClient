@@ -71,7 +71,7 @@ TEST(rtspClient, AUDIO_DESTROIED_CLBK_TEST)
 	}
 
 	printf("start TEARDOWN\n");
-	EXPECT_EQ(Client.DoTEARDOWN("audio"), RTSP_NO_ERROR);
+	EXPECT_EQ(Client.DoTEARDOWN("video"), RTSP_NO_ERROR);
 }
 
 TEST(rtspClient, VIDEO_DESTROIED_CLBK_TEST)

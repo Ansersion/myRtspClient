@@ -952,7 +952,7 @@ in_addr_t RtspClient::GetIP(string uri)
 	MyRegex Regex;
 	string RtspUri("");
 	// string Pattern("rtsp://([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})");
-	string Pattern("rtsp://([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})");
+	string Pattern("rtsp://([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})[^0-9]");
 	// string Pattern("rtsp://(192.168.1.143)");
 	list<string> Groups;
 	bool IgnoreCase = true;
