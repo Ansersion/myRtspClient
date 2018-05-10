@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
 	 * if there are several 'video' session 
 	 * refered in SDP, only play the first 'video' 
 	 * session, the same as 'audio'.*/
-	if(Client.DoPLAY("audio", &scale, &start_time, &end_time) != RTSP_NO_ERROR) {
+	if(Client.DoPLAY("video", NULL, NULL, NULL) != RTSP_NO_ERROR) {
 		printf("DoPLAY error\n");
 		return 0;
 	}
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 	int fd = open("test_packet_recv.h264", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR);
 
 	while(true) {
-		if(!Client.GetMediaData("audio", buf, &size, BufSize)) {
+		if(!Client.GetMediaData("video", buf, &size, BufSize)) {
 			if(try_times > 5) {
 				break;
 			}

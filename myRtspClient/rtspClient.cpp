@@ -54,6 +54,8 @@ extern PCMU_Audio PCMU_AudioObj;
 
 extern NALUTypeBase_H265 NaluBaseType_H265Obj;
 
+#define MEDIA_BUFSIZ 8192
+
 RtspClient::RtspClient():
 	RtspURI(""), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse(""), SDPStr(""), 
 	VPS(""), SPS(""), PPS(""), CmdPLAYSent(false), GetVideoDataCount(GET_SPS_PPS_PERIOD),
@@ -63,10 +65,10 @@ RtspClient::RtspClient():
 	MediaSessionMap = new map<string, MediaSession>;
 	AudioBuffer.Size = 0;
 	VideoBuffer.Size = 0;
-	if((AudioBuffer.Buf = (uint8_t *)malloc(BUFSIZ)))
-		AudioBuffer.Size = BUFSIZ;
-	if((VideoBuffer.Buf = (uint8_t *)malloc(BUFSIZ)))
-		VideoBuffer.Size = BUFSIZ;
+	if((AudioBuffer.Buf = (uint8_t *)malloc(MEDIA_BUFSIZ)))
+		AudioBuffer.Size = MEDIA_BUFSIZ;
+	if((VideoBuffer.Buf = (uint8_t *)malloc(MEDIA_BUFSIZ)))
+		VideoBuffer.Size = MEDIA_BUFSIZ;
 
 	ByeFromServerAudioClbk = NULL;
 	ByeFromServerVideoClbk = NULL;
@@ -83,10 +85,10 @@ RtspClient::RtspClient(string uri):
 	MediaSessionMap = new map<string, MediaSession>;
 	AudioBuffer.Size = 0;
 	VideoBuffer.Size = 0;
-	if((AudioBuffer.Buf = (uint8_t *)malloc(BUFSIZ)))
-		AudioBuffer.Size = BUFSIZ;
-	if((VideoBuffer.Buf = (uint8_t *)malloc(BUFSIZ)))
-		VideoBuffer.Size = BUFSIZ;
+	if((AudioBuffer.Buf = (uint8_t *)malloc(MEDIA_BUFSIZ)))
+		AudioBuffer.Size = MEDIA_BUFSIZ;
+	if((VideoBuffer.Buf = (uint8_t *)malloc(MEDIA_BUFSIZ)))
+		VideoBuffer.Size = MEDIA_BUFSIZ;
 
 	/* Temporary only FU_A supported */
 	// NALUType = new FU_A;
@@ -669,7 +671,8 @@ int RtspClient::ParseSDP(string SDP)
                Example: "(audio) (0) (RTP/AVP) (14)"
 			   */
 			// string PatternTmp("([a-zA-Z]+) +.+ +(.+) +.*");
-			string PatternTmp("([a-zA-Z]+) +([0-9/]+) +([A-Za-z/]+) +\\b([0-9]+)\\b");
+			// string PatternTmp("([a-zA-Z]+) +([0-9/]+) +([A-Za-z/]+) +\\b([0-9]+)\\b");
+			string PatternTmp("([a-zA-Z]+) +([0-9/]+) +([A-Za-z/]+) +([0-9]+)");
 			if(!Regex.Regex(Value.c_str(), PatternTmp.c_str(), &Group)) {
 				continue;
 			}
@@ -849,6 +852,7 @@ int RtspClient::CreateTcpSockfd(string uri)
 
 	// Connect to server
 	bzero(&Servaddr, sizeof(Servaddr));
+    // Servaddr.sin_len = sizeof(struct sockaddr_in);
 	Servaddr.sin_family = AF_INET;
 	Servaddr.sin_port = htons(GetPort(uri));
 	Servaddr.sin_addr.s_addr = GetIP(uri);
@@ -947,7 +951,9 @@ in_addr_t RtspClient::GetIP(string uri)
 	//### example uri: rtsp://192.168.15.100/test ###//
 	MyRegex Regex;
 	string RtspUri("");
-	string Pattern("rtsp://([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})\\b");
+	// string Pattern("rtsp://([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})");
+	string Pattern("rtsp://([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})");
+	// string Pattern("rtsp://(192.168.1.143)");
 	list<string> Groups;
 	bool IgnoreCase = true;
 
@@ -1273,7 +1279,7 @@ string RtspClient::ParseSessionID(string ResponseOfSETUP)
 	else return Result;
 
 	// Session: 970756dc30b3a638;timeout=60
-	string Pattern("Session: +(\\w+)");
+	string Pattern("Session: +([0-9a-fA-F_\$-\.\+]+)");
 	list<string> Group;
 	bool IgnoreCase = true;
 	if(Regex.Regex(Response.c_str(), Pattern.c_str(), &Group, IgnoreCase)) {
