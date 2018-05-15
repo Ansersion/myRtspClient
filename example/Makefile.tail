@@ -13,7 +13,7 @@ MY_RTSP_INCLUDE = ../myRtspClient/include
 MY_RTSP_LIB = ../myRtspClient/libmyRtspClient.$(libmyRtspClient_LIB_SUFFIX)
 
 INCLUDES = -I$(MY_RTSP_INCLUDE)
-LIBS 	= $(MY_RTSP_LIB) -lpthread
+LIBS 	= $(MY_RTSP_LIB)
 
 .$(C).$(OBJ):
 	$(C_COMPILER) -c $(C_FLAGS) $<       
