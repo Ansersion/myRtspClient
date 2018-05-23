@@ -243,6 +243,12 @@ class RtspClient
 		int RecvSDP(int sockfd, string * msg = NULL); 
 		int Close(int sockfd);
 
+    public:
+        /* Especially for H264/H265 */
+		void SetObtainVpsSpsPpsPeriodly(const bool enable) { ObtainVpsSpsPpsPeriodly = enable; };
+		bool GetObtainVpsSpsPpsPeriodly() const { return ObtainVpsSpsPpsPeriodly; };
+
+
 	protected:
 		string RtspURI;
 		unsigned int RtspCSeq;
@@ -275,6 +281,9 @@ class RtspClient
 		DESTROIED_CLBK ByeFromServerAudioClbk;
 		DESTROIED_CLBK ByeFromServerVideoClbk;
 		int Timeout;
+
+        /* Especially for H264/H265 */
+        bool ObtainVpsSpsPpsPeriodly;
 };
 
 #endif

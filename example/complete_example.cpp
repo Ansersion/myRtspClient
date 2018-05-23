@@ -91,6 +91,7 @@ int main(int argc, char *argv[])
 		printf("DoSETUP error\n");
 		return 0;
 	}
+	Client.SetVideoByeFromServerClbk(ByeFromServerClbk);
 	printf("%s\n", Client.GetResponse().c_str());
 	
 	/* Check whether server return '200'(OK) */
@@ -127,30 +128,68 @@ int main(int argc, char *argv[])
 	const size_t BufSize = 98304;
 	uint8_t buf[BufSize];
 	size_t size = 0;
+    size_t write_size = 0;
 
 	/* Write h264 video data to file "test_packet_recv.h264" 
 	 * Then it could be played by ffplay */
 	// int fd = open("test_packet_recv.h264", O_CREAT | O_RDWR, 0);
 	int fd = open("test_packet_recv.h264", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR);
 
+    /* By default, myRtspClient will write SPS, PPS, VPS(H265 only) for H264/H265 video
+       periodly when you invoke 'GetMediaData'. It could bring your video data stability.
+       However, if you want a high performance, you could turn down this function and get 
+       SPS, PPS, VPS by yourself just at the begining of the video data */
+    /* For convenience, you could refer to "simple_example.cpp" */
+    /* Get SPS, PPS, VPS manually start */
+    Client.SetObtainVpsSpsPpsPeriodly(false);
+    if(!Client.GetVPSNalu(buf, &size)) {
+		if(write(fd, buf, size) < 0) {
+			perror("write");
+		}
+    } 
+    if(!Client.GetSPSNalu(buf, &size)) {
+		if(write(fd, buf, size) < 0) {
+			perror("write");
+		}
+    } 
+    if(!Client.GetPPSNalu(buf, &size)) {
+		if(write(fd, buf, size) < 0) {
+			perror("write");
+		}
+    } 
+    /* Get SPS, PPS, VPS manually end */
+    
+
 	while(true) {
-		if(!Client.GetMediaData("video", buf, &size, BufSize)) {
-			if(try_times > 5) {
+		if(!Client.GetMediaData("video", buf+write_size, &size, BufSize)) {
+            if(ByeFromServerFlag) {
+                break;
+            }
+            if(try_times > 5) {
 				break;
 			}
 			try_times++;
 			continue;
 		}
-		if(write(fd, buf, size) < 0) {
-			perror("write");
-		}
-		if(ByeFromServerFlag) {
-			break;
-		}
+        write_size += size;
+
+        /* lower the 'write' times to improve performance */
+        /* For convenience, you could refer to "simple_example.cpp" */
+        if(write_size > 32768) {
+            if(write(fd, buf, write_size) < 0) {
+                perror("write");
+            }
+            write_size = 0;
+        }
 
 		try_times = 0;
-		printf("recv %u\n", size);
+		// printf("recv %u\n", size);
 	}
+    if(write_size > 0) {
+        if(write(fd, buf, write_size) < 0) {
+            perror("write");
+        }
+    }
 
 	printf("start TEARDOWN\n");
     int err = Client.DoTEARDOWN();

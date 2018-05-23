@@ -75,6 +75,7 @@ RtspClient::RtspClient():
 
 	/* Temporary only FU_A supported */
 	// NALUType = new FU_A;
+    ObtainVpsSpsPpsPeriodly = true;
 }
 
 RtspClient::RtspClient(string uri):
@@ -94,6 +95,8 @@ RtspClient::RtspClient(string uri):
 	// NALUType = new FU_A;
 	ByeFromServerAudioClbk = NULL;
 	ByeFromServerVideoClbk = NULL;
+
+    ObtainVpsSpsPpsPeriodly = true;
 }
 
 RtspClient::~RtspClient()
@@ -1366,16 +1369,20 @@ uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * si
 
 	*size = 0;
 
-	for(it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
-		if(Regex.Regex(it->first.c_str(), media_type.c_str(), IgnoreCase)) break;
-	}
+    it = MediaSessionMap->find(media_type);
+    if(it == MediaSessionMap->end()) {
+        printf("regex\n");
+        for(it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
+            if(Regex.Regex(it->first.c_str(), media_type.c_str(), IgnoreCase)) break;
+        }
+    }
 
 	if(it == MediaSessionMap->end()) {
 		fprintf(stderr, "%s: No such media session\n", __func__);
 		return NULL;
 	}
 
-	if(it->second.MediaType == "video") return GetVideoData(&(it->second), buf, size, max_size);
+	if(it->second.MediaType == "video") return GetVideoData(&(it->second), buf, size, max_size, ObtainVpsSpsPpsPeriodly);
 	if(it->second.MediaType == "audio") return GetAudioData(&(it->second), buf, size, max_size);
 	return NULL;
 }
