@@ -1,0 +1,74 @@
+
+
+
+                                JThread ChangeLog
+				  
+			 	    ---------
+
+ 1.3.3 (March 2017)
+ 	* Fixed race conditions when starting the same thread from
+	  two different threads, or when starting and killing a
+	  thread at the same time. Thanks to Andreas Ringlstetter for
+	  providing the patch.
+
+ 1.3.2 (March 2017)
+	* CMake tests if pthread_cancel exists (doesn't on Android)
+	* Added CMake option to compile only a static version of the
+	  library (useful for PNaCl)
+	* JThread::IsSameThread was added by by isage.dna@gmail.com
+
+ 1.3.1 (November 2011)
+ 	* Fixed a bug in the CMake configuration: was unable to handle
+	  path names with spaces.
+	* In an MS-Windows environment, you can now choose to build a
+	  DLL instead of a static library.
+
+ 1.3.0 (July 2011)
+ 	* Switched to CMake
+	* Added namespace 'jthread'
+
+ 1.2.1 (June 2006)
+ 	* In the pthread implementation the thread is now created in the
+	  detached state. This makes sure the resources of a thread are
+	  freed when the thread ends. Thanks to Julien Künzi 
+	  (julien.kuenzi@epfl.ch) for bringing this to my attention.
+
+ 1.2.0 (March 2006)
+ 	* Added JMutexAutoLock class. Thanks to Jeremy Noring 
+	  (jnoring@wilife.com) for suggesting this.
+	* On MS-Windows platforms, you now have the choice between two
+	  mutex implementations. Besides the implementation present in
+	  previous releases, you can now also use a CRITICAL_SECTION
+	  object. This was suggested by Jeremy Noring (jnoring@wilife.com).
+	* Added pkg-config stuff. Thanks to Philippe Khalaf 
+	  (burger@speedy.org) for supplying the patches.
+
+ 1.1.2 (September 2005)
+ 	* Win32 version now uses _beginthreadex instead of CreateThread.
+	  This should be a safer function. Thanks to Zhu Jin Hong
+	  (labile@21cn.com) for pointing this out.
+	* Added WinCE support.
+	* Switched to automake.
+
+ 1.1.1 (December 2004)
+ 	* Added necessary 'CloseHandle' calls for the thread handle in 
+	  the Win32 version of 'jthread.cpp'. Thanks to Nils O. Selasdal
+	  (NOS@Utel.no) for pointing out the handle leak.
+
+ 1.1.0 (September 2004)
+ 	* Important change: In your own void *Thread() function, you
+	  now have to call JThread::ThreadStarted() at the start of
+	  the function. Until this function is called, the Start()
+	  function blocks. This way, when the Start() function is
+	  finished, we can be really really sure that our own thread
+	  is running.
+
+ 1.0.1 (August 2004)
+ 	* configure now detects pdflatex and listings package: 
+	  only if these are found, documentation is built.
+
+ 1.0.0 (February 2001)
+ 	* Initial release
+	* Thanks to Stijn Vansummeren (stijnvs@lumumba.luc.ac.be) for fixing
+	  a bug in the JThread::GetReturnValue() function
+

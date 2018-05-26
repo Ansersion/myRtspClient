@@ -34,7 +34,16 @@ include(CheckCXXSourceCompiles)
 include(TestBigEndian)
 include(${PROJECT_SOURCE_DIR}/cmake/Macros.cmake)
 
-find_package(JThread)
+include_directories("${PROJECT_SOURCE_DIR}/../JTHREAD/build/src")
+
+set(JTHREAD_FOUND 1)
+
+set(JTHREAD_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/../JTHREAD")
+
+set(JTHREAD_LIBRARIES  "-L${PROJECT_SOURCE_DIR}/../JTHREAD/build/src" "-ljthread" "-lpthread")
+
+
+# find_package(JThread)
 
 set(JRTPLIB_LINK_LIBS "")
 set(JRTPLIB_INTERNAL_INCLUDES "")

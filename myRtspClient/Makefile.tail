@@ -8,13 +8,14 @@ all: $(ALL)
 OBJS = myRegex.$(OBJ) myRtpSession.$(OBJ) MediaSession.$(OBJ) nalu_types_h264.$(OBJ) rtspClient.$(OBJ) utils.$(OBJ) mpeg_types.$(OBJ) nalu_types_h265.$(OBJ) pcmu_types.$(OBJ)
 
 $(MY_RTSP_CLIENT_LIB): $(OBJS) 
-	@rm -rf Base64 Md5 Jrtplib
-	@mkdir -p Base64 Md5 Jrtplib
+	@rm -rf Base64 Md5 Jrtplib Jthread
+	@mkdir -p Base64 Md5 Jrtplib Jthread
 	@(cd Base64; ar x ../$(BASE64_LIB))
 	@(cd Md5; ar x ../$(MD5_LIB))
 	@(cd Jrtplib; ar x ../$(JRTPLIB_LIB))
-	$(LIBRARY_LINK) $@ $(LIBRARY_LINK_OPTS) $(OBJS) Base64/*.o Md5/*.o Jrtplib/*.o
-	@rm -rf Base64 Md5 Jrtplib
+	@(cd Jthread; ar x ../$(JTHREAD_LIB))
+	$(LIBRARY_LINK) $@ $(LIBRARY_LINK_OPTS) $(OBJS) Base64/*.o Md5/*.o Jrtplib/*.o Jthread/*.o
+	@rm -rf Base64 Md5 Jrtplib Jthread
 
 .$(C).$(OBJ):
 	$(C_COMPILER) -c $(C_FLAGS) $<       

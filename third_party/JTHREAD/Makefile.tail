@@ -1,0 +1,15 @@
+JTHREAD_BUILD_DIR = build
+
+all:
+	@mkdir -p $(JTHREAD_BUILD_DIR)
+	@echo "Compile jthread"
+	(cd $(JTHREAD_BUILD_DIR); rm -f Makefile; cmake ..; make)
+
+clean:
+	(test -d $(JTHREAD_BUILD_DIR) || exit 1; cd $(JTHREAD_BUILD_DIR); make clean)
+
+install:
+	@echo "install not supported\n"
+
+##### Any additional, platform-specific rules come here:
+

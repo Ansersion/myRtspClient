@@ -1,11 +1,11 @@
 # Configure you cross compiling parameters here.
 # If your arm-linux-gcc is installed by "apt-get", it would be:
 #
-# CROSS_COMPILE_DIR= 	/usr
-# CROSS_COMPILE=		$(CROSS_COMPILE_DIR)/bin/arm-linux-gnueabi-
+CROSS_COMPILE_DIR= 	/usr
+CROSS_COMPILE=		$(CROSS_COMPILE_DIR)/bin/arm-linux-gnueabi-
 #
-CROSS_COMPILE_DIR?=
-CROSS_COMPILE?=
+# CROSS_COMPILE_DIR?=
+# CROSS_COMPILE?=
 COMPILE_OPTS =		$(INCLUDES) -I. -O2 
 C =			c
 C_COMPILER =		$(CROSS_COMPILE)gcc
@@ -18,7 +18,7 @@ LINK =			$(CROSS_COMPILE)g++ -o
 LINK_OPTS =		-lpthread
 CONSOLE_LINK_OPTS =	$(LINK_OPTS)
 LIBRARY_LINK =		$(CROSS_COMPILE)ar cr 
-LIBRARY_LINK_OPTS =	$(LINK_OPTS)
+LIBRARY_LINK_OPTS =	
 LIB_SUFFIX =			a
 LIBS_FOR_CONSOLE_APPLICATION =
 LIBS_FOR_GUI_APPLICATION =

@@ -1,0 +1,6 @@
+Name: JThread 
+Description: Multi-platform thread/mutex library
+Requires:
+Version: ${VERSION}
+Libs: ${JTHREAD_LIBS_PKGCONFIG}
+Cflags: -I${CMAKE_INSTALL_PREFIX}/include

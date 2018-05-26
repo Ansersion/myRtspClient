@@ -4,31 +4,36 @@ MY_RTSP_CLIENT = myRtspClient
 
 JRTPLIB_DIR = $(THIRD_PARTY_DIR)/JRTPLIB
 JRTPLIB_DIR_CMAKE_BUILD_DIR = build
+JTHREAD_DIR_CMAKE_BUILD_DIR = build
 BASE64_DIR = $(THIRD_PARTY_DIR)/Base64_live555
 MD5_DIR = $(THIRD_PARTY_DIR)/md5
+JTHREAD = $(THIRD_PARTY_DIR)/JTHREAD
 THIRD_PARTY_DIR = third_party
 EXAMPLE_DIR = example
 
 all:
-	cd $(JRTPLIB_DIR); $(MAKE) 
 	cd $(BASE64_DIR); $(MAKE) 
 	cd $(MD5_DIR); $(MAKE) 
+	cd $(JTHREAD); $(MAKE)
+	cd $(JRTPLIB_DIR); $(MAKE) 
 	cd $(MY_RTSP_CLIENT); $(MAKE) 
 	cd $(EXAMPLE_DIR); $(MAKE) 
 
 install:
-	cd $(JRTPLIB_DIR); $(MAKE) install
 	cd $(BASE64_DIR); $(MAKE) install
 	cd $(MD5_DIR); $(MAKE) install
+	cd $(JTHREAD); $(MAKE) install
+	cd $(JRTPLIB_DIR); $(MAKE) install
 	cd $(MY_RTSP_CLIENT); $(MAKE) install
 	cd $(EXAMPLE_DIR); $(MAKE) install
 
 clean:
-	cd $(JRTPLIB_DIR); $(MAKE) clean; rm -rf $(JRTPLIB_DIR_CMAKE_BUILD_DIR)
 	cd $(BASE64_DIR); $(MAKE) clean
 	cd $(MD5_DIR); $(MAKE) clean
-	cd $(MY_RTSP_CLIENT); $(MAKE) clean
+	cd $(JTHREAD); $(MAKE) clean; rm -rf $(JTHREAD_DIR_CMAKE_BUILD_DIR)
+	cd $(JRTPLIB_DIR); $(MAKE) clean; rm -rf $(JRTPLIB_DIR_CMAKE_BUILD_DIR)
+	cd $(MY_RTSP_CLIENT); $(MAKE) clean; 
 	cd $(EXAMPLE_DIR); $(MAKE) clean
 
 distclean: clean
-	-rm -f $(JRTPLIB_DIR)/Makefile $(BASE64_DIR)/Makefile $(MD5_DIR)/Makefile $(MY_RTSP_CLIENT)/Makefile $(EXAMPLE_DIR)/Makefile
+	-rm -f $(JRTPLIB_DIR)/Makefile $(BASE64_DIR)/Makefile $(MD5_DIR)/Makefile $(JTHREAD)/Makefile $(MY_RTSP_CLIENT)/Makefile $(EXAMPLE_DIR)/Makefile
