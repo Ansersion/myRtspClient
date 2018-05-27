@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
         }
 
 		try_times = 0;
-		// printf("recv %u\n", size);
+		printf("recv %u\n", size);
 	}
     if(write_size > 0) {
         if(write(fd, buf, write_size) < 0) {

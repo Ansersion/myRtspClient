@@ -1,6 +1,0 @@
-Name: JThread 
-Description: Multi-platform thread/mutex library
-Requires:
-Version: 1.3.3
-Libs:  -L/usr/local/lib -ljthread -lpthread
-Cflags: -I/usr/local/include

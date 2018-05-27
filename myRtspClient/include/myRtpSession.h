@@ -57,6 +57,8 @@ class MyRTPSession : public RTPSession
 		void OnNewSource(RTPSourceData *dat);
 		void OnBYEPacket(RTPSourceData *dat);
 		void OnRemoveSource(RTPSourceData *dat);
+		void OnPollThreadStep();
+		void ProcessRTPPacket(const RTPSourceData &srcdat,const RTPPacket &rtppack);
 
 	private:
 		void (*DestroiedClbk)();

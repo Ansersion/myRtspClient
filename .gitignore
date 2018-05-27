@@ -11,6 +11,7 @@ gtest/writeSTAP_Packet2.h264
 third_party/JRTPLIB/build
 third_party/JRTPLIB/build_2
 third_party/JRTPLIB/build_backup
+third_party/JTHREAD/build
 a.out
 # *.h264
 simple_example
