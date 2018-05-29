@@ -212,6 +212,7 @@ uint8_t * MyRTPSession::GetMyRTPData(uint8_t * data_buf, size_t * size, unsigned
 	}
 
 	unsigned long UsleepTimes = (timeout_ms + USLEEP_UNIT - 1) / USLEEP_UNIT; // floor the 'timeout_ms / USLEEP_UNIT'
+    *size = 0;
 
 	do {
 #ifndef RTP_SUPPORT_THREAD
@@ -226,6 +227,9 @@ uint8_t * MyRTPSession::GetMyRTPData(uint8_t * data_buf, size_t * size, unsigned
 			EndDataAccess();
 			usleep(USLEEP_UNIT);
 			UsleepTimes--;
+            if(UsleepTimes <= 0) {
+                break;
+            }
 			continue;
 			// return NULL;
 		}
@@ -236,6 +240,9 @@ uint8_t * MyRTPSession::GetMyRTPData(uint8_t * data_buf, size_t * size, unsigned
 			EndDataAccess();
 			usleep(USLEEP_UNIT);
 			UsleepTimes--;
+            if(UsleepTimes <= 0) {
+                break;
+            }
 			continue;
 			// return NULL;
 		}
@@ -270,6 +277,7 @@ uint8_t * MyRTPSession::GetMyRTPPacket(uint8_t * packet_buf, size_t * size, unsi
 		fprintf(stderr, "%s: Invalide argument('size==NULL')", __func__);
 		return NULL;
 	}
+    *size = 0;
 
 	unsigned long UsleepTimes = (timeout_ms + USLEEP_UNIT - 1) / USLEEP_UNIT; // floor the 'timeout_ms / USLEEP_UNIT'
 
@@ -286,6 +294,9 @@ uint8_t * MyRTPSession::GetMyRTPPacket(uint8_t * packet_buf, size_t * size, unsi
 			EndDataAccess();
 			usleep(USLEEP_UNIT);
 			UsleepTimes--;
+            if(UsleepTimes <= 0) {
+                break;
+            }
 			continue;
 			// return NULL;
 		}
@@ -296,6 +307,9 @@ uint8_t * MyRTPSession::GetMyRTPPacket(uint8_t * packet_buf, size_t * size, unsi
 			EndDataAccess();
 			usleep(USLEEP_UNIT);
 			UsleepTimes--;
+            if(UsleepTimes <= 0) {
+                break;
+            }
 			continue;
 			// return NULL;
 		}
@@ -318,3 +332,22 @@ uint8_t * MyRTPSession::GetMyRTPPacket(uint8_t * packet_buf, size_t * size, unsi
 
 	return packet_buf;
 }
+
+void MyRTPSession::OnPollThreadError(int)
+{
+}
+
+void MyRTPSession::OnPollThreadStep()
+{
+}
+
+void MyRTPSession::OnPollThreadStart(bool &)
+{
+    printf("RTP Poll start\n");
+}
+
+void MyRTPSession::OnPollThreadStop()
+{
+    printf("RTP Poll stop\n");
+}
+
