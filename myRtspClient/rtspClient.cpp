@@ -56,6 +56,14 @@ extern NALUTypeBase_H265 NaluBaseType_H265Obj;
 
 #define MEDIA_BUFSIZ 8192
 
+const string RtspClient::HttpHeadUserAgent("User-Agent: ");
+const string RtspClient::HttpHeadXSessionCookie("x-sessioncookie: ");
+const string RtspClient::HttpHeadAccept("Accept: ");
+const string RtspClient::HttpHeadPrama("Pragma: ");
+const string RtspClient::HttpHeadCacheControl("Cache-Control: ");
+const string RtspClient::HttpHeadContentType("Content-Type: ");
+// const string RtspClient::HttpTunnelMsg("User-Agent: %s\r\nx-sessioncookie: %s\r\nAccept: application/x-rtsp-tunnelled\r\nPragma: no-cache\r\nCache-Control: no-cache\r\n");
+
 RtspClient::RtspClient():
 	RtspURI(""), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse(""), SDPStr(""), 
 	VPS(""), SPS(""), PPS(""), CmdPLAYSent(false), GetVideoDataCount(GET_SPS_PPS_PERIOD),
@@ -76,27 +84,43 @@ RtspClient::RtspClient():
 	/* Temporary only FU_A supported */
 	// NALUType = new FU_A;
     ObtainVpsSpsPpsPeriodly = true;
+
+    RtspOverHttpDataPort = 0;
+    RtspOverHttpDataSockfd = 0;
+
+    HttpHeadUserAgentContent = "MyRTSPClient";
+    HttpHeadXSessionCookieContent = "";
+    HttpHeadAcceptContent = "application/x-rtsp-tunnelled";
+    HttpHeadPramaContent = "no-cache";
+    HttpHeadCacheControlContent = "no-cache";
+    HttpHeadContentTypeContent = "application/x-rtsp-tunnelled";
 }
 
-RtspClient::RtspClient(string uri):
-	RtspURI(uri), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse(""), SDPStr(""),
-	VPS(""), SPS(""), PPS(""), CmdPLAYSent(false), GetVideoDataCount(GET_SPS_PPS_PERIOD)
+// RtspClient::RtspClient(string uri):
+// 	RtspURI(uri), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse(""), SDPStr(""),
+// 	VPS(""), SPS(""), PPS(""), CmdPLAYSent(false), GetVideoDataCount(GET_SPS_PPS_PERIOD)
+// {
+// 	// SDPInfo = new multimap<string, string>;
+// 	MediaSessionMap = new map<string, MediaSession>;
+// 	AudioBuffer.Size = 0;
+// 	VideoBuffer.Size = 0;
+// 	if((AudioBuffer.Buf = (uint8_t *)malloc(MEDIA_BUFSIZ)))
+// 		AudioBuffer.Size = MEDIA_BUFSIZ;
+// 	if((VideoBuffer.Buf = (uint8_t *)malloc(MEDIA_BUFSIZ)))
+// 		VideoBuffer.Size = MEDIA_BUFSIZ;
+// 
+// 	/* Temporary only FU_A supported */
+// 	// NALUType = new FU_A;
+// 	ByeFromServerAudioClbk = NULL;
+// 	ByeFromServerVideoClbk = NULL;
+// 
+//     ObtainVpsSpsPpsPeriodly = true;
+//     UsingRtspOverHttp = false;
+// }
+
+RtspClient::RtspClient(string uri): RtspClient()
 {
-	// SDPInfo = new multimap<string, string>;
-	MediaSessionMap = new map<string, MediaSession>;
-	AudioBuffer.Size = 0;
-	VideoBuffer.Size = 0;
-	if((AudioBuffer.Buf = (uint8_t *)malloc(MEDIA_BUFSIZ)))
-		AudioBuffer.Size = MEDIA_BUFSIZ;
-	if((VideoBuffer.Buf = (uint8_t *)malloc(MEDIA_BUFSIZ)))
-		VideoBuffer.Size = MEDIA_BUFSIZ;
-
-	/* Temporary only FU_A supported */
-	// NALUType = new FU_A;
-	ByeFromServerAudioClbk = NULL;
-	ByeFromServerVideoClbk = NULL;
-
-    ObtainVpsSpsPpsPeriodly = true;
+    RtspURI.assign(uri);
 }
 
 RtspClient::~RtspClient()
@@ -572,7 +596,7 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session)
 	ErrorType Err = RTSP_NO_ERROR;
 	int Sockfd = -1;
 
-	cout << "TEST: TEARDOWN: ###" << media_session->MediaType << "###" << endl;
+	// cout << "TEST: TEARDOWN: ###" << media_session->MediaType << "###" << endl;
 
 	Sockfd = CreateTcpSockfd();
 	if(Sockfd < 0) return RTSP_INVALID_URI;
@@ -641,6 +665,67 @@ ErrorType RtspClient::DoTEARDOWN(string media_type)
 	Err = RTSP_INVALID_MEDIA_SESSION;
 	return Err;
 }
+
+ErrorType RtspClient::DoRtspOverHttpGet()
+{
+	int Sockfd = -1;
+
+	Sockfd = CreateTcpSockfd(RtspOverHttpDataPort);
+    if(Sockfd < 0) return RTSP_INVALID_URI;
+
+    UpdateXSessionCookie();
+
+	string Cmd("GET");
+	stringstream Msg("");
+	Msg << Cmd << " " << GetResource() << " " << "HTTP/" << VERSION_HTTP << "\r\n";
+	Msg << HttpHeadUserAgent << HttpHeadUserAgentContent << "\r\n";
+	Msg << HttpHeadXSessionCookie << HttpHeadXSessionCookieContent << "\r\n";
+	Msg << HttpHeadAccept<< HttpHeadAcceptContent << "\r\n";
+	Msg << HttpHeadPrama<< HttpHeadPramaContent << "\r\n";
+	Msg << HttpHeadCacheControl << HttpHeadCacheControlContent << "\r\n";
+	Msg << "\r\n";
+    cout << "DEBUG: " << Msg.str();
+
+	if(!SendRTSP(Sockfd, Msg.str())) {
+		Close(Sockfd);
+		return RTSP_SEND_ERROR;
+	}
+	if(!RecvRTSP(Sockfd, &RtspResponse)) {
+		Close(Sockfd);
+		return RTSP_RECV_ERROR;
+	}
+
+	return RTSP_NO_ERROR;
+}
+
+ErrorType RtspClient::DoRtspOverHttpPost()
+{
+	int Sockfd = -1;
+
+	Sockfd = CreateTcpSockfd();
+    if(Sockfd < 0) return RTSP_INVALID_URI;
+
+	string Cmd("POST");
+	stringstream Msg("");
+	Msg << Cmd << " " << GetResource() << " " << "HTTP/" << VERSION_HTTP << "\r\n";
+	Msg << HttpHeadUserAgent << HttpHeadUserAgentContent << "\r\n";
+	Msg << HttpHeadXSessionCookie << HttpHeadXSessionCookieContent << "\r\n";
+	Msg << HttpHeadContentType << HttpHeadContentTypeContent << "\r\n";
+	Msg << "\r\n";
+    cout << "DEBUG: " << Msg.str();
+
+	if(!SendRTSP(Sockfd, Msg.str())) {
+		Close(Sockfd);
+		return RTSP_SEND_ERROR;
+	}
+	if(!RecvRTSP(Sockfd, &RtspResponse)) {
+		Close(Sockfd);
+		return RTSP_RECV_ERROR;
+	}
+
+    return RTSP_NO_ERROR;
+}
+
 
 int RtspClient::ParseSDP(string SDP)
 {
@@ -855,9 +940,14 @@ int RtspClient::CreateTcpSockfd(string uri)
 
 	// Connect to server
 	bzero(&Servaddr, sizeof(Servaddr));
-    // Servaddr.sin_len = sizeof(struct sockaddr_in);
 	Servaddr.sin_family = AF_INET;
-	Servaddr.sin_port = htons(GetPort(uri));
+    cout << "DEBUG: RtspPort=" << RtspOverHttpDataPort << endl;
+    if(RtspOverHttpDataPort > 0) {
+        Servaddr.sin_port = htons(RtspPort);
+    } else {
+        cout << "ERROR: RtspPort=" << RtspOverHttpDataPort << endl;
+        Servaddr.sin_port = htons(GetPort(uri));
+    }
 	Servaddr.sin_addr.s_addr = GetIP(uri);
 
 	if(connect(Sockfd, (struct sockaddr *)&Servaddr, sizeof(Servaddr)) < 0 && errno != EINPROGRESS) {
@@ -874,6 +964,56 @@ int RtspClient::CreateTcpSockfd(string uri)
 	}
 
 	RtspSockfd = Sockfd;
+	return Sockfd;
+}
+
+int RtspClient::CreateTcpSockfd(uint16_t rtsp_over_http_data_port)
+{
+	int Sockfd = -1;
+	struct sockaddr_in Servaddr;
+	string RtspUri("");
+	int SockStatus = -1;
+
+	if(RtspOverHttpDataSockfd > 0) {
+		return RtspOverHttpDataSockfd;
+	}
+
+	if(RtspURI.length() != 0) RtspUri.assign(RtspURI);
+	else {
+		RtspOverHttpDataSockfd = Sockfd;
+		return Sockfd;
+	}
+
+	if((Sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+		perror("Socket created error");
+		RtspOverHttpDataSockfd = Sockfd;
+		return Sockfd;
+	}
+
+	// Set Sockfd NONBLOCK
+	SockStatus = fcntl(Sockfd, F_GETFL, 0);
+	fcntl(Sockfd, F_SETFL, SockStatus | O_NONBLOCK);
+
+	// Connect to server
+	bzero(&Servaddr, sizeof(Servaddr));
+	Servaddr.sin_family = AF_INET;
+    Servaddr.sin_port = htons(rtsp_over_http_data_port);
+	Servaddr.sin_addr.s_addr = GetIP(RtspUri);
+
+	if(connect(Sockfd, (struct sockaddr *)&Servaddr, sizeof(Servaddr)) < 0 && errno != EINPROGRESS) {
+		perror("connect error");
+		close(Sockfd);
+		Sockfd = -1;
+		RtspOverHttpDataSockfd = Sockfd;
+		return Sockfd;
+	}
+	if(!CheckSockWritable(Sockfd)) {
+		Sockfd = -1;
+		RtspOverHttpDataSockfd = Sockfd;
+		return Sockfd;
+	}
+
+	RtspOverHttpDataSockfd = Sockfd;
 	return Sockfd;
 }
 
@@ -995,6 +1135,31 @@ uint16_t RtspClient::GetPort(string uri)
 	}
 	Groups.pop_front();
 	return atoi(Groups.front().c_str());
+}
+
+string RtspClient::GetResource(string uri)
+{
+	//### example uri: rtsp://192.168.15.100/test ###//
+	MyRegex Regex;
+	string RtspUri("");
+	// string Pattern("rtsp://([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})");
+	string Pattern("rtsp://.+(/.+)");
+	// string Pattern("rtsp://192.168.1.143(/ansersion)");
+	list<string> Groups;
+	bool IgnoreCase = true;
+
+	if(uri.length() != 0) {
+		RtspUri.assign(uri);
+		RtspURI.assign(uri);
+	}
+	else if(RtspURI.length() != 0) RtspUri.assign(RtspURI);
+	else return "";
+
+	if(!Regex.Regex(RtspUri.c_str(), Pattern.c_str(), &Groups, IgnoreCase)) {
+		return "";
+	}
+	Groups.pop_front();
+	return Groups.front();
 }
 
 /*********************/
@@ -1271,6 +1436,19 @@ int RtspClient::Close(int sockfd)
 	return CloseResult;
 }
 
+void RtspClient::UpdateXSessionCookie()
+{
+    //     gettimeofday(&seedData.timestamp, NULL);
+    //  seedData.counter = ++fSessionCookieCounter;
+    //  our_MD5Data((unsigned char*)(&seedData), sizeof seedData, fSessionCookie); 
+    time_t timep;
+	char habuf[MD5_BUF_SIZE] = {0};
+    time(&timep);
+	Md5sum32((void *)&timep, (unsigned char *)habuf, sizeof(timep), MD5_BUF_SIZE);
+	habuf[23] = '\0';
+    HttpHeadXSessionCookieContent = string(habuf);
+}
+
 string RtspClient::ParseSessionID(string ResponseOfSETUP)
 {
 	MyRegex Regex;
@@ -1371,7 +1549,6 @@ uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * si
 
     it = MediaSessionMap->find(media_type);
     if(it == MediaSessionMap->end()) {
-        printf("regex\n");
         for(it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
             if(Regex.Regex(it->first.c_str(), media_type.c_str(), IgnoreCase)) break;
         }

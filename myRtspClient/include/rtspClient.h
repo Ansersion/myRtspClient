@@ -32,6 +32,7 @@ using std::multimap;
 
 #define PORT_RTSP 				554
 #define VERSION_RTSP 			"1.0"
+#define VERSION_HTTP 			"1.1"
 #define SELECT_TIMEOUT_SEC 		1
 #define SELECT_TIMEOUT_USEC 	0
 
@@ -88,6 +89,14 @@ typedef struct Buffer_t {
 
 class RtspClient
 {
+    public:
+        static const string HttpHeadUserAgent;
+        static const string HttpHeadXSessionCookie;
+        static const string HttpHeadAccept;
+        static const string HttpHeadPrama;
+        static const string HttpHeadCacheControl;
+        static const string HttpHeadContentType;
+
 	public:
 		RtspClient();
 		RtspClient(string uri);
@@ -170,6 +179,10 @@ class RtspClient
 		 * */
 		ErrorType DoTEARDOWN(string media_type);
 
+        ErrorType DoRtspOverHttpGet();
+        ErrorType DoRtspOverHttpPost();
+
+
 		int GetTimeRate(string media_type);
 		int GetChannelNum(string media_type);
 
@@ -190,12 +203,14 @@ class RtspClient
 
 		/* Tools Methods */
 		int CreateTcpSockfd(string uri = "");
+        int CreateTcpSockfd(uint16_t rtsp_over_http_data_port);
 
 		/* "CreateUdpSockfd" is only for test. 
 		 * We will use jrtplib instead later. */
 		int SetAvailableRTPPort(MediaSession * media_session, uint16_t RTP_port = 0); 
 		in_addr_t GetIP(string uri = "");
 		uint16_t GetPort(string uri = "");
+        string GetResource(string uri = "");
 
 		// "IsResponse_200_OK" is really a ineffective method, should be modified in future.
 		bool IsResponse_200_OK(ErrorType * err = NULL, string * response = NULL);
@@ -247,6 +262,8 @@ class RtspClient
         /* Especially for H264/H265 */
 		void SetObtainVpsSpsPpsPeriodly(const bool enable) { ObtainVpsSpsPpsPeriodly = enable; };
 		bool GetObtainVpsSpsPpsPeriodly() const { return ObtainVpsSpsPpsPeriodly; };
+        void UpdateXSessionCookie();
+        void SetHttpTunnelPort(uint16_t port) { RtspOverHttpDataPort = port; };
 
 
 	protected:
@@ -284,6 +301,17 @@ class RtspClient
 
         /* Especially for H264/H265 */
         bool ObtainVpsSpsPpsPeriodly;
+
+		uint16_t RtspOverHttpDataPort;
+		int RtspOverHttpDataSockfd;
+
+    protected:
+        string HttpHeadUserAgentContent;
+        string HttpHeadXSessionCookieContent;
+        string HttpHeadAcceptContent;
+        string HttpHeadPramaContent;
+        string HttpHeadCacheControlContent;
+        string HttpHeadContentTypeContent;
 };
 
 #endif

@@ -38,6 +38,9 @@ int main(int argc, char *argv[])
 	// string RtspUri("rtsp://192.168.81.145/ansersion");
 	RtspClient Client;
 
+    // Client.setRtspOverHttp(8000);
+    // Client.setRtpOverHttp(8000);
+
 	/* Set up rtsp server resource URI */
 	Client.SetURI(RtspUri);
 	

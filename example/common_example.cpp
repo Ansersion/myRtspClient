@@ -42,11 +42,23 @@ int main(int argc, char *argv[])
 	cout << "Start play " << argv[1] << endl;
 	cout << "Then put video data into test_packet_recv.h264" << endl;
 	string RtspUri(argv[1]);
+
 	// string RtspUri("rtsp://192.168.81.145/ansersion");
 	RtspClient Client;
 
+
 	/* Set up rtsp server resource URI */
 	Client.SetURI(RtspUri);
+    Client.SetHttpTunnelPort(8000);
+    Client.SetPort(8000);
+    if(RTSP_NO_ERROR == Client.DoRtspOverHttpGet()) {
+        cout << "DoGet OK" << endl;
+    }
+    cout << Client.GetResource();
+    if(RTSP_NO_ERROR == Client.DoRtspOverHttpPost()) {
+        cout << "DoPost OK" << endl;
+    }
+    cout << Client.GetResource();
 
 	// /* Set rtsp access username */
 	// Client.SetUsername("Ansersion");
