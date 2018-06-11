@@ -62,6 +62,8 @@ const string RtspClient::HttpHeadAccept("Accept: ");
 const string RtspClient::HttpHeadPrama("Pragma: ");
 const string RtspClient::HttpHeadCacheControl("Cache-Control: ");
 const string RtspClient::HttpHeadContentType("Content-Type: ");
+const string RtspClient::HttpHeadContentLength("Content-Length: ");
+const string RtspClient::HttpHeadExpires("Expires: ");
 // const string RtspClient::HttpTunnelMsg("User-Agent: %s\r\nx-sessioncookie: %s\r\nAccept: application/x-rtsp-tunnelled\r\nPragma: no-cache\r\nCache-Control: no-cache\r\n");
 
 RtspClient::RtspClient():
@@ -94,6 +96,8 @@ RtspClient::RtspClient():
     HttpHeadPramaContent = "no-cache";
     HttpHeadCacheControlContent = "no-cache";
     HttpHeadContentTypeContent = "application/x-rtsp-tunnelled";
+    HttpHeadContentLengthContent = "32767";
+    HttpHeadExpiresContent = "Sun, 9 Jan 1972 00:00:00 GMT";
 }
 
 // RtspClient::RtspClient(string uri):
@@ -711,6 +715,10 @@ ErrorType RtspClient::DoRtspOverHttpPost()
 	Msg << HttpHeadUserAgent << HttpHeadUserAgentContent << "\r\n";
 	Msg << HttpHeadXSessionCookie << HttpHeadXSessionCookieContent << "\r\n";
 	Msg << HttpHeadContentType << HttpHeadContentTypeContent << "\r\n";
+	Msg << HttpHeadPrama<< HttpHeadPramaContent << "\r\n";
+	Msg << HttpHeadCacheControl << HttpHeadCacheControlContent << "\r\n";
+	Msg << HttpHeadContentLength << HttpHeadContentLengthContent << "\r\n";
+	Msg << HttpHeadExpires << HttpHeadExpiresContent << "\r\n";
 	Msg << "\r\n";
     cout << "DEBUG: " << Msg.str();
 
@@ -1212,7 +1220,7 @@ int RtspClient::CheckSockReadable(int sockfd, struct timeval * tval)
 
 int RtspClient::SendRTSP(int fd, const char * msg, size_t size)
 {
- 	if(!msg || size < 0) {
+ 	if(!msg) {
  		printf("Recv Argument Error\n");
  		return TRANS_ERROR;
  	}
@@ -1290,7 +1298,7 @@ int RtspClient::SendRTSP(int fd, string msg)
 int RtspClient::RecvRTSP(int fd, char * msg, size_t maxlen)
 {
 	MyRegex Regex;
-	if(!msg || maxlen < 0) {
+	if(!msg) {
 		printf("Recv Argument Error\n");
 		return TRANS_ERROR;
 	}
@@ -1352,7 +1360,7 @@ int RtspClient::RecvRTSP(int fd, string * msg)
 
 int RtspClient::RecvSDP(int sockfd, char * msg, size_t size)
 {
-	if(!msg || size < 0) {
+	if(!msg) {
 		printf("Recv Argument Error\n");
 		return TRANS_ERROR;
 	}
@@ -1728,7 +1736,7 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 		}
 
 		if(*size + SizeTmp > max_size) {
-			fprintf(stderr, "\033[31mWARNING: NALU truncated because larger than buffer: %u(NALU size) > %u(Buffer size)\033[0m\n", *size + SizeTmp, max_size);
+			fprintf(stderr, "\033[31mWARNING: NALU truncated because larger than buffer: %lu(NALU size) > %lu(Buffer size)\033[0m\n", *size + SizeTmp, max_size);
 			return buf;
 		}
 
@@ -1769,7 +1777,7 @@ uint8_t * RtspClient::GetAudioData(MediaSession * media_session, uint8_t * buf, 
 	}
 
 	if(*size + SizeTmp > max_size) {
-		fprintf(stderr, "\033[31mWARNING: NALU truncated because larger than buffer: %u(NALU size) > %u(Buffer size)\033[0m\n", *size + SizeTmp, max_size);
+		fprintf(stderr, "\033[31mWARNING: NALU truncated because larger than buffer: %lu(NALU size) > %lu(Buffer size)\033[0m\n", *size + SizeTmp, max_size);
 		return buf;
 	}
 

@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
 		if(ByeFromServerFlag) {
 			break;
 		}
-		printf("recv %u\n", size);
+		printf("recv %lu\n", size);
 	}
 
 	printf("start TEARDOWN\n");

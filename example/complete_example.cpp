@@ -39,9 +39,9 @@ int main(int argc, char *argv[])
 		cout << argv[0] << " rtsp://127.0.0.1/ansersion" << endl;
 		return 1;
 	}
-	float scale = -1;
-	float start_time = 70.5;
-	float end_time = 50.5;
+	// float scale = -1;
+	// float start_time = 70.5;
+	// float end_time = 50.5;
 	cout << "Start play " << argv[1] << endl;
 	cout << "Then put video data into test_packet_recv.h264" << endl;
 	string RtspUri(argv[1]);
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 	 * if there are several 'video' session 
 	 * refered in SDP, only receive packets of the first 
 	 * 'video' session, the same as 'audio'.*/
-	int packet_num = 0;
+	// int packet_num = 0;
 	int try_times = 0;
 	const size_t BufSize = 98304;
 	uint8_t buf[BufSize];
@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
         }
 
 		try_times = 0;
-		printf("recv %u\n", size);
+		printf("recv %lu\n", size);
 	}
     if(write_size > 0) {
         if(write(fd, buf, write_size) < 0) {

@@ -96,6 +96,8 @@ class RtspClient
         static const string HttpHeadPrama;
         static const string HttpHeadCacheControl;
         static const string HttpHeadContentType;
+        static const string HttpHeadContentLength;
+        static const string HttpHeadExpires;
 
 	public:
 		RtspClient();
@@ -248,13 +250,16 @@ class RtspClient
 
 		int CheckSockWritable(int sockfd, struct timeval * tval = NULL);
 		int CheckSockReadable(int sockfd, struct timeval * tval = NULL);
+		// int SendRTSP(int fd, const char * msg, size_t size, bool http_tunnel);
 		int SendRTSP(int fd, const char * msg, size_t size);
 		int SendRTSP(int fd, string msg);
 		int RecvRTSP(int fd, char * msg, size_t max_line);
+		// int RecvRTSP(int fd, char * msg, size_t max_line, bool http_tunnel);
 		int RecvRTSP(int fd, string * msg);
 
 		/* "RecvSDP" can only be used after DESCRIBE. */
 		int RecvSDP(int sockfd, char * msg, size_t size);
+		// int RecvSDP(int sockfd, char * msg, size_t size, bool http_tunnel);
 		int RecvSDP(int sockfd, string * msg = NULL); 
 		int Close(int sockfd);
 
@@ -312,6 +317,8 @@ class RtspClient
         string HttpHeadPramaContent;
         string HttpHeadCacheControlContent;
         string HttpHeadContentTypeContent;
+        string HttpHeadContentLengthContent;
+        string HttpHeadExpiresContent;
 };
 
 #endif
