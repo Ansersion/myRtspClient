@@ -169,25 +169,68 @@ ErrorType RtspClient::DoDESCRIBE(string uri)
 	Msg << Cmd << " " << RtspUri << " " << "RTSP/" << VERSION_RTSP << "\r\n";
 	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
 	Msg << "\r\n";
+    cout << "DEBUG: " << Msg.str() << endl;
 
-	if(!SendRTSP(Sockfd, Msg.str())) {
-		// close(Sockfd);
-		Close(Sockfd);
-		return RTSP_SEND_ERROR;
-	}
-	if(!RecvRTSP(Sockfd, &RtspResponse)) {
-		Close(Sockfd);
-		// close(Sockfd);
-		return RTSP_RECV_ERROR;
-	}
+    ErrorType ret = SendRTSP(Sockfd, RtspOverHttpDataPort, Msg.str());
+    if(RTSP_NO_ERROR != ret) {
+        return ret;
+    }
+    // if(RtspOverHttpDataPort != 0) {
+    //     char * encodedBytes = base64Encode(Msg.str().c_str(), Msg.str().length());
+    //     if(NULL == encodedBytes) {
+    //         Close(Sockfd);
+    //         return RTSP_SEND_ERROR;
+    //     }
+    //     if(RTSP_NO_ERROR != SendRTSP(Sockfd, string(encodedBytes))) {
+    //         Close(Sockfd);
+    //         delete[] encodedBytes;
+    //         return RTSP_SEND_ERROR;
+    //     }
+    //     delete[] encodedBytes;
+    // } else {
+    //     if(RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
+    //         // close(Sockfd);
+    //         Close(Sockfd);
+    //         return RTSP_SEND_ERROR;
+    //     }
+    // }
+
+	// if(RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
+	// 	// close(Sockfd);
+	// 	Close(Sockfd);
+	// 	return RTSP_SEND_ERROR;
+	// }
+    ret = RecvRTSP(Sockfd, RtspOverHttpDataPort, &RtspResponse);
+    if(RTSP_NO_ERROR != ret) {
+        return ret;
+    }
+    // if(RtspOverHttpDataPort != 0) {
+    //     cout << "DEBUG: RecvRTSP http tunnel" << endl;
+    //     if(RTSP_NO_ERROR != RecvRTSP(RtspOverHttpDataSockfd, &RtspResponse)) {
+    //         cout << "DEBUG: RecvRTSP http tunnel error" << endl;
+    //         Close(Sockfd);
+    //         return RTSP_RECV_ERROR;
+    //     }
+    //     cout << "DEBUG: " << RtspResponse << endl;
+    // } else {
+    //     if(RTSP_NO_ERROR != RecvRTSP(Sockfd, &RtspResponse)) {
+    //         Close(Sockfd);
+    //         // close(Sockfd);
+    //         return RTSP_RECV_ERROR;
+    //     }
+    // }
 	// check username and password, if any
 	if(CheckAuth(Sockfd, Cmd, RtspUri) != CHECK_OK) {
 		cout << "CheckAuth: error" << endl;
-		// close(Sockfd);
 		Close(Sockfd);
 		return RTSP_RESPONSE_401;
 	}
-	RecvSDP(Sockfd, &SDPStr);
+    if(RtspOverHttpDataPort != 0) {
+	    RecvSDP(RtspOverHttpDataSockfd, &SDPStr);
+    } else {
+	    RecvSDP(Sockfd, &SDPStr);
+    }
+    cout << "DEBUG: " << SDPStr << endl;
 	// close(Sockfd);
 	return RTSP_NO_ERROR;
 }
@@ -213,12 +256,12 @@ ErrorType RtspClient::DoOPTIONS(string uri)
 	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
 	Msg << "\r\n";
 
-	if(!SendRTSP(Sockfd, Msg.str())) {
+	if(RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
 		// close(Sockfd);
 		Close(Sockfd);
 		return RTSP_SEND_ERROR;
 	}
-	if(!RecvRTSP(Sockfd, &RtspResponse)) {
+	if(RTSP_NO_ERROR != RecvRTSP(Sockfd, &RtspResponse)) {
 		// close(Sockfd);
 		Close(Sockfd);
 		return RTSP_RECV_ERROR;
@@ -259,13 +302,13 @@ ErrorType RtspClient::DoPAUSE(MediaSession * media_session)
 	Msg << "Session: " << media_session->SessionID << "\r\n";
 	Msg << "\r\n";
 
-	if(RTSP_NO_ERROR == Err && !SendRTSP(Sockfd, Msg.str())) {
+	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
 		Close(Sockfd);
 		// close(Sockfd);
 		Sockfd = -1;
 		Err = RTSP_SEND_ERROR;
 	}
-	if(RTSP_NO_ERROR == Err && !RecvRTSP(Sockfd, &RtspResponse)) {
+	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != RecvRTSP(Sockfd, &RtspResponse)) {
 		Close(Sockfd);
 		// close(Sockfd);
 		Sockfd = -1;
@@ -326,13 +369,13 @@ ErrorType RtspClient::DoGET_PARAMETER(MediaSession * media_session)
 	Msg << "Session: " << media_session->SessionID << "\r\n";
 	Msg << "\r\n";
 
-	if(RTSP_NO_ERROR == Err && !SendRTSP(Sockfd, Msg.str())) {
+	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
 		Close(Sockfd);
 		// close(Sockfd);
 		Sockfd = -1;
 		Err = RTSP_SEND_ERROR;
 	}
-	if(RTSP_NO_ERROR == Err && !RecvRTSP(Sockfd, &RtspResponse)) {
+	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != RecvRTSP(Sockfd, &RtspResponse)) {
 		Close(Sockfd);
 		// close(Sockfd);
 		Sockfd = -1;
@@ -413,13 +456,13 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 	}
 	Msg << "\r\n";
 
-	if(RTSP_NO_ERROR == Err && !SendRTSP(Sockfd, Msg.str())) {
+	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
 		// close(Sockfd);
 		Close(Sockfd);
 		Sockfd = -1;
 		Err = RTSP_SEND_ERROR;
 	}
-	if(RTSP_NO_ERROR == Err && !RecvRTSP(Sockfd, &RtspResponse)) {
+	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != RecvRTSP(Sockfd, &RtspResponse)) {
 		// close(Sockfd);
 		Close(Sockfd);
 		Sockfd = -1;
@@ -531,13 +574,13 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session, float * scale, float 
 	Msg << "\r\n";
 	std::cout << Msg.str();
 
-	if(RTSP_NO_ERROR == Err && !SendRTSP(Sockfd, Msg.str())) {
+	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
 		Close(Sockfd);
 		// close(Sockfd);
 		Sockfd = -1;
 		Err = RTSP_SEND_ERROR;
 	}
-	if(RTSP_NO_ERROR == Err && !RecvRTSP(Sockfd, &RtspResponse)) {
+	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != RecvRTSP(Sockfd, &RtspResponse)) {
 		Close(Sockfd);
 		// close(Sockfd);
 		Sockfd = -1;
@@ -624,13 +667,13 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session)
 	}
 	Msg << "\r\n";
 
-	if(RTSP_NO_ERROR == Err && !SendRTSP(Sockfd, Msg.str())) {
+	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
 		// close(Sockfd);
 		Close(Sockfd);
 		Sockfd = -1;
 		Err = RTSP_SEND_ERROR;
 	}
-	if(RTSP_NO_ERROR == Err && !RecvRTSP(Sockfd, &RtspResponse)) {
+	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != RecvRTSP(Sockfd, &RtspResponse)) {
 		// close(Sockfd);
 		Close(Sockfd);
 		Sockfd = -1;
@@ -690,11 +733,11 @@ ErrorType RtspClient::DoRtspOverHttpGet()
 	Msg << "\r\n";
     cout << "DEBUG: " << Msg.str();
 
-	if(!SendRTSP(Sockfd, Msg.str())) {
+	if(RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
 		Close(Sockfd);
 		return RTSP_SEND_ERROR;
 	}
-	if(!RecvRTSP(Sockfd, &RtspResponse)) {
+	if(RTSP_NO_ERROR != RecvRTSP(Sockfd, &RtspResponse)) {
 		Close(Sockfd);
 		return RTSP_RECV_ERROR;
 	}
@@ -722,14 +765,14 @@ ErrorType RtspClient::DoRtspOverHttpPost()
 	Msg << "\r\n";
     cout << "DEBUG: " << Msg.str();
 
-	if(!SendRTSP(Sockfd, Msg.str())) {
+	if(RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
 		Close(Sockfd);
 		return RTSP_SEND_ERROR;
 	}
-	if(!RecvRTSP(Sockfd, &RtspResponse)) {
-		Close(Sockfd);
-		return RTSP_RECV_ERROR;
-	}
+	// if(RTSP_NO_ERROR != RecvRTSP(Sockfd, &RtspResponse)) {
+	// 	Close(Sockfd);
+	// 	return RTSP_RECV_ERROR;
+	// }
 
     return RTSP_NO_ERROR;
 }
@@ -920,7 +963,7 @@ int RtspClient::CreateTcpSockfd(string uri)
 	int Sockfd = -1;
 	struct sockaddr_in Servaddr;
 	string RtspUri("");
-	int SockStatus = -1;
+	// int SockStatus = -1;
 
 	if(RtspSockfd > 0) {
 		return RtspSockfd;
@@ -980,7 +1023,7 @@ int RtspClient::CreateTcpSockfd(uint16_t rtsp_over_http_data_port)
 	int Sockfd = -1;
 	struct sockaddr_in Servaddr;
 	string RtspUri("");
-	int SockStatus = -1;
+	// int SockStatus = -1;
 
 	if(RtspOverHttpDataSockfd > 0) {
 		return RtspOverHttpDataSockfd;
@@ -1220,20 +1263,20 @@ int RtspClient::CheckSockReadable(int sockfd, struct timeval * tval)
     return CHECK_OK;
 }
 
-int RtspClient::SendRTSP(int fd, const char * msg, size_t size)
+ErrorType RtspClient::SendRTSP(int fd, const char * msg, size_t size)
 {
  	if(!msg) {
  		printf("Recv Argument Error\n");
- 		return TRANS_ERROR;
+ 		return RTSP_SEND_ERROR;
  	}
 
  	int SendResult = 0;
  	int Index = 0;
- 	int Err = TRANS_OK;
+ 	ErrorType Err = RTSP_NO_ERROR;
 
 	while(size > 0) {
 		if(!CheckSockWritable(fd)) {
-			Err = TRANS_ERROR;
+			Err = RTSP_SEND_ERROR;
 			break;
 		}
 		SendResult = Writen(fd, msg+Index, size);
@@ -1241,11 +1284,11 @@ int RtspClient::SendRTSP(int fd, const char * msg, size_t size)
 			if(errno == EINTR) continue;
 			else if(errno == EWOULDBLOCK || errno == EAGAIN) continue;
 			else {
-				Err = TRANS_ERROR;
+				Err = RTSP_SEND_ERROR;
 				break;
 			}
 		} else if(SendResult == 0) {
-			Err = TRANS_ERROR;
+			Err = RTSP_SEND_ERROR;
 			break;
 		}
 		Index += SendResult;
@@ -1292,41 +1335,83 @@ int RtspClient::SendRTSP(int fd, const char * msg, size_t size)
 // 	return Err;
 // }
 
-int RtspClient::SendRTSP(int fd, string msg)
+ErrorType RtspClient::SendRTSP(int fd, string msg)
 {
-	return SendRTSP(fd, msg.c_str(), msg.length());
+    if(RTSP_NO_ERROR != SendRTSP(fd, msg.c_str(), msg.length())) {
+        return RTSP_SEND_ERROR;
+    }
+    return RTSP_NO_ERROR;
 }
 
-int RtspClient::RecvRTSP(int fd, char * msg, size_t maxlen)
+ErrorType RtspClient::SendRTSP(int fd, uint16_t http_tunnel_port, string msg)
+{
+    if(http_tunnel_port != 0) {
+        char * encodedBytes = base64Encode(msg.c_str(), msg.length());
+        if(NULL == encodedBytes) {
+            Close(fd);
+            return RTSP_SEND_ERROR;
+        }
+        if(RTSP_NO_ERROR != SendRTSP(fd, string(encodedBytes))) {
+            Close(fd);
+            delete[] encodedBytes;
+            return RTSP_SEND_ERROR;
+        }
+        delete[] encodedBytes;
+    } else {
+        if(RTSP_NO_ERROR != SendRTSP(fd, msg)) {
+            Close(fd);
+            return RTSP_SEND_ERROR;
+        }
+    }
+    return RTSP_NO_ERROR;
+}
+
+ErrorType RtspClient::RecvRTSP(int fd, uint16_t http_tunnel_port, string * msg)
+{
+    if(http_tunnel_port != 0) {
+        if(RTSP_NO_ERROR != RecvRTSP(RtspOverHttpDataSockfd, &RtspResponse)) {
+            Close(fd);
+            return RTSP_RECV_ERROR;
+        }
+    } else {
+        if(RTSP_NO_ERROR != RecvRTSP(fd, &RtspResponse)) {
+            Close(fd);
+            return RTSP_RECV_ERROR;
+        }
+    }
+    return RTSP_NO_ERROR;
+}
+
+ErrorType RtspClient::RecvRTSP(int fd, char * msg, size_t maxlen)
 {
 	MyRegex Regex;
 	if(!msg) {
 		printf("Recv Argument Error\n");
-		return TRANS_ERROR;
+		return RTSP_RECV_ERROR;
 	}
 
 	int RecvResult = 0;
 	int Index = 0;
-	int Err = TRANS_OK;
+	ErrorType Err = RTSP_NO_ERROR;
 
 	memset(msg, 0, maxlen);
 	while(maxlen > 0) {
 		if(!CheckSockReadable(fd)) {
-			Err = TRANS_ERROR;
+			Err = RTSP_RECV_ERROR;
 			break;
 		}
 		RecvResult = ReadLine(fd, msg + Index, maxlen);
 		if(RecvResult < 0) {
 			if(errno == EINTR) continue;
 			else if(errno == EWOULDBLOCK || errno == EAGAIN) {
-				Err = TRANS_OK;
+				Err = RTSP_NO_ERROR;
 				break;
 			} else {
-				Err = TRANS_ERROR;
+				Err = RTSP_RECV_ERROR;
 				break;
 			}
 		} else if(RecvResult == 0) {
-			Err = TRANS_ERROR;
+			Err = RTSP_RECV_ERROR;
 			break;
 		}
 		/*
@@ -1334,7 +1419,7 @@ int RtspClient::RecvRTSP(int fd, char * msg, size_t maxlen)
 		 * */
 		if(RecvResult <= (int)strlen("\r\n") &&
 				Regex.Regex(msg+Index, "^(\r\n|\n)$")) {
-			Err = TRANS_OK;
+			Err = RTSP_NO_ERROR;
 			break;
 		}
 		Index += RecvResult;
@@ -1343,19 +1428,19 @@ int RtspClient::RecvRTSP(int fd, char * msg, size_t maxlen)
 	return Err;
 }
 
-int RtspClient::RecvRTSP(int fd, string * msg)
+ErrorType RtspClient::RecvRTSP(int fd, string * msg)
 {
 	if(!msg) {
 		printf("Invalid Argument\n");
-		return TRANS_ERROR;
+		return RTSP_RECV_ERROR;
 	}
 
 	char * Buf = (char *)calloc(RECV_BUF_SIZE, sizeof(char));
-	int RecvResult = TRANS_OK;
+	ErrorType RecvResult = RTSP_NO_ERROR;
 
 	msg->assign("");
 	RecvResult = RecvRTSP(fd, Buf, RECV_BUF_SIZE);
-	if(TRANS_OK == RecvResult) msg->assign(Buf);
+	if(RTSP_NO_ERROR == RecvResult) msg->assign(Buf);
 	free(Buf);
 	return RecvResult;
 }
@@ -1936,12 +2021,20 @@ uint32_t RtspClient::CheckAuth(int sockfd, string cmd, string uri)
 	Msg << "\r\n";
 	// cout << Msg.str() << endl;
 
-	if(!SendRTSP(sockfd, Msg.str())) {
-		return CHECK_ERROR;
-	}
-	if(!RecvRTSP(sockfd, &RtspResponse)) {
-		return CHECK_ERROR;
-	}
+	// if(RTSP_NO_ERROR != SendRTSP(sockfd, Msg.str())) {
+	// 	return CHECK_ERROR;
+	// }
+    ErrorType ret = SendRTSP(sockfd, RtspOverHttpDataPort, Msg.str());
+    if(RTSP_NO_ERROR != ret) {
+        return CHECK_ERROR;
+    }
+	// if(RTSP_NO_ERROR != RecvRTSP(sockfd, &RtspResponse)) {
+	// 	return CHECK_ERROR;
+	// }
+    ret = RecvRTSP(sockfd, RtspOverHttpDataPort, &RtspResponse);
+    if(RTSP_NO_ERROR != ret) {
+        return CHECK_ERROR;
+    }
 	if(!IsResponse_200_OK()) {
 		// cout << RtspResponse << endl;
 		return CHECK_ERROR;

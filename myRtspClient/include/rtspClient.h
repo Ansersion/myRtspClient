@@ -57,6 +57,7 @@ enum ErrorType {
     RTSP_INVALID_URI,
 	RTSP_SEND_ERROR, 
 	RTSP_RECV_ERROR,
+	RTSP_PARSE_SDP_ERROR,
 	RTSP_INVALID_MEDIA_SESSION,
 	RTSP_RESPONSE_BLANK,
 	RTSP_RESPONSE_200,
@@ -251,11 +252,13 @@ class RtspClient
 		int CheckSockWritable(int sockfd, struct timeval * tval = NULL);
 		int CheckSockReadable(int sockfd, struct timeval * tval = NULL);
 		// int SendRTSP(int fd, const char * msg, size_t size, bool http_tunnel);
-		int SendRTSP(int fd, const char * msg, size_t size);
-		int SendRTSP(int fd, string msg);
-		int RecvRTSP(int fd, char * msg, size_t max_line);
+		ErrorType SendRTSP(int fd, const char * msg, size_t size);
+		ErrorType SendRTSP(int fd, string msg);
+        ErrorType SendRTSP(int fd, uint16_t http_tunnel_port, string msg);
+		ErrorType RecvRTSP(int fd, char * msg, size_t max_line);
 		// int RecvRTSP(int fd, char * msg, size_t max_line, bool http_tunnel);
-		int RecvRTSP(int fd, string * msg);
+		ErrorType RecvRTSP(int fd, string * msg);
+		ErrorType RecvRTSP(int fd, uint16_t http_tunnel_port, string * msg);
 
 		/* "RecvSDP" can only be used after DESCRIBE. */
 		int RecvSDP(int sockfd, char * msg, size_t size);
