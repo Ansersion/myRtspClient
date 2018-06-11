@@ -943,17 +943,17 @@ int RtspClient::CreateTcpSockfd(string uri)
 	}
 
 	// Set Sockfd NONBLOCK
-	SockStatus = fcntl(Sockfd, F_GETFL, 0);
-	fcntl(Sockfd, F_SETFL, SockStatus | O_NONBLOCK);
+	// SockStatus = fcntl(Sockfd, F_GETFL, 0);
+	// fcntl(Sockfd, F_SETFL, SockStatus | O_NONBLOCK);
 
 	// Connect to server
 	bzero(&Servaddr, sizeof(Servaddr));
 	Servaddr.sin_family = AF_INET;
-    cout << "DEBUG: RtspPort=" << RtspOverHttpDataPort << endl;
+    // cout << "DEBUG: RtspPort=" << RtspOverHttpDataPort << endl;
     if(RtspOverHttpDataPort > 0) {
         Servaddr.sin_port = htons(RtspPort);
     } else {
-        cout << "ERROR: RtspPort=" << RtspOverHttpDataPort << endl;
+        // cout << "ERROR: RtspPort=" << RtspOverHttpDataPort << endl;
         Servaddr.sin_port = htons(GetPort(uri));
     }
 	Servaddr.sin_addr.s_addr = GetIP(uri);
@@ -965,11 +965,11 @@ int RtspClient::CreateTcpSockfd(string uri)
 		RtspSockfd = Sockfd;
 		return Sockfd;
 	}
-	if(!CheckSockWritable(Sockfd)) {
-		Sockfd = -1;
-		RtspSockfd = Sockfd;
-		return Sockfd;
-	}
+	// if(!CheckSockWritable(Sockfd)) {
+	// 	Sockfd = -1;
+	// 	RtspSockfd = Sockfd;
+	// 	return Sockfd;
+	// }
 
 	RtspSockfd = Sockfd;
 	return Sockfd;
@@ -999,8 +999,8 @@ int RtspClient::CreateTcpSockfd(uint16_t rtsp_over_http_data_port)
 	}
 
 	// Set Sockfd NONBLOCK
-	SockStatus = fcntl(Sockfd, F_GETFL, 0);
-	fcntl(Sockfd, F_SETFL, SockStatus | O_NONBLOCK);
+	// SockStatus = fcntl(Sockfd, F_GETFL, 0);
+	// fcntl(Sockfd, F_SETFL, SockStatus | O_NONBLOCK);
 
 	// Connect to server
 	bzero(&Servaddr, sizeof(Servaddr));
@@ -1174,48 +1174,50 @@ string RtspClient::GetResource(string uri)
 /* Protected Methods */
 int RtspClient::CheckSockWritable(int sockfd, struct timeval * tval)
 {
-	fd_set Wset;
-	struct timeval Tval;
-	FD_ZERO(&Wset);
-	FD_SET(sockfd, &Wset);
-	if(!tval) {
-		Tval.tv_sec = SELECT_TIMEOUT_SEC;
-		Tval.tv_usec = SELECT_TIMEOUT_USEC;
-	} else {
-		Tval = *tval;
-	}
+	// fd_set Wset;
+	// struct timeval Tval;
+	// FD_ZERO(&Wset);
+	// FD_SET(sockfd, &Wset);
+	// if(!tval) {
+	// 	Tval.tv_sec = SELECT_TIMEOUT_SEC;
+	// 	Tval.tv_usec = SELECT_TIMEOUT_USEC;
+	// } else {
+	// 	Tval = *tval;
+	// }
 
-	while(select(sockfd + 1, NULL, &Wset, NULL, &Tval) != 0) {
-		if(FD_ISSET(sockfd, &Wset)) {
-			return CHECK_OK;
-		}
-		return CHECK_ERROR;
-	}   
-	printf("Select Timeout\n");
-	return CHECK_ERROR;
+	// while(select(sockfd + 1, NULL, &Wset, NULL, &Tval) != 0) {
+	// 	if(FD_ISSET(sockfd, &Wset)) {
+	// 		return CHECK_OK;
+	// 	}
+	// 	return CHECK_ERROR;
+	// }   
+	// printf("Select Timeout\n");
+	// return CHECK_ERROR;
+    return CHECK_OK;
 }
 
 int RtspClient::CheckSockReadable(int sockfd, struct timeval * tval)
 {
-	fd_set Rset;
-	struct timeval Tval;
-	FD_ZERO(&Rset);
-	FD_SET(sockfd, &Rset);
-	if(!tval) {
-		Tval.tv_sec = SELECT_TIMEOUT_SEC;
-		Tval.tv_usec = SELECT_TIMEOUT_USEC;
-	} else {
-		Tval = *tval;
-	}
+	// fd_set Rset;
+	// struct timeval Tval;
+	// FD_ZERO(&Rset);
+	// FD_SET(sockfd, &Rset);
+	// if(!tval) {
+	// 	Tval.tv_sec = SELECT_TIMEOUT_SEC;
+	// 	Tval.tv_usec = SELECT_TIMEOUT_USEC;
+	// } else {
+	// 	Tval = *tval;
+	// }
 
-	while(select(sockfd + 1, &Rset, NULL, NULL, &Tval) != 0) {
-		if(FD_ISSET(sockfd, &Rset)) {
-			return CHECK_OK;
-		}
-		return CHECK_ERROR;
-	}   
-	printf("Select Timeout\n");
-	return CHECK_ERROR;
+	// while(select(sockfd + 1, &Rset, NULL, NULL, &Tval) != 0) {
+	// 	if(FD_ISSET(sockfd, &Rset)) {
+	// 		return CHECK_OK;
+	// 	}
+	// 	return CHECK_ERROR;
+	// }   
+	// printf("Select Timeout\n");
+	// return CHECK_ERROR;
+    return CHECK_OK;
 }
 
 int RtspClient::SendRTSP(int fd, const char * msg, size_t size)
