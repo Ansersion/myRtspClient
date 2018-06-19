@@ -57,7 +57,6 @@ int main(int argc, char *argv[])
     if(RTSP_NO_ERROR == Client.DoRtspOverHttpPost()) {
         cout << "DoPost OK" << endl;
     }
-    cout << Client.GetResource();
 
     // /* Set rtsp access username */
     // Client.SetUsername("Ansersion");
@@ -66,15 +65,55 @@ int main(int argc, char *argv[])
     // Client.SetPassword("AnsersionPassword");
 
     // /* Send DESCRIBE command to server */
-    Client.DoDESCRIBE();
-    cout << Client.GetResource();
+	if(Client.DoOPTIONS() != RTSP_NO_ERROR) {
+		printf("DoOPTIONS error\n");
+		return 0;
+	}
+	printf("%s\n", Client.GetResponse().c_str());
+	/* Check whether server return '200'(OK) */
+	if(!Client.IsResponse_200_OK()) {
+		printf("DoOPTIONS error\n");
+		return 0;
+	}
 
-    // /* Parse SDP message after sending DESCRIBE command */
-    // Client.ParseSDP();
+	/* Send DESCRIBE command to server */
+	if(Client.DoDESCRIBE() != RTSP_NO_ERROR) {
+		printf("DoDESCRIBE error\n");
+		return 0;
+	}
+	printf("%s\n", Client.GetResponse().c_str());
+	/* Check whether server return '200'(OK) */
+	if(!Client.IsResponse_200_OK()) {
+		printf("DoDESCRIBE error\n");
+		return 0;
+	}
 
-    // /* Send SETUP command to set up all 'audio' and 'video' 
-    //  * sessions which SDP refers. */
-    // Client.DoSETUP();
+	/* Parse SDP message after sending DESCRIBE command */
+	printf("%s\n", Client.GetSDP().c_str());
+	if(Client.ParseSDP() != RTSP_NO_ERROR) {
+		printf("ParseSDP error\n");
+		return 0;
+	}
+
+	/* Send SETUP command to set up all 'audio' and 'video' 
+	 * sessions which SDP refers. */
+	if(Client.DoSETUP() != RTSP_NO_ERROR) {
+		printf("DoSETUP error\n");
+		return 0;
+	}
+	printf("%s\n", Client.GetResponse().c_str());
+
+	if(!Client.IsResponse_200_OK()) {
+		printf("DoSETUP error\n");
+		return 0;
+	}
+
+	if(Client.DoPLAY("video", NULL, NULL, NULL) != RTSP_NO_ERROR) {
+		printf("DoPLAY error\n");
+		return 0;
+	}
+	
+	printf("%s\n", Client.GetResponse().c_str());
     // Client.SetVideoByeFromServerClbk(ByeFromServerClbk);
 
     // printf("start PLAY\n");

@@ -230,7 +230,7 @@ ErrorType RtspClient::DoDESCRIBE(string uri)
     } else {
 	    RecvSDP(Sockfd, &SDPStr);
     }
-    cout << "DEBUG: " << SDPStr << endl;
+    // cout << "DEBUG: " << SDPStr << endl;
 	// close(Sockfd);
 	return RTSP_NO_ERROR;
 }
@@ -256,16 +256,26 @@ ErrorType RtspClient::DoOPTIONS(string uri)
 	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
 	Msg << "\r\n";
 
-	if(RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
-		// close(Sockfd);
-		Close(Sockfd);
-		return RTSP_SEND_ERROR;
-	}
-	if(RTSP_NO_ERROR != RecvRTSP(Sockfd, &RtspResponse)) {
-		// close(Sockfd);
-		Close(Sockfd);
-		return RTSP_RECV_ERROR;
-	}
+    cout << "DEBUG: " << Msg.str() << endl;
+
+    ErrorType ret = SendRTSP(Sockfd, RtspOverHttpDataPort, Msg.str());
+    if(RTSP_NO_ERROR != ret) {
+        return ret;
+    }
+	// if(RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
+	// 	// close(Sockfd);
+	// 	Close(Sockfd);
+	// 	return RTSP_SEND_ERROR;
+	// }
+    ret = RecvRTSP(Sockfd, RtspOverHttpDataPort, &RtspResponse);
+    if(RTSP_NO_ERROR != ret) {
+        return ret;
+    }
+	// if(RTSP_NO_ERROR != RecvRTSP(Sockfd, &RtspResponse)) {
+	// 	// close(Sockfd);
+	// 	Close(Sockfd);
+	// 	return RTSP_RECV_ERROR;
+	// }
 	// close(Sockfd);
 	return RTSP_NO_ERROR;
 }
@@ -289,7 +299,6 @@ ErrorType RtspClient::DoPAUSE(MediaSession * media_session)
 	if(!media_session) {
 		return RTSP_INVALID_MEDIA_SESSION;
 	}
-	ErrorType Err = RTSP_NO_ERROR;
 	int Sockfd = -1;
 
 	Sockfd = CreateTcpSockfd();
@@ -302,20 +311,29 @@ ErrorType RtspClient::DoPAUSE(MediaSession * media_session)
 	Msg << "Session: " << media_session->SessionID << "\r\n";
 	Msg << "\r\n";
 
-	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
-		Close(Sockfd);
-		// close(Sockfd);
-		Sockfd = -1;
-		Err = RTSP_SEND_ERROR;
-	}
-	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != RecvRTSP(Sockfd, &RtspResponse)) {
-		Close(Sockfd);
-		// close(Sockfd);
-		Sockfd = -1;
-		Err = RTSP_RECV_ERROR;
-	}
+	ErrorType ret = SendRTSP(Sockfd, RtspOverHttpDataPort, Msg.str());
+    if(RTSP_NO_ERROR != ret) {
+        return ret;
+    }
+    ret = RecvRTSP(Sockfd, RtspOverHttpDataPort, &RtspResponse);
+    if(RTSP_NO_ERROR != ret) {
+        return ret;
+    }
+
+	// if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
+	// 	Close(Sockfd);
+	// 	// close(Sockfd);
+	// 	Sockfd = -1;
+	// 	Err = RTSP_SEND_ERROR;
+	// }
+	//if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != RecvRTSP(Sockfd, &RtspResponse)) {
+	//	Close(Sockfd);
+	//	// close(Sockfd);
+	//	Sockfd = -1;
+	//	Err = RTSP_RECV_ERROR;
+	//}
 	// close(Sockfd);
-	return Err;
+	return RTSP_NO_ERROR;
 }
 
 ErrorType RtspClient::DoPAUSE(string media_type)
@@ -356,7 +374,7 @@ ErrorType RtspClient::DoGET_PARAMETER(MediaSession * media_session)
 	if(!media_session) {
 		return RTSP_INVALID_MEDIA_SESSION;
 	}
-	ErrorType Err = RTSP_NO_ERROR;
+	// ErrorType Err = RTSP_NO_ERROR;
 	int Sockfd = -1;
 
 	Sockfd = CreateTcpSockfd();
@@ -369,20 +387,16 @@ ErrorType RtspClient::DoGET_PARAMETER(MediaSession * media_session)
 	Msg << "Session: " << media_session->SessionID << "\r\n";
 	Msg << "\r\n";
 
-	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
-		Close(Sockfd);
-		// close(Sockfd);
-		Sockfd = -1;
-		Err = RTSP_SEND_ERROR;
-	}
-	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != RecvRTSP(Sockfd, &RtspResponse)) {
-		Close(Sockfd);
-		// close(Sockfd);
-		Sockfd = -1;
-		Err = RTSP_RECV_ERROR;
-	}
-	// close(Sockfd);
-	return Err;
+	ErrorType ret = SendRTSP(Sockfd, RtspOverHttpDataPort, Msg.str());
+    if(RTSP_NO_ERROR != ret) {
+        return ret;
+    }
+    ret = RecvRTSP(Sockfd, RtspOverHttpDataPort, &RtspResponse);
+    if(RTSP_NO_ERROR != ret) {
+        return ret;
+    }
+
+	return RTSP_NO_ERROR;
 }
 
 ErrorType RtspClient::DoGET_PARAMETER(string media_type)
@@ -424,7 +438,6 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 	if(!media_session) {
 		return RTSP_INVALID_MEDIA_SESSION;
 	}
-	ErrorType Err = RTSP_NO_ERROR;
 	int Sockfd = -1;
 
 	Sockfd = CreateTcpSockfd();
@@ -439,8 +452,13 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 	string Cmd("SETUP");
 	stringstream Msg("");
 	Msg << Cmd << " " << media_session->ControlURI << " " << "RTSP/" << VERSION_RTSP << "\r\n";
-	Msg << "Transport:" << " " << media_session->Protocol << "/UDP;";
-	Msg << "unicast;" << "client_port=" << media_session->RTPPort << "-" << media_session->RTCPPort << "\r\n";
+    if(RtspOverHttpDataPort > 0) {
+	    Msg << "Transport:" << " " << media_session->Protocol << "/TCP;";
+        Msg << "interleaved=0-1\r\n";
+    } else {
+	    Msg << "Transport:" << " " << media_session->Protocol << "/UDP;";
+        Msg << "unicast;" << "client_port=" << media_session->RTPPort << "-" << media_session->RTCPPort << "\r\n";
+    }
 	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
 	if(Realm.length() > 0 && Nonce.length() > 0) {
 		string RealmTmp = Realm;
@@ -455,19 +473,17 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 			<< "\", response=\"" << Md5Response << "\"\r\n";
 	}
 	Msg << "\r\n";
+    cout << "DEBUG: " << Msg.str() << endl;
 
-	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
-		// close(Sockfd);
-		Close(Sockfd);
-		Sockfd = -1;
-		Err = RTSP_SEND_ERROR;
-	}
-	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != RecvRTSP(Sockfd, &RtspResponse)) {
-		// close(Sockfd);
-		Close(Sockfd);
-		Sockfd = -1;
-		Err = RTSP_RECV_ERROR;
-	}
+	ErrorType ret = SendRTSP(Sockfd, RtspOverHttpDataPort, Msg.str());
+    if(RTSP_NO_ERROR != ret) {
+        return ret;
+    }
+    ret = RecvRTSP(Sockfd, RtspOverHttpDataPort, &RtspResponse);
+    if(RTSP_NO_ERROR != ret) {
+        return ret;
+    }
+
 	// if(CheckAuth(Sockfd, Cmd, media_session->ControlURI) != CHECK_OK) {
 	// 	cout << "CheckAuth: error" << endl;
 	// 	close(Sockfd);
@@ -487,7 +503,7 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 
 	// media_session->RTSPSockfd = Sockfd;
 	// close(Sockfd);
-	return Err;
+	return RTSP_NO_ERROR;
 }
 
 ErrorType RtspClient::DoSETUP(string media_type)
@@ -530,7 +546,7 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session, float * scale, float 
 		return RTSP_INVALID_MEDIA_SESSION;
 	}
 
-	ErrorType Err = RTSP_NO_ERROR;
+	// ErrorType Err = RTSP_NO_ERROR;
 	int Sockfd = -1;
 	Sockfd = CreateTcpSockfd();
 	if(Sockfd < 0) return RTSP_INVALID_URI;
@@ -572,27 +588,18 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session, float * scale, float 
 			<< "\", response=\"" << Md5Response << "\"\r\n";
 	}
 	Msg << "\r\n";
-	std::cout << Msg.str();
+    cout << "DEBUG: " << Msg.str();
 
-	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
-		Close(Sockfd);
-		// close(Sockfd);
-		Sockfd = -1;
-		Err = RTSP_SEND_ERROR;
-	}
-	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != RecvRTSP(Sockfd, &RtspResponse)) {
-		Close(Sockfd);
-		// close(Sockfd);
-		Sockfd = -1;
-		Err = RTSP_RECV_ERROR;
-	}
-	// if(CheckAuth(Sockfd, Cmd, RtspURI) != CHECK_OK) {
-	// 	cout << "CheckAuth: error" << endl;
-	// 	close(Sockfd);
-	// 	return RTSP_RESPONSE_401;
-	// }
-	// close(Sockfd);
-	return Err;
+	ErrorType ret = SendRTSP(Sockfd, RtspOverHttpDataPort, Msg.str());
+    if(RTSP_NO_ERROR != ret) {
+        return ret;
+    }
+    ret = RecvRTSP(Sockfd, RtspOverHttpDataPort, &RtspResponse);
+    if(RTSP_NO_ERROR != ret) {
+        return ret;
+    }
+
+	return RTSP_NO_ERROR;
 }
 
 ErrorType RtspClient::DoPLAY(string media_type, float * scale, float * start_time, float * end_time)
@@ -640,7 +647,7 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session)
 		return RTSP_INVALID_MEDIA_SESSION;
 		// return RTSP_NO_ERROR;
 	}
-	ErrorType Err = RTSP_NO_ERROR;
+	// ErrorType Err = RTSP_NO_ERROR;
 	int Sockfd = -1;
 
 	// cout << "TEST: TEARDOWN: ###" << media_session->MediaType << "###" << endl;
@@ -667,31 +674,28 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session)
 	}
 	Msg << "\r\n";
 
-	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
-		// close(Sockfd);
-		Close(Sockfd);
-		Sockfd = -1;
-		Err = RTSP_SEND_ERROR;
-	}
-	if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != RecvRTSP(Sockfd, &RtspResponse)) {
-		// close(Sockfd);
-		Close(Sockfd);
-		Sockfd = -1;
-		Err = RTSP_RECV_ERROR;
-	}
-	if(RTSP_NO_ERROR == Err) {
+	ErrorType ret = SendRTSP(Sockfd, RtspOverHttpDataPort, Msg.str());
+    if(RTSP_NO_ERROR != ret) {
+        Close(Sockfd);
+        return ret;
+    }
+    ret = RecvRTSP(Sockfd, RtspOverHttpDataPort, &RtspResponse);
+    if(RTSP_NO_ERROR != ret) {
+        Close(Sockfd);
+        return ret;
+    }
+
+	if(RTSP_NO_ERROR == ret) {
 		map<string, MediaSession>::iterator it;
 		for(it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
 			if(media_session->SessionID == it->second.SessionID) break;
 		}
 		if(it != MediaSessionMap->end()) {
 			MediaSessionMap->erase(it);
-			// close(media_session->RTPSockfd);
-			// close(media_session->RTCPSockfd);
 		}
 	}
 	Close(Sockfd);
-	return Err;
+	return RTSP_NO_ERROR;
 }
 
 ErrorType RtspClient::DoTEARDOWN(string media_type)
@@ -731,7 +735,7 @@ ErrorType RtspClient::DoRtspOverHttpGet()
 	Msg << HttpHeadPrama<< HttpHeadPramaContent << "\r\n";
 	Msg << HttpHeadCacheControl << HttpHeadCacheControlContent << "\r\n";
 	Msg << "\r\n";
-    cout << "DEBUG: " << Msg.str();
+    // cout << "DEBUG: " << Msg.str();
 
 	if(RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
 		Close(Sockfd);
@@ -763,7 +767,7 @@ ErrorType RtspClient::DoRtspOverHttpPost()
 	Msg << HttpHeadContentLength << HttpHeadContentLengthContent << "\r\n";
 	Msg << HttpHeadExpires << HttpHeadExpiresContent << "\r\n";
 	Msg << "\r\n";
-    cout << "DEBUG: " << Msg.str();
+    // cout << "DEBUG: " << Msg.str();
 
 	if(RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
 		Close(Sockfd);
