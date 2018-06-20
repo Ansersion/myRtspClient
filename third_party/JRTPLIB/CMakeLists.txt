@@ -1,3 +1,5 @@
+# Configure for cmake here
+set(JTHREAD_FOUND 1)
 cmake_minimum_required(VERSION 2.8)
 if (POLICY CMP0042)
 	cmake_policy(SET CMP0042 NEW)
@@ -35,11 +37,7 @@ include(TestBigEndian)
 include(${PROJECT_SOURCE_DIR}/cmake/Macros.cmake)
 
 include_directories("${PROJECT_SOURCE_DIR}/../JTHREAD/build/src")
-
-set(JTHREAD_FOUND 1)
-
 set(JTHREAD_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/../JTHREAD")
-
 set(JTHREAD_LIBRARIES  "-L${PROJECT_SOURCE_DIR}/../JTHREAD/build/src" "-ljthread" "-lpthread")
 
 

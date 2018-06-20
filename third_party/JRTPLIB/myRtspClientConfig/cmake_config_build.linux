@@ -1,0 +1,2 @@
+# Configure for cmake here
+set(JTHREAD_FOUND 1)

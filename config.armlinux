@@ -32,3 +32,12 @@ EXE =
 # OR
 # RTP_ENDIAN = LITTLE_ENDIAN
 RTP_ENDIAN = LITTLE_ENDIAN
+
+###############################
+# JThread enable/disable
+# DISABLE as default 
+###############################
+# RTP_JTHREAD = ENABLE
+# OR
+# RTP_JTHREAD = DISABLE
+RTP_JTHREAD = DISABLE

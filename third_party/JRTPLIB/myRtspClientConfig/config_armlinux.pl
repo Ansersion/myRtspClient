@@ -30,6 +30,13 @@ foreach $k (keys %CompileParameter) {
 			$Endian = "LITTLE";
 		}
 	}
+	if($k =~ /RTP_JTHREAD/) {
+		if($CompileParameter{$k} =~ /ENABLE/) {
+            $CompileParameter{$k} = "1";
+		} else {
+            $CompileParameter{$k} = "0";
+        }
+	}
 }
 
 close CONFIG;
@@ -41,7 +48,8 @@ while(<CONFIG_CMAKE>) {
 	if(s/TOOLCHAIN_DIR\s*<SET_VALUE>\s*/TOOLCHAIN_DIR $CompileParameter{"CROSS_COMPILE_DIR"}/) {
 	} elsif(s/CMAKE_C_COMPILER\s*<SET_VALUE>\s*/CMAKE_C_COMPILER $CompileParameter{"C_COMPILER"}/) {
 	} elsif(s/CMAKE_CXX_COMPILER\s*<SET_VALUE>\s*/CMAKE_CXX_COMPILER $CompileParameter{"CPLUSPLUS_COMPILER"}/) {
-	}
+	} elsif(s/JTHREAD_FOUND\s*<BOOL>\s*/JTHREAD_FOUND $CompileParameter{"RTP_JTHREAD"}/) {
+    }
 	print CONFIG_CMAKE_BUILD $_;
 }
 close CONFIG_CMAKE;
