@@ -1,5 +1,5 @@
 # Configure for cmake here
-set(JTHREAD_FOUND 1)
+set(JTHREAD_FOUND 0)
 cmake_minimum_required(VERSION 2.8)
 if (POLICY CMP0042)
 	cmake_policy(SET CMP0042 NEW)

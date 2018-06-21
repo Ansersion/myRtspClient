@@ -1,2 +1,2 @@
 # Configure for cmake here
-set(JTHREAD_FOUND 0)
+set(JTHREAD_FOUND <BOOL>)

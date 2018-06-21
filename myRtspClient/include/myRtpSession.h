@@ -43,7 +43,7 @@ class MyRTPSession : public RTPSession
 {
 	public:
 		MyRTPSession();
-		int MyRTP_SetUp(MediaSession * media_session);
+		int MyRTP_SetUp(MediaSession * media_session, bool is_http_tunnelling = false, SocketType tunnelling_sock=0);
 
 		/* Wait 1 second for TEARDOWN at default */
 		void MyRTP_Teardown(MediaSession * media_session, struct timeval * tval = NULL);
@@ -66,6 +66,9 @@ class MyRTPSession : public RTPSession
 
 	private:
 		void (*DestroiedClbk)();
+
+    private:
+        bool isHttpTunneling;
 
 };
 

@@ -47,7 +47,7 @@ class MediaSession
 	public:
 	 	MediaSession();
 		~MediaSession();
-	 	int RTP_SetUp();
+	 	int RTP_SetUp(int tunnelling_sock = 0);
 
 		/* Wait 1 second for TEARDOWN at default */
 		int RTP_Teardown(struct timeval * tval = NULL);

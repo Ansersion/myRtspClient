@@ -497,7 +497,7 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 	}
 	media_session->Timeout = timeout;
 
-	media_session->RTP_SetUp();
+	media_session->RTP_SetUp(RtspOverHttpDataSockfd);
 	SetDestroiedClbk("audio", ByeFromServerAudioClbk);
 	SetDestroiedClbk("video", ByeFromServerVideoClbk);
 

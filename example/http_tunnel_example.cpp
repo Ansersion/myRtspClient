@@ -114,42 +114,43 @@ int main(int argc, char *argv[])
 	}
 	
 	printf("%s\n", Client.GetResponse().c_str());
-    // Client.SetVideoByeFromServerClbk(ByeFromServerClbk);
+    Client.SetVideoByeFromServerClbk(ByeFromServerClbk);
 
-    // printf("start PLAY\n");
-    // printf("SDP: %s\n", Client.GetSDP().c_str());
-    //
-    //	/* Send PLAY command to play only 'video' sessions.*/
-    //	Client.DoPLAY("video");
+    printf("start PLAY\n");
+    printf("SDP: %s\n", Client.GetSDP().c_str());
+    
+    /* Send PLAY command to play only 'video' sessions.*/
+    // if(Client.DoPLAY("video") != RTSP_NO_ERROR) {
+    // }
     //
     //	/* Receive 1000 RTP 'video' packets
     //	 * note(FIXME): 
     //	 * if there are several 'video' session 
     //	 * refered in SDP, only receive packets of the first 
     //	 * 'video' session, the same as 'audio'.*/
-    //	int packet_num = 0;
-    //	const size_t BufSize = 98304;
-    //	uint8_t buf[BufSize];
-    //	size_t size = 0;
-    //
+     int packet_num = 0;
+     const size_t BufSize = 98304;
+     uint8_t buf[BufSize];
+     size_t size = 0;
+    
     /* Write h264 video data to file "test_packet_recv.h264" 
      * Then it could be played by ffplay */
-    // int fd = open("test_packet_recv.h264", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR);
+    int fd = open("test_packet_recv.h264", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR);
 
-    // while(++packet_num < 1000) {
-    // 	if(!Client.GetMediaData("video", buf, &size, BufSize)) continue;
-    // 	if(write(fd, buf, size) < 0) {
-    // 		perror("write");
-    // 	}
-    // 	if(ByeFromServerFlag) {
-    // 		break;
-    // 	}
-    // 	printf("recv %u\n", size);
-    // }
+    while(++packet_num < 1000) {
+    	if(!Client.GetMediaData("video", buf, &size, BufSize)) continue;
+    	if(write(fd, buf, size) < 0) {
+    		perror("write");
+    	}
+    	if(ByeFromServerFlag) {
+    		break;
+    	}
+    	printf("recv %lu\n", size);
+    }
 
-    // printf("start TEARDOWN\n");
-    // /* Send TEARDOWN command to teardown all of the sessions */
-    // Client.DoTEARDOWN();
+    printf("start TEARDOWN\n");
+    /* Send TEARDOWN command to teardown all of the sessions */
+    Client.DoTEARDOWN();
 
     return 0;
 }

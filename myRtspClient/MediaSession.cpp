@@ -82,7 +82,7 @@ MediaSession::~MediaSession()
 	if(RTPInterface) delete RTPInterface;
 }
 
-int MediaSession::RTP_SetUp()
+int MediaSession::RTP_SetUp(int tunnelling_sock)
 {
 	if(0 == TimeRate) return MEDIA_SESSION_ERROR;
 	if(0 == RTPPort) return MEDIA_SESSION_ERROR;
@@ -92,7 +92,11 @@ int MediaSession::RTP_SetUp()
 	}
 
 	RTPInterface = new MyRTPSession;
-	if(!RTPInterface->MyRTP_SetUp(this)) return MEDIA_SESSION_ERROR;
+    if(tunnelling_sock > 0) {
+	    if(!RTPInterface->MyRTP_SetUp(this, true, tunnelling_sock)) return MEDIA_SESSION_ERROR;
+    } else {
+	    if(!RTPInterface->MyRTP_SetUp(this)) return MEDIA_SESSION_ERROR;
+    }
 
 	return MEDIA_SESSION_OK;
 }
