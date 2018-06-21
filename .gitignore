@@ -49,3 +49,5 @@ myRtspClient/jrtplib/cmake_install.cmake
 myRtspClient/jrtplib/src/cmake_install.cmake
 myRtspClient/libmyRtspClient.so
 myRtspClient/jrtplib/examples/example[0-9]
+cmake_config_build.*
+CMakeLists.txt

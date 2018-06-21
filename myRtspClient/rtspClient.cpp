@@ -1000,7 +1000,6 @@ int RtspClient::CreateTcpSockfd(string uri)
     if(RtspOverHttpDataPort > 0) {
         Servaddr.sin_port = htons(RtspPort);
     } else {
-        // cout << "ERROR: RtspPort=" << RtspOverHttpDataPort << endl;
         Servaddr.sin_port = htons(GetPort(uri));
     }
 	Servaddr.sin_addr.s_addr = GetIP(uri);

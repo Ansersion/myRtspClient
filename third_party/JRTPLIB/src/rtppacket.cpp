@@ -130,8 +130,8 @@ int RTPPacket::ParseRawPacket(RTPRawPacket &rawpack)
 	// The version number should be correct
     if (rtpheader->version != RTP_VERSION) {
         if(!prompt_flag_for_myRtspClient) {
-            printf("***Maybe you need to change 'RTP_ENDIAN' in config.xxx***\n");
-            printf("***when running genMakefiles(only for cross-compiling)***\n");
+            // printf("***Maybe you need to change 'RTP_ENDIAN' in config.xxx***\n");
+            // printf("***when running genMakefiles(only for cross-compiling)***\n");
             prompt_flag_for_myRtspClient = true;
         }
         return ERR_RTP_PACKET_INVALIDPACKET;

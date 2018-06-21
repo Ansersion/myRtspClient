@@ -20,6 +20,7 @@ while(<CONFIG>) {
 	}
 }
 
+my $foundJthread = 0;
 foreach $k (keys %CompileParameter) {
 	if($k =~ /RTP_ENDIAN/) {
 		if($CompileParameter{$k} =~ /LITTLE/) {
@@ -27,12 +28,16 @@ foreach $k (keys %CompileParameter) {
 		}
 	}
 	if($k =~ /RTP_JTHREAD/) {
+        $foundJthread = 1;
 		if($CompileParameter{$k} =~ /ENABLE/) {
             $CompileParameter{$k} = "1";
 		} else {
             $CompileParameter{$k} = "0";
         }
 	}
+}
+if(0 == $foundJthread) {
+    $CompileParameter{"RTP_JTHREAD"} = "0";
 }
 
 close CONFIG;
