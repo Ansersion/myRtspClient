@@ -38,7 +38,7 @@ MyRTPTCPSession::MyRTPTCPSession():
 
 }
 
-int MyRTPTCPSession::MyRTP_SetUp(MediaSession * media_session, bool is_http_tunnelling, SocketType tunnelling_sock)
+int MyRTPTCPSession::MyRTP_SetUp(MediaSession * media_session, SocketType tunnelling_sock)
 {
 	if(!media_session) {
 		fprintf(stderr, "%s: Invalid media session\n", __func__);
@@ -48,57 +48,36 @@ int MyRTPTCPSession::MyRTP_SetUp(MediaSession * media_session, bool is_http_tunn
 		fprintf(stderr, "%s: Invalid MediaSession::TimeRate\n", __func__);
 		return RTP_ERROR;
 	}
-	if(0 == media_session->RTPPort) {
-		fprintf(stderr, "%s: Invalid MediaSession::RTPPort\n", __func__);
-		return RTP_ERROR;
-	}
-    // isHttpTunneling = is_http_tunnelling;
 
 	int status;
 
 	// Now, we'll create a RTP session, set the destination
 	// and poll for incoming data.
 
-//    if(isHttpTunneling) {
-//        RTPSessionParams sessparams;
-//        // MyTCPTransmitter transparams("HTTP Tunnelling");
-//		RTPTCPTransmissionParams transparams;
-//
-//        // IMPORTANT: The local timestamp unit MUST be set, otherwise
-//        //            RTCP Sender Report info will be calculated wrong
-//        // In this case, we'll be just use 8000 samples per second.
-//        sessparams.SetOwnTimestampUnit(1.0/media_session->TimeRate);         
-//
-//        sessparams.SetAcceptOwnPackets(true);
-//
-//        sessparams.SetProbationType(RTPSources::NoProbation);
-//        // TODO: use a valueable instead of "65535"
-//        // sessparams.SetMaximumPacketSize(65535);
-//
-////         bool threadsafe = false;
-//// #ifdef RTP_SUPPORT_THREAD
-////         threadsafe = true;
-//// #endif // RTP_SUPPORT_THREAD
-////         transparams.Init(threadsafe);
-//        // TODO: use a valueable instead of "65535"
-//        // transparams.Create(65535, 0);
-//
-//        status = Create(sessparams,&transparams, RTPTransmitter::TCPProto);  
-//        AddDestination(RTPTCPAddress(tunnelling_sock));
-//    } else {
-//
-//        RTPUDPv4TransmissionParams transparams;
-//        RTPSessionParams sessparams;
-//
-//        // IMPORTANT: The local timestamp unit MUST be set, otherwise
-//        //            RTCP Sender Report info will be calculated wrong
-//        // In this case, we'll be just use 8000 samples per second.
-//        sessparams.SetOwnTimestampUnit(1.0/media_session->TimeRate);         
-//
-//        sessparams.SetAcceptOwnPackets(true);
-//        transparams.SetPortbase(media_session->RTPPort);
-//        status = Create(sessparams,&transparams);  
-//    }
+	RTPSessionParams sessparams;
+	RTPTCPTransmissionParams transparams;
+
+	// IMPORTANT: The local timestamp unit MUST be set, otherwise
+	//            RTCP Sender Report info will be calculated wrong
+	// In this case, we'll be just use 8000 samples per second.
+	sessparams.SetOwnTimestampUnit(1.0/media_session->TimeRate);         
+
+	sessparams.SetAcceptOwnPackets(true);
+
+	sessparams.SetProbationType(RTPSources::NoProbation);
+	// TODO: use a valueable instead of "65535"
+	// sessparams.SetMaximumPacketSize(65535);
+
+	//         bool threadsafe = false;
+	// #ifdef RTP_SUPPORT_THREAD
+	//         threadsafe = true;
+	// #endif // RTP_SUPPORT_THREAD
+	//         transparams.Init(threadsafe);
+	// TODO: use a valueable instead of "65535"
+	// transparams.Create(65535, 0);
+
+	status = Create(sessparams,&transparams, RTPTransmitter::TCPProto);  
+	AddDestination(RTPTCPAddress(tunnelling_sock));
 	return IsError(status);
 }
 

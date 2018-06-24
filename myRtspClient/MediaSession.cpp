@@ -93,9 +93,10 @@ int MediaSession::RTP_SetUp(int tunnelling_sock)
 		return MEDIA_SESSION_OK;
 	}
 
+	printf("MyRTP_SetUp TCP: %d\n", tunnelling_sock);
     if(tunnelling_sock > 0) {
 		RTPInterface = new MyRTPTCPSession;
-	    // if(!RTPInterface->MyRTP_SetUp(this, true, tunnelling_sock)) return MEDIA_SESSION_ERROR;
+	    if(!RTPInterface->MyRTP_SetUp(this, tunnelling_sock)) return MEDIA_SESSION_ERROR;
     } else {
 		RTPInterface = new MyRTPUDPSession;
 	    if(!RTPInterface->MyRTP_SetUp(this)) return MEDIA_SESSION_ERROR;

@@ -47,7 +47,7 @@ class MyRTPSession : public RTPSession
 {
 	public:
 		MyRTPSession() {};
-		virtual int MyRTP_SetUp(MediaSession * media_session, bool is_http_tunnelling, SocketType tunnelling_sock) {return 0;}
+		virtual int MyRTP_SetUp(MediaSession * media_session, SocketType tunnelling_sock) {return 0;}
 		virtual int MyRTP_SetUp(MediaSession * media_session) { return 0;}
 
 		/* Wait 1 second for TEARDOWN at default */

@@ -29,7 +29,7 @@ class MyRTPTCPSession : public MyRTPSession
 {
 	public:
 		MyRTPTCPSession();
-		virtual int MyRTP_SetUp(MediaSession * media_session, bool is_http_tunnelling = false, SocketType tunnelling_sock=0);
+		virtual int MyRTP_SetUp(MediaSession * media_session, SocketType tunnelling_sock);
 
 		/* Wait 1 second for TEARDOWN at default */
 		virtual void MyRTP_Teardown(MediaSession * media_session, struct timeval * tval = NULL);

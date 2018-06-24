@@ -13,6 +13,11 @@
 //   limitations under the License.
 //
 
+
+/****************************************************/
+/* THIS EXAMPLE IS NOT COMPLETED YET */
+/****************************************************/
+
 #include <iostream>
 #include "rtspClient.h"
 #include <stdio.h>
