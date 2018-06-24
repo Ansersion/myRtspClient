@@ -51,3 +51,4 @@ myRtspClient/libmyRtspClient.so
 myRtspClient/jrtplib/examples/example[0-9]
 cmake_config_build.*
 CMakeLists.txt
+third_party/JRTPLIB/examples/*

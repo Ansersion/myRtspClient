@@ -163,9 +163,11 @@ int main(int argc, char *argv[])
 	while(true) {
 		if(!Client.GetMediaData("video", buf+write_size, &size, BufSize)) {
             if(ByeFromServerFlag) {
+				printf("ByeFromServerFlag\n");
                 break;
             }
             if(try_times > 5) {
+				printf("try_times > 5\n");
 				break;
 			}
 			try_times++;

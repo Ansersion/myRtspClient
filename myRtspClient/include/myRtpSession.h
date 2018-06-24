@@ -31,6 +31,10 @@
 #include <iostream>
 #include <string>
 
+#define RTP_OK      1
+#define RTP_ERROR   0
+
+#define USLEEP_UNIT     10000
 
 typedef void (*DESTROIED_RTP_CLBK) ();
 
@@ -42,33 +46,43 @@ int checkerror(int rtperr);
 class MyRTPSession : public RTPSession
 {
 	public:
-		MyRTPSession();
-		int MyRTP_SetUp(MediaSession * media_session, bool is_http_tunnelling = false, SocketType tunnelling_sock=0);
+		MyRTPSession() {};
+		virtual int MyRTP_SetUp(MediaSession * media_session, bool is_http_tunnelling, SocketType tunnelling_sock) {return 0;}
+		virtual int MyRTP_SetUp(MediaSession * media_session) { return 0;}
 
 		/* Wait 1 second for TEARDOWN at default */
-		void MyRTP_Teardown(MediaSession * media_session, struct timeval * tval = NULL);
-		uint8_t * GetMyRTPData(uint8_t * data_buf, size_t * size, unsigned long timeout_ms);
-		uint8_t * GetMyRTPPacket(uint8_t * packet_buf, size_t * size, unsigned long timeout_ms);
+		virtual void MyRTP_Teardown(MediaSession * media_session, struct timeval * tval = NULL){}
+		virtual uint8_t * GetMyRTPData(uint8_t * data_buf, size_t * size, unsigned long timeout_ms) {return NULL;}
+		virtual uint8_t * GetMyRTPPacket(uint8_t * packet_buf, size_t * size, unsigned long timeout_ms) {return NULL;}
 
-		void SetDestroiedClbk(void (*clbk)()) {DestroiedClbk = clbk;}
+		virtual void SetDestroiedClbk(void (*clbk)()) {DestroiedClbk = clbk;}
 
 	protected:
-		int IsError(int rtperr);
-		void OnNewSource(RTPSourceData *dat);
-		void OnBYEPacket(RTPSourceData *dat);
-		void OnRemoveSource(RTPSourceData *dat);
+		virtual int IsError(int rtperr)
+		{
+			if (rtperr < 0)
+			{   
+				std::cout << "ERROR: " << RTPGetErrorString(rtperr) << std::endl;
+				return RTP_ERROR;
+			}   
+			return RTP_OK;
+		}
+
+		virtual void OnNewSource(RTPSourceData *dat) {}
+		virtual void OnBYEPacket(RTPSourceData *dat) {}
+		virtual void OnRemoveSource(RTPSourceData *dat) {}
 		// void OnPollThreadStep();
 		// void ProcessRTPPacket(const RTPSourceData &srcdat,const RTPPacket &rtppack);
-        void OnPollThreadError(int);
-        void OnPollThreadStep();
-        void OnPollThreadStart(bool &);
-        void OnPollThreadStop();
+        virtual void OnPollThreadError(int) {}
+        virtual void OnPollThreadStep() {}
+        virtual void OnPollThreadStart(bool &) {}
+        virtual void OnPollThreadStop() {}
 
 	private:
 		void (*DestroiedClbk)();
 
-    private:
-        bool isHttpTunneling;
+    // private:
+    //     bool isHttpTunneling;
 
 };
 

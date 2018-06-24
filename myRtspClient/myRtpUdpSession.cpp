@@ -16,14 +16,9 @@
 #include <time.h>
 #include <stdio.h>
 #include <unistd.h>
-#include "myRtpSession.h"
+#include "myRtpUdpSession.h"
 #include "MediaSession.h"
 #include "myTCPTransmitter.h"
-
-#define RTP_OK 		1
-#define RTP_ERROR 	0
-
-#define USLEEP_UNIT 	10000
 
 using namespace jrtplib;
 
@@ -32,25 +27,14 @@ using namespace jrtplib;
 // message and exists.
 //
 
-MyRTPSession::MyRTPSession():
-	RTPSession(), 
-	DestroiedClbk(NULL),
-    isHttpTunneling(false)
+MyRTPUDPSession::MyRTPUDPSession():
+	MyRTPSession(), 
+	DestroiedClbk(NULL)
 {
 
 }
 
-int MyRTPSession::IsError(int rtperr)
-{
-	if (rtperr < 0)
-	{
-		std::cout << "ERROR: " << RTPGetErrorString(rtperr) << std::endl;
-		return RTP_ERROR;
-	}
-	return RTP_OK;
-}
-
-int MyRTPSession::MyRTP_SetUp(MediaSession * media_session, bool is_http_tunnelling, SocketType tunnelling_sock)
+int MyRTPUDPSession::MyRTP_SetUp(MediaSession * media_session)
 {
 	if(!media_session) {
 		fprintf(stderr, "%s: Invalid media session\n", __func__);
@@ -64,56 +48,29 @@ int MyRTPSession::MyRTP_SetUp(MediaSession * media_session, bool is_http_tunnell
 		fprintf(stderr, "%s: Invalid MediaSession::RTPPort\n", __func__);
 		return RTP_ERROR;
 	}
-    isHttpTunneling = is_http_tunnelling;
 
 	int status;
 
 	// Now, we'll create a RTP session, set the destination
 	// and poll for incoming data.
 
-    if(isHttpTunneling) {
-        RTPSessionParams sessparams;
-        MyTCPTransmitter transparams("HTTP Tunnelling");
 
-        // IMPORTANT: The local timestamp unit MUST be set, otherwise
-        //            RTCP Sender Report info will be calculated wrong
-        // In this case, we'll be just use 8000 samples per second.
-        sessparams.SetOwnTimestampUnit(1.0/media_session->TimeRate);         
+	RTPUDPv4TransmissionParams transparams;
+	RTPSessionParams sessparams;
 
-        sessparams.SetAcceptOwnPackets(true);
+	// IMPORTANT: The local timestamp unit MUST be set, otherwise
+	//            RTCP Sender Report info will be calculated wrong
+	// In this case, we'll be just use 8000 samples per second.
+	sessparams.SetOwnTimestampUnit(1.0/media_session->TimeRate);         
 
-        sessparams.SetProbationType(RTPSources::NoProbation);
-        // TODO: use a valueable instead of "65535"
-        sessparams.SetMaximumPacketSize(65535);
-
-        bool threadsafe = false;
-#ifdef RTP_SUPPORT_THREAD
-        threadsafe = true;
-#endif // RTP_SUPPORT_THREAD
-        transparams.Init(threadsafe);
-        // TODO: use a valueable instead of "65535"
-        transparams.Create(65535, 0);
-
-        status = Create(sessparams,&transparams);  
-        AddDestination(RTPTCPAddress(tunnelling_sock));
-    } else {
-
-        RTPUDPv4TransmissionParams transparams;
-        RTPSessionParams sessparams;
-
-        // IMPORTANT: The local timestamp unit MUST be set, otherwise
-        //            RTCP Sender Report info will be calculated wrong
-        // In this case, we'll be just use 8000 samples per second.
-        sessparams.SetOwnTimestampUnit(1.0/media_session->TimeRate);         
-
-        sessparams.SetAcceptOwnPackets(true);
-        transparams.SetPortbase(media_session->RTPPort);
-        status = Create(sessparams,&transparams);  
-    }
+	sessparams.SetAcceptOwnPackets(true);
+	transparams.SetPortbase(media_session->RTPPort);
+	status = Create(sessparams,&transparams);  
+	// printf("DEBUG: create udpsession\n");
 	return IsError(status);
 }
 
-void MyRTPSession::MyRTP_Teardown(MediaSession * media_session, struct timeval * tval)
+void MyRTPUDPSession::MyRTP_Teardown(MediaSession * media_session, struct timeval * tval)
 {
 	struct timeval Timeout;
 
@@ -129,7 +86,7 @@ void MyRTPSession::MyRTP_Teardown(MediaSession * media_session, struct timeval *
 	BYEDestroy(RTPTime(Timeout.tv_sec, Timeout.tv_usec), 0, 0);
 }
 
-void MyRTPSession::OnNewSource(RTPSourceData *dat)
+void MyRTPUDPSession::OnNewSource(RTPSourceData *dat)
 {
 	if (dat->IsOwnSSRC())
 		return;
@@ -160,7 +117,7 @@ void MyRTPSession::OnNewSource(RTPSourceData *dat)
 	std::cout << "Adding destination " << std::string(inet_ntoa(inaddr)) << ":" << port << std::endl;
 }
 
-void MyRTPSession::OnBYEPacket(RTPSourceData *dat)
+void MyRTPUDPSession::OnBYEPacket(RTPSourceData *dat)
 {
 	if (dat->IsOwnSSRC())
 		return;
@@ -194,7 +151,7 @@ void MyRTPSession::OnBYEPacket(RTPSourceData *dat)
 	} 
 }
 
-void MyRTPSession::OnRemoveSource(RTPSourceData *dat)
+void MyRTPUDPSession::OnRemoveSource(RTPSourceData *dat)
 {
 	if (dat->IsOwnSSRC())
 		return;
@@ -230,7 +187,7 @@ void MyRTPSession::OnRemoveSource(RTPSourceData *dat)
 	}
 }
 
-uint8_t * MyRTPSession::GetMyRTPData(uint8_t * data_buf, size_t * size, unsigned long timeout_ms)
+uint8_t * MyRTPUDPSession::GetMyRTPData(uint8_t * data_buf, size_t * size, unsigned long timeout_ms)
 {
 	if(!data_buf) {
 		fprintf(stderr, "%s: Invalide argument('data_buf==NULL')", __func__);
@@ -248,6 +205,7 @@ uint8_t * MyRTPSession::GetMyRTPData(uint8_t * data_buf, size_t * size, unsigned
 	do {
 #ifndef RTP_SUPPORT_THREAD
 		int status = Poll();
+		// printf("DEBUG: end poll: %d\n", status);
 		if(!IsError(status)) return NULL;
 #endif 
 
@@ -282,6 +240,11 @@ uint8_t * MyRTPSession::GetMyRTPData(uint8_t * data_buf, size_t * size, unsigned
 		uint8_t * Packet = NULL;
 		Packet = pack->GetPayloadData();
 		PacketSize = pack->GetPayloadLength();
+		// printf("DEBUG: get packet: %d\n", PacketSize);
+		//for(int i = 0; i < PacketSize; i++) {
+		//	printf("%x ", Packet[i]);
+		//}
+		//printf("\n");
 		// printf("data length: %lu\n", PacketSize);
 
 		*size = PacketSize;
@@ -297,7 +260,7 @@ uint8_t * MyRTPSession::GetMyRTPData(uint8_t * data_buf, size_t * size, unsigned
 	return data_buf;
 }
 
-uint8_t * MyRTPSession::GetMyRTPPacket(uint8_t * packet_buf, size_t * size, unsigned long timeout_ms)
+uint8_t * MyRTPUDPSession::GetMyRTPPacket(uint8_t * packet_buf, size_t * size, unsigned long timeout_ms)
 {
 	if(!packet_buf) {
 		fprintf(stderr, "%s: Invalide argument('packet_buf==NULL')", __func__);
@@ -364,20 +327,20 @@ uint8_t * MyRTPSession::GetMyRTPPacket(uint8_t * packet_buf, size_t * size, unsi
 	return packet_buf;
 }
 
-void MyRTPSession::OnPollThreadError(int)
+void MyRTPUDPSession::OnPollThreadError(int)
 {
 }
 
-void MyRTPSession::OnPollThreadStep()
+void MyRTPUDPSession::OnPollThreadStep()
 {
 }
 
-void MyRTPSession::OnPollThreadStart(bool &)
+void MyRTPUDPSession::OnPollThreadStart(bool &)
 {
     printf("RTP Poll start\n");
 }
 
-void MyRTPSession::OnPollThreadStop()
+void MyRTPUDPSession::OnPollThreadStop()
 {
     printf("RTP Poll stop\n");
 }

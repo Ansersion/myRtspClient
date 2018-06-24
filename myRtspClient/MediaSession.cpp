@@ -14,6 +14,8 @@
 //
 
 #include "MediaSession.h"
+#include "myRtpTcpSession.h"
+#include "myRtpUdpSession.h"
 #include "myRtpSession.h"
 #include "nalu_types.h"
 #include <vector>
@@ -91,10 +93,11 @@ int MediaSession::RTP_SetUp(int tunnelling_sock)
 		return MEDIA_SESSION_OK;
 	}
 
-	RTPInterface = new MyRTPSession;
     if(tunnelling_sock > 0) {
-	    if(!RTPInterface->MyRTP_SetUp(this, true, tunnelling_sock)) return MEDIA_SESSION_ERROR;
+		RTPInterface = new MyRTPTCPSession;
+	    // if(!RTPInterface->MyRTP_SetUp(this, true, tunnelling_sock)) return MEDIA_SESSION_ERROR;
     } else {
+		RTPInterface = new MyRTPUDPSession;
 	    if(!RTPInterface->MyRTP_SetUp(this)) return MEDIA_SESSION_ERROR;
     }
 

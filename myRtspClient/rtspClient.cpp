@@ -169,7 +169,7 @@ ErrorType RtspClient::DoDESCRIBE(string uri)
 	Msg << Cmd << " " << RtspUri << " " << "RTSP/" << VERSION_RTSP << "\r\n";
 	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
 	Msg << "\r\n";
-    cout << "DEBUG: " << Msg.str() << endl;
+    // cout << "DEBUG: " << Msg.str() << endl;
 
     ErrorType ret = SendRTSP(Sockfd, RtspOverHttpDataPort, Msg.str());
     if(RTSP_NO_ERROR != ret) {
@@ -256,7 +256,7 @@ ErrorType RtspClient::DoOPTIONS(string uri)
 	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
 	Msg << "\r\n";
 
-    cout << "DEBUG: " << Msg.str() << endl;
+    // cout << "DEBUG: " << Msg.str() << endl;
 
     ErrorType ret = SendRTSP(Sockfd, RtspOverHttpDataPort, Msg.str());
     if(RTSP_NO_ERROR != ret) {
@@ -473,7 +473,7 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session)
 			<< "\", response=\"" << Md5Response << "\"\r\n";
 	}
 	Msg << "\r\n";
-    cout << "DEBUG: " << Msg.str() << endl;
+    // cout << "DEBUG: " << Msg.str() << endl;
 
 	ErrorType ret = SendRTSP(Sockfd, RtspOverHttpDataPort, Msg.str());
     if(RTSP_NO_ERROR != ret) {
@@ -588,7 +588,7 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session, float * scale, float 
 			<< "\", response=\"" << Md5Response << "\"\r\n";
 	}
 	Msg << "\r\n";
-    cout << "DEBUG: " << Msg.str();
+    // cout << "DEBUG: " << Msg.str();
 
 	ErrorType ret = SendRTSP(Sockfd, RtspOverHttpDataPort, Msg.str());
     if(RTSP_NO_ERROR != ret) {

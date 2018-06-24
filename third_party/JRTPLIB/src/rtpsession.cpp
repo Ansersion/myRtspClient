@@ -1000,12 +1000,16 @@ int RTPSession::Poll()
 {
 	int status;
 	
+	// printf("DEBUG: !create\n");
 	if (!created)
 		return ERR_RTP_SESSION_NOTCREATED;
+	// printf("DEBUG: usingpollthread\n");
 	if (usingpollthread)
 		return ERR_RTP_SESSION_USINGPOLLTHREAD;
+	// printf("DEBUG: status < 0\n");
 	if ((status = rtptrans->Poll()) < 0)
 		return status;
+	// printf("DEBUG: ProcessPolledData < 0\n");
 	return ProcessPolledData();
 }
 
@@ -1376,6 +1380,7 @@ int RTPSession::ProcessPolledData()
 	RTPRawPacket *rawpack;
 	int status;
 	
+	// printf("DEBUG: SOURCES_LOCK < 0\n");
 	SOURCES_LOCK
 	while ((rawpack = rtptrans->GetNextPacket()) != 0)
 	{
@@ -1393,6 +1398,7 @@ int RTPSession::ProcessPolledData()
 
 		// since our sources instance also uses the scheduler (analysis of incoming packets)
 		// we'll lock it
+		// printf("DEBUG: ProcessRawPacket\n");
 		SCHED_LOCK
 		if ((status = sources.ProcessRawPacket(rawpack,rtptrans,acceptownpackets)) < 0)
 		{
@@ -1472,6 +1478,7 @@ int RTPSession::ProcessPolledData()
 				}
 			}
 		}
+		// printf("DEBUG: RTPDelete\n");
 		RTPDelete(rawpack,GetMemoryManager());
 	}
 
@@ -1529,6 +1536,7 @@ int RTPSession::ProcessPolledData()
 		{
 			pack = *(byepackets.begin());
 			byepackets.pop_front();
+
 			
 			if ((status = SendRTCPData(pack->GetCompoundPacketData(),pack->GetCompoundPacketLength())) < 0)
 			{
