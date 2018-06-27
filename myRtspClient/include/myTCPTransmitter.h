@@ -53,6 +53,10 @@ public:
 		cout << m_name << ": Error receiving from socket " << sock << ", removing destination" << endl;
 		DeleteDestination(RTPTCPAddress(sock));
 	}
+
+public:
+    int Poll();
+    
 private:
 	string m_name;
 };

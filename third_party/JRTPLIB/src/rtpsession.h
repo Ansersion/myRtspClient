@@ -602,7 +602,10 @@ protected:
 	 *  really suited to actually do something with the data.
 	 */
 	virtual void OnValidatedRTPPacket(RTPSourceData *srcdat, RTPPacket *rtppack, bool isonprobation, bool *ispackethandled);
-private:
+
+    /* change private to protected, so we can use these to rewrite Poll --Ansersion */
+    protected: 
+// private:
 	int InternalCreate(const RTPSessionParams &sessparams);
 	int CreateCNAME(uint8_t *buffer,size_t *bufferlength,bool resolve);
 	int ProcessPolledData();

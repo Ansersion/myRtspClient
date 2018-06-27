@@ -237,3 +237,34 @@ uint8_t * MyRTPTCPSession::GetMyRTPPacket(uint8_t * packet_buf, size_t * size, u
 	return packet_buf;
 }
 
+int MyRTPTCPSession::Poll()
+{
+    int status = 0;
+    if(!created) {
+        return ERR_RTP_SESSION_NOTCREATED;
+    }
+    if(usingpollthread) {
+        return ERR_RTP_SESSION_USINGPOLLTHREAD;
+    }
+    if((status = rtptrans->Poll()) < 0) {
+        return status;
+    }
+    return ProcessPolledData();
+    // switch(RecvState) {
+    //     case RECV_LEN:
+    //         break;
+    //     case RECV_DATA:
+    //         break;
+    //     case COMMIT_BYE:
+    //     case GOT_BYE:
+    //         break;
+    //     default:
+    //         break;
+    // }
+    // return status;
+}
+
+int MyRTPTCPSession::ProcessPolledData()
+{
+    return 0;
+}
