@@ -37,10 +37,18 @@
 using namespace std;
 using namespace jrtplib;
 
+enum RecvStateEnm {
+    RECV_LEN,
+    RECV_DATA,
+    COMMIT_BYE,
+    GOT_BYE,
+};
+
 class MyTCPTransmitter : public RTPTCPTransmitter
 {
 public:
-	MyTCPTransmitter(const string &name) : RTPTCPTransmitter(0), m_name(name) { }
+	MyTCPTransmitter(const string &name) : RTPTCPTransmitter(0), m_name(name), m_recvstate(RECV_LEN) { }
+	MyTCPTransmitter(RTPMemoryManager *mgr) : RTPTCPTransmitter(mgr), m_name(""), m_recvstate(RECV_LEN) { }
 
 	void OnSendError(SocketType sock)
 	{
@@ -54,11 +62,18 @@ public:
 		DeleteDestination(RTPTCPAddress(sock));
 	}
 
-public:
-    int Poll();
+protected:
+	int PollSocket(SocketType sock, SocketData &sdata);
+    // int ProcessHttpTunnelHeader(uint8_t * header);
     
 private:
 	string m_name;
+    RecvStateEnm m_recvstate;
+    int m_dataLength;
+    int m_lengthBufferOffset;
+    uint8_t m_httpTunnelHeaderBuffer[4];
+    uint8_t * m_pDataBuffer;
+    bool m_isrtp;
 };
 
 #endif

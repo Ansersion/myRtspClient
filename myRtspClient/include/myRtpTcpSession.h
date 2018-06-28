@@ -36,8 +36,9 @@ class MyRTPTCPSession : public MyRTPSession
 		virtual uint8_t * GetMyRTPData(uint8_t * data_buf, size_t * size, unsigned long timeout_ms);
 		virtual uint8_t * GetMyRTPPacket(uint8_t * packet_buf, size_t * size, unsigned long timeout_ms);
     private:
-        int Poll();
-        int ProcessPolledData();
+        int MyTcpCreate(const RTPSessionParams &sessparams,const RTPTransmissionParams *transparams);
+        // int Poll();
+        // int ProcessPolledData();
 
 
 

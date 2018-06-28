@@ -160,7 +160,7 @@ protected:
 	virtual void OnSendError(SocketType sock);
 	/** By overriding this function you can be notified of an error when receiving from a socket. */
 	virtual void OnReceiveError(SocketType sock);
-private:
+protected:
 	class SocketData
 	{
 	public:
@@ -180,7 +180,9 @@ private:
 
 	int SendRTPRTCPData(const void *data,size_t len);	
 	void FlushPackets();
-	int PollSocket(SocketType sock, SocketData &sdata);
+    // change PollSocket to virtual function so we can override it --Ansersion
+	virtual int PollSocket(SocketType sock, SocketData &sdata);
+	// int PollSocket(SocketType sock, SocketData &sdata);
 	void ClearDestSockets();
 	int ValidateSocket(SocketType s);
 

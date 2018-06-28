@@ -16,9 +16,132 @@
 #include <time.h>
 #include <stdio.h>
 #include <unistd.h>
+#include "rtprawpacket.h"
 #include "myTCPTransmitter.h"
 
-int MyTCPTransmitter::Poll()
+// #define RTPTCPTRANS_MAXPACKSIZE							65535
+// 
+// #ifdef RTP_SUPPORT_THREAD
+// 	#define MAINMUTEX_LOCK 		{ if (m_threadsafe) m_mainMutex.Lock(); }
+// 	#define MAINMUTEX_UNLOCK	{ if (m_threadsafe) m_mainMutex.Unlock(); }
+// 	#define WAITMUTEX_LOCK		{ if (m_threadsafe) m_waitMutex.Lock(); }
+// 	#define WAITMUTEX_UNLOCK	{ if (m_threadsafe) m_waitMutex.Unlock(); }
+// #else
+// 	#define MAINMUTEX_LOCK
+// 	#define MAINMUTEX_UNLOCK
+// 	#define WAITMUTEX_LOCK
+// 	#define WAITMUTEX_UNLOCK
+// #endif // RTP_SUPPORT_THREAD
+
+
+int MyTCPTransmitter::PollSocket(SocketType sock, SocketData &sdata)
 {
+    // sdata with no use
+
+#ifdef RTP_SOCKETTYPE_WINSOCK
+	unsigned long len;
+#else 
+	size_t len;
+#endif // RTP_SOCKETTYPE_WINSOCK
+	bool dataavailable;
+    int status = 0;
+    int offset;
+    bool complete = false;
+
+    do {
+        len = 0;
+        offset = 0;
+        RTPIOCTL(sock, FIONREAD, &len);
+
+        if (len <= 0) 
+            dataavailable = false;
+        else
+            dataavailable = true;
+
+        if(dataavailable) {
+            switch(m_recvstate) {
+                case RECV_LEN: 
+                    {
+                        const int httpTunnelHeaderLen = 4;
+                        if(recv(sock, m_httpTunnelHeaderBuffer, 1, MSG_WAITALL) < 0) {
+                            return ERR_RTP_TCPTRANS_ERRORINRECV;
+                        }
+                        if(m_httpTunnelHeaderBuffer[0] != '$') {
+                            break;
+                        }
+                        if(recv(sock, m_httpTunnelHeaderBuffer + 1, 1, MSG_WAITALL) < 0) {
+                            return ERR_RTP_TCPTRANS_ERRORINRECV;
+                        }
+                        if(m_httpTunnelHeaderBuffer[1] != 0 && m_httpTunnelHeaderBuffer[1] != 1) {
+                            break;
+                        }
+                        if(recv(sock, m_httpTunnelHeaderBuffer + 2, httpTunnelHeaderLen - 2, MSG_WAITALL) < 0) {
+                            return ERR_RTP_TCPTRANS_ERRORINRECV;
+                        }
+                        m_isrtp = 0 == m_httpTunnelHeaderBuffer[1] ? true : false;
+                        m_dataLength = (m_httpTunnelHeaderBuffer[2] << 8) + m_httpTunnelHeaderBuffer[3];
+                        m_lengthBufferOffset = 0;
+                        m_recvstate = RECV_DATA;
+                        printf("header: %d, %d\n", m_isrtp, m_dataLength);
+
+                        break;
+                    }
+                case RECV_DATA:
+                    m_pDataBuffer = RTPNew(GetMemoryManager(), RTPMEM_TYPE_BUFFER_RECEIVEDRTPPACKET) uint8_t[m_dataLength];
+                    if(0 == m_pDataBuffer) {
+                        return ERR_RTP_OUTOFMEM;
+                    }
+                    if(recv(sock, m_pDataBuffer, m_dataLength, MSG_WAITALL) < 0) {
+                        return ERR_RTP_TCPTRANS_ERRORINRECV;
+                    }
+                    m_recvstate = RECV_LEN;
+                    complete = true;
+                    printf("data: complete\n");
+                    break;
+                case COMMIT_BYE:
+                    break;
+                case GOT_BYE:
+                    break;
+                default:
+                    break;
+            }
+        }
+    }while(dataavailable);
+
+    if(complete) {
+        RTPTime curtime = RTPTime::CurrentTime();
+        uint8_t *pBuf = m_pDataBuffer;
+        m_pDataBuffer = 0;
+        if(pBuf) {
+            RTPTCPAddress *pAddr = RTPNew(GetMemoryManager(),RTPMEM_TYPE_CLASS_RTPADDRESS) RTPTCPAddress(sock);
+            if(0 == pAddr) {
+                return ERR_RTP_OUTOFMEM;
+            }
+            RTPRawPacket *pPack = RTPNew(GetMemoryManager(),RTPMEM_TYPE_CLASS_RTPRAWPACKET) RTPRawPacket(pBuf, m_dataLength, pAddr, curtime, m_isrtp, GetMemoryManager());
+            if (pPack == 0)
+            {
+                RTPDelete(pAddr,GetMemoryManager());
+                RTPDeleteByteArray(pBuf,GetMemoryManager());
+                return ERR_RTP_OUTOFMEM;
+            }
+            m_rawpacketlist.push_back(pPack);	
+        }
+    }
+
     return 0;
 }
+
+// int MyTCPTransmitter::ProcessHttpTunnelHeader(uint8_t * header, bool * isrtp)
+// {
+//     int dataLength = -1;
+//     if('$' != header[0]) {
+//         return dataLength;
+//     }
+//     uint8_t channel = header[1];
+//     if(channel != 0 && channel != 1) {
+//         return dataLength;
+//     }
+//     *isrtp = 0 == channel ? true : false;
+//     dataLength = (header[2] << 8) + header[3];
+//     return dataLength;
+// }

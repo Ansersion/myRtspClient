@@ -76,7 +76,8 @@ int MyRTPTCPSession::MyRTP_SetUp(MediaSession * media_session, SocketType tunnel
 	// TODO: use a valueable instead of "65535"
 	// transparams.Create(65535, 0);
 
-	status = Create(sessparams,&transparams, RTPTransmitter::TCPProto);  
+	// status = Create(sessparams,&transparams, RTPTransmitter::TCPProto);  
+	status = MyTcpCreate(sessparams,&transparams);  
 	AddDestination(RTPTCPAddress(tunnelling_sock));
 	return IsError(status);
 }
@@ -237,34 +238,64 @@ uint8_t * MyRTPTCPSession::GetMyRTPPacket(uint8_t * packet_buf, size_t * size, u
 	return packet_buf;
 }
 
-int MyRTPTCPSession::Poll()
+int MyRTPTCPSession::MyTcpCreate(const RTPSessionParams &sessparams,const RTPTransmissionParams *transparams)
 {
-    int status = 0;
-    if(!created) {
-        return ERR_RTP_SESSION_NOTCREATED;
-    }
-    if(usingpollthread) {
-        return ERR_RTP_SESSION_USINGPOLLTHREAD;
-    }
-    if((status = rtptrans->Poll()) < 0) {
-        return status;
-    }
-    return ProcessPolledData();
-    // switch(RecvState) {
-    //     case RECV_LEN:
-    //         break;
-    //     case RECV_DATA:
-    //         break;
-    //     case COMMIT_BYE:
-    //     case GOT_BYE:
-    //         break;
-    //     default:
-    //         break;
-    // }
-    // return status;
+	int status;
+	
+	if (created)
+		return ERR_RTP_SESSION_ALREADYCREATED;
+
+	usingpollthread = sessparams.IsUsingPollThread();
+	needthreadsafety = sessparams.NeedThreadSafety();
+	if (usingpollthread && !needthreadsafety)
+		return ERR_RTP_SESSION_THREADSAFETYCONFLICT;
+
+	useSR_BYEifpossible = sessparams.GetSenderReportForBYE();
+	sentpackets = false;
+	
+	// Check max packet size
+	
+	if ((maxpacksize = sessparams.GetMaximumPacketSize()) < RTP_MINPACKETSIZE)
+		return ERR_RTP_SESSION_MAXPACKETSIZETOOSMALL;
+		
+	// Initialize the transmission component
+	
+	rtptrans = 0;
+    rtptrans = RTPNew(GetMemoryManager(),RTPMEM_TYPE_CLASS_RTPTRANSMITTER) MyTCPTransmitter(GetMemoryManager());
+	
+	if (rtptrans == 0)
+		return ERR_RTP_OUTOFMEM;
+	if ((status = rtptrans->Init(needthreadsafety)) < 0)
+	{
+		RTPDelete(rtptrans,GetMemoryManager());
+		return status;
+	}
+	if ((status = rtptrans->Create(maxpacksize,transparams)) < 0)
+	{
+		RTPDelete(rtptrans,GetMemoryManager());
+		return status;
+	}
+
+	deletetransmitter = true;
+	return InternalCreate(sessparams);
 }
 
-int MyRTPTCPSession::ProcessPolledData()
-{
-    return 0;
-}
+// int MyRTPTCPSession::Poll()
+// {
+//     int status = 0;
+//     if(!created) {
+//         return ERR_RTP_SESSION_NOTCREATED;
+//     }
+//     if(usingpollthread) {
+//         return ERR_RTP_SESSION_USINGPOLLTHREAD;
+//     }
+//     if((status = rtptrans->Poll()) < 0) {
+//         return status;
+//     }
+//     return ProcessPolledData();
+// }
+// 
+// int MyRTPTCPSession::ProcessPolledData()
+// {
+//     return 0;
+// }
