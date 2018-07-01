@@ -695,6 +695,7 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session)
 		}
 	}
 	Close(Sockfd);
+
 	return RTSP_NO_ERROR;
 }
 
@@ -1530,6 +1531,9 @@ int RtspClient::Close(int sockfd)
 			RtspSockfd = -1;
 		}
 		if(sockfd > 0) CloseResult = close(sockfd);
+	}
+	if(RtspOverHttpDataSockfd > 0) {
+		close(RtspOverHttpDataSockfd);
 	}
 	return CloseResult;
 }

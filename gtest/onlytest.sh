@@ -9,5 +9,6 @@ then
 	usage $*
 fi
 
+mkdir -p backup
 ls | grep -v my_gtest_main.cc |grep -v $1| grep cpp$ | xargs -I '{}' mv '{}' ./backup/
 rm -f ./backup/$1

@@ -49,25 +49,25 @@ using namespace std;
 // 	}
 // }
 
-TEST(MD5, MD5_32)
-{
-	MyRegex Regex;
-
-	// char str[] = "audio 0 RTP/AVP 14 16 18\r\n";
-	char str[] = "a";
-	char output[33];
-	output[32] = '\0';
-	// char pattern[] = "WWW-Authenticate:Digest +realm=(\"[a-zA-Z_0-9 ]+\"), +nonce=(\"[a-zA-Z0-9]+\")";
-	// list<string> group;
-	// bool IgnoreCase = true;
-	EXPECT_EQ(Md5sum32((void *)str, (unsigned char *)output, 1, 33), 0);
-
-
-	// EXPECT_EQ(Regex.Regex(str, pattern, &group, IgnoreCase), MyRegex::REGEX_SUCCESS);
-
-	// int i = 0;
-	// for(list<string>::iterator it = group.begin(); it != group.end(); it++) {
-	// 	i++;
-	// 	cout << i << ": " << *it << endl;
-	// }
-}
+// TEST(MD5, MD5_32)
+// {
+// 	MyRegex Regex;
+// 
+// 	// char str[] = "audio 0 RTP/AVP 14 16 18\r\n";
+// 	char str[] = "a";
+// 	char output[33];
+// 	output[32] = '\0';
+// 	// char pattern[] = "WWW-Authenticate:Digest +realm=(\"[a-zA-Z_0-9 ]+\"), +nonce=(\"[a-zA-Z0-9]+\")";
+// 	// list<string> group;
+// 	// bool IgnoreCase = true;
+// 	EXPECT_EQ(Md5sum32((void *)str, (unsigned char *)output, 1, 33), 0);
+// 
+// 
+// 	// EXPECT_EQ(Regex.Regex(str, pattern, &group, IgnoreCase), MyRegex::REGEX_SUCCESS);
+// 
+// 	// int i = 0;
+// 	// for(list<string>::iterator it = group.begin(); it != group.end(); it++) {
+// 	// 	i++;
+// 	// 	cout << i << ": " << *it << endl;
+// 	// }
+// }
