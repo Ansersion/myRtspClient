@@ -14,10 +14,6 @@
 //
 
 
-/****************************************************/
-/* THIS EXAMPLE IS NOT COMPLETED YET */
-/****************************************************/
-
 #include <iostream>
 #include "rtspClient.h"
 #include <stdio.h>
@@ -133,24 +129,42 @@ int main(int argc, char *argv[])
     //	 * if there are several 'video' session 
     //	 * refered in SDP, only receive packets of the first 
     //	 * 'video' session, the same as 'audio'.*/
-     int packet_num = 0;
-     const size_t BufSize = 98304;
-     uint8_t buf[BufSize];
-     size_t size = 0;
+	int try_times = 0;
+	int packet_num = 0;
+	const size_t BufSize = 98304;
+	uint8_t buf[BufSize];
+	size_t size = 0;
+	size_t write_size = 0;
     
     /* Write h264 video data to file "test_packet_recv.h264" 
      * Then it could be played by ffplay */
     int fd = open("test_packet_recv.h264", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR);
 
-    while(++packet_num < 1000) {
-    	if(!Client.GetMediaData("video", buf, &size, BufSize)) continue;
-    	if(write(fd, buf, size) < 0) {
-    		perror("write");
-    	}
-    	if(ByeFromServerFlag) {
-    		break;
-    	}
-    	printf("recv %lu\n", size);
+    while(++packet_num < 5000) {
+		if(!Client.GetMediaData("video", buf, &size, BufSize)) {
+			if(ByeFromServerFlag) {
+				break;
+			}
+			if(try_times > 5) {
+				printf("try_times > 5\n");
+				break;
+			}
+			try_times++;
+			continue;
+		}
+        write_size += size;
+
+        /* lower the 'write' times to improve performance */
+        /* For convenience, you could refer to "simple_example.cpp" */
+        if(write_size > 32768) {
+            if(write(fd, buf, write_size) < 0) {
+                perror("write");
+            }
+            write_size = 0;
+        }
+
+		try_times = 0;
+		printf("recv %lu\n", size);
     }
 
     printf("start TEARDOWN\n");

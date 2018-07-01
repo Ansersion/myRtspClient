@@ -52,7 +52,7 @@ class NALUTypeBase_H264 : public NALUTypeBase
 		virtual uint16_t ParseNALUHeader_F(const uint8_t * RTPPayload);
 		virtual uint16_t ParseNALUHeader_NRI(const uint8_t * RTPPayload);
 		virtual uint16_t ParseNALUHeader_Type(const uint8_t * RTPPayload);
-		virtual bool IsPacketStart(const uint8_t * rtp_payload) {return true;}
+		virtual bool IsPacketStart(const uint8_t * rtp_payload) {return false;}
 		virtual bool IsPacketEnd(const uint8_t * rtp_payload) {return true;}
 		virtual bool IsPacketReserved(const uint8_t * rtp_payload) {return false;}
 		virtual bool IsPacketThisType(const uint8_t * rtp_payload);

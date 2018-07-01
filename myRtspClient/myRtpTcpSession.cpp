@@ -156,7 +156,8 @@ uint8_t * MyRTPTCPSession::GetMyRTPData(uint8_t * data_buf, size_t * size, unsig
 		//	printf("%x ", Packet[i]);
 		//}
 		//printf("\n");
-		// printf("data length: %lu\n", PacketSize);
+		// printf("data length: %lu\t", PacketSize);
+		// printf("%02x %02x %02x %02x\n", Packet[0], Packet[1], Packet[2], Packet[3]);
 
 		*size = PacketSize;
 		memcpy(data_buf, Packet, PacketSize);
@@ -280,22 +281,103 @@ int MyRTPTCPSession::MyTcpCreate(const RTPSessionParams &sessparams,const RTPTra
 	return InternalCreate(sessparams);
 }
 
-// int MyRTPTCPSession::Poll()
-// {
-//     int status = 0;
-//     if(!created) {
-//         return ERR_RTP_SESSION_NOTCREATED;
-//     }
-//     if(usingpollthread) {
-//         return ERR_RTP_SESSION_USINGPOLLTHREAD;
-//     }
-//     if((status = rtptrans->Poll()) < 0) {
-//         return status;
-//     }
-//     return ProcessPolledData();
-// }
-// 
-// int MyRTPTCPSession::ProcessPolledData()
-// {
-//     return 0;
-// }
+void MyRTPTCPSession::OnNewSource(RTPSourceData *dat)
+{
+	// if (dat->IsOwnSSRC())
+	// 	return;
+
+	// uint32_t ip;
+	// uint16_t port;
+
+	// if (dat->GetRTPDataAddress() != 0)
+	// {
+	// 	const RTPIPv4Address *addr = (const RTPIPv4Address *)(dat->GetRTPDataAddress());
+	// 	ip = addr->GetIP();
+	// 	port = addr->GetPort();
+	// }
+	// else if (dat->GetRTCPDataAddress() != 0)
+	// {
+	// 	const RTPIPv4Address *addr = (const RTPIPv4Address *)(dat->GetRTCPDataAddress());
+	// 	ip = addr->GetIP();
+	// 	port = addr->GetPort()-1;
+	// }
+	// else
+	// 	return;
+
+	// RTPIPv4Address dest(ip,port);
+	// AddDestination(dest);
+
+	// struct in_addr inaddr;
+	// inaddr.s_addr = htonl(ip);
+	std::cout << "Adding destination" << std::endl;
+}
+
+void MyRTPTCPSession::OnBYEPacket(RTPSourceData *dat)
+{
+	// if (dat->IsOwnSSRC())
+	// 	return;
+
+	// uint32_t ip;
+	// uint16_t port;
+
+	// if (dat->GetRTPDataAddress() != 0)
+	// {
+	// 	const RTPIPv4Address *addr = (const RTPIPv4Address *)(dat->GetRTPDataAddress());
+	// 	ip = addr->GetIP();
+	// 	port = addr->GetPort();
+	// }
+	// else if (dat->GetRTCPDataAddress() != 0)
+	// {
+	// 	const RTPIPv4Address *addr = (const RTPIPv4Address *)(dat->GetRTCPDataAddress());
+	// 	ip = addr->GetIP();
+	// 	port = addr->GetPort()-1;
+	// }
+	// else
+	// 	return;
+
+	// RTPIPv4Address dest(ip,port);
+	// DeleteDestination(dest);
+
+	// struct in_addr inaddr;
+	// inaddr.s_addr = htonl(ip);
+	std::cout << "Deleting destination" << std::endl;
+	if(DestroiedClbk) {
+		DestroiedClbk();
+	} 
+}
+
+void MyRTPTCPSession::OnRemoveSource(RTPSourceData *dat)
+{
+	// if (dat->IsOwnSSRC())
+	// 	return;
+	// if (dat->ReceivedBYE())
+	// 	return;
+
+	// uint32_t ip;
+	// uint16_t port;
+
+	// if (dat->GetRTPDataAddress() != 0)
+	// {
+	// 	const RTPIPv4Address *addr = (const RTPIPv4Address *)(dat->GetRTPDataAddress());
+	// 	ip = addr->GetIP();
+	// 	port = addr->GetPort();
+	// }
+	// else if (dat->GetRTCPDataAddress() != 0)
+	// {
+	// 	const RTPIPv4Address *addr = (const RTPIPv4Address *)(dat->GetRTCPDataAddress());
+	// 	ip = addr->GetIP();
+	// 	port = addr->GetPort()-1;
+	// }
+	// else
+	// 	return;
+
+	// RTPIPv4Address dest(ip,port);
+	// DeleteDestination(dest);
+
+	// struct in_addr inaddr;
+	// inaddr.s_addr = htonl(ip);
+	std::cout << "Deleting destination" << std::endl;
+	if(DestroiedClbk) {
+		DestroiedClbk();
+	}
+}

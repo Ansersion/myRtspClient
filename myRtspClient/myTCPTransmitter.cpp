@@ -82,7 +82,7 @@ int MyTCPTransmitter::PollSocket(SocketType sock, SocketData &sdata)
                         m_dataLength = (m_httpTunnelHeaderBuffer[2] << 8) + m_httpTunnelHeaderBuffer[3];
                         m_lengthBufferOffset = 0;
                         m_recvstate = RECV_DATA;
-                        printf("header: %d, %d\n", m_isrtp, m_dataLength);
+                        // printf("header: %d, %d\n", m_isrtp, m_dataLength);
 
                         break;
                     }
@@ -96,17 +96,18 @@ int MyTCPTransmitter::PollSocket(SocketType sock, SocketData &sdata)
                     }
                     m_recvstate = RECV_LEN;
                     complete = true;
-                    printf("data: complete\n");
+                    // printf("data: complete\n");
                     break;
-                case COMMIT_BYE:
-                    break;
-                case GOT_BYE:
-                    break;
+                //case COMMIT_BYE:
+                //    break;
+                //case GOT_BYE:
+                //    break;
                 default:
+                    m_recvstate = RECV_LEN;
                     break;
             }
         }
-    }while(dataavailable);
+    }while(dataavailable && !complete);
 
     if(complete) {
         RTPTime curtime = RTPTime::CurrentTime();

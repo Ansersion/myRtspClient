@@ -166,7 +166,7 @@ uint16_t STAP_B::ParseNALUHeader_Type(const uint8_t * RTPPayload)
 
 bool STAP_B::IsPacketStart(const uint8_t * rtp_payload)
 {
-    return 0;
+    return false;
 }
 
 bool STAP_B::IsPacketEnd(const uint8_t * rtp_payload)
@@ -202,7 +202,7 @@ uint16_t MTAP_16::ParseNALUHeader_Type(const uint8_t * RTPPayload)
 
 bool MTAP_16::IsPacketStart(const uint8_t * rtp_payload)
 {
-    return 0;
+    return false;
 }
 
 bool MTAP_16::IsPacketEnd(const uint8_t * rtp_payload)
@@ -238,7 +238,7 @@ uint16_t MTAP_24::ParseNALUHeader_Type(const uint8_t * RTPPayload)
 
 bool MTAP_24::IsPacketStart(const uint8_t * rtp_payload)
 {
-    return 0;
+    return false;
 }
 
 bool MTAP_24::IsPacketEnd(const uint8_t * rtp_payload)
@@ -280,7 +280,7 @@ uint16_t STAP_A::ParseNALUHeader_Type(const uint8_t * RTPPayload)
 
 bool STAP_A::IsPacketStart(const uint8_t * rtp_payload) 
 {
-	return true;
+	return false;
 }
 
 bool STAP_A::IsPacketEnd(const uint8_t * rtp_payload)
@@ -444,7 +444,7 @@ uint16_t FU_B::ParseNALUHeader_Type(const uint8_t * RTPPayload)
 
 bool FU_B::IsPacketStart(const uint8_t * rtp_payload)
 {
-    return 0;
+    return false;
 }
 
 bool FU_B::IsPacketEnd(const uint8_t * rtp_payload)
