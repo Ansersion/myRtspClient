@@ -63,8 +63,11 @@ public:
 	}
 
 protected:
+	// NOTE: functions override RTPTCPTransmitter, which should changed from 'private' to 'protected' of Jrtplib in rtptcptransmitter.h
+	// override RTPTCPTransmitter
+	int SendRTPRTCPData(const void *data,size_t len);	
+	// override RTPTCPTransmitter
 	int PollSocket(SocketType sock, SocketData &sdata);
-    // int ProcessHttpTunnelHeader(uint8_t * header);
     
 private:
 	string m_name;

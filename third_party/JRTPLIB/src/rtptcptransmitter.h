@@ -178,7 +178,9 @@ protected:
 		int ProcessAvailableBytes(SocketType sock, int availLen, bool &complete, RTPMemoryManager *pMgr);
 	};
 
-	int SendRTPRTCPData(const void *data,size_t len);	
+    // change SendRTPRTCPData to virtual function so we can override it --Ansersion
+	// int SendRTPRTCPData(const void *data,size_t len);	
+	virtual int SendRTPRTCPData(const void *data,size_t len);	
 	void FlushPackets();
     // change PollSocket to virtual function so we can override it --Ansersion
 	virtual int PollSocket(SocketType sock, SocketData &sdata);

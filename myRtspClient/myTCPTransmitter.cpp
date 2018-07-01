@@ -19,19 +19,20 @@
 #include "rtprawpacket.h"
 #include "myTCPTransmitter.h"
 
-// #define RTPTCPTRANS_MAXPACKSIZE							65535
-// 
-// #ifdef RTP_SUPPORT_THREAD
-// 	#define MAINMUTEX_LOCK 		{ if (m_threadsafe) m_mainMutex.Lock(); }
-// 	#define MAINMUTEX_UNLOCK	{ if (m_threadsafe) m_mainMutex.Unlock(); }
-// 	#define WAITMUTEX_LOCK		{ if (m_threadsafe) m_waitMutex.Lock(); }
-// 	#define WAITMUTEX_UNLOCK	{ if (m_threadsafe) m_waitMutex.Unlock(); }
-// #else
-// 	#define MAINMUTEX_LOCK
-// 	#define MAINMUTEX_UNLOCK
-// 	#define WAITMUTEX_LOCK
-// 	#define WAITMUTEX_UNLOCK
-// #endif // RTP_SUPPORT_THREAD
+#define RTPTCPTRANS_MAXPACKSIZE							65535
+
+#ifdef RTP_SUPPORT_THREAD
+	#define MAINMUTEX_LOCK 		{ if (m_threadsafe) m_mainMutex.Lock(); }
+	#define MAINMUTEX_UNLOCK	{ if (m_threadsafe) m_mainMutex.Unlock(); }
+	#define WAITMUTEX_LOCK		{ if (m_threadsafe) m_waitMutex.Lock(); }
+	#define WAITMUTEX_UNLOCK	{ if (m_threadsafe) m_waitMutex.Unlock(); }
+#else
+	#define MAINMUTEX_LOCK
+	#define MAINMUTEX_UNLOCK
+	#define WAITMUTEX_LOCK
+	#define WAITMUTEX_UNLOCK
+#endif // RTP_SUPPORT_THREAD
+
 
 
 int MyTCPTransmitter::PollSocket(SocketType sock, SocketData &sdata)
@@ -132,17 +133,55 @@ int MyTCPTransmitter::PollSocket(SocketType sock, SocketData &sdata)
     return 0;
 }
 
-// int MyTCPTransmitter::ProcessHttpTunnelHeader(uint8_t * header, bool * isrtp)
-// {
-//     int dataLength = -1;
-//     if('$' != header[0]) {
-//         return dataLength;
-//     }
-//     uint8_t channel = header[1];
-//     if(channel != 0 && channel != 1) {
-//         return dataLength;
-//     }
-//     *isrtp = 0 == channel ? true : false;
-//     dataLength = (header[2] << 8) + header[3];
-//     return dataLength;
-// }
+int MyTCPTransmitter::SendRTPRTCPData(const void *data,size_t len)
+{
+	if (!m_init)
+		return ERR_RTP_TCPTRANS_NOTINIT;
+
+	MAINMUTEX_LOCK
+	
+	if (!m_created)
+	{
+		MAINMUTEX_UNLOCK
+		return ERR_RTP_TCPTRANS_NOTCREATED;
+	}
+	if (len > RTPTCPTRANS_MAXPACKSIZE)
+	{
+		MAINMUTEX_UNLOCK
+		return ERR_RTP_TCPTRANS_SPECIFIEDSIZETOOBIG;
+	}
+	
+	std::map<SocketType, SocketData>::iterator it = m_destSockets.begin();
+	std::map<SocketType, SocketData>::iterator end = m_destSockets.end();
+
+	vector<SocketType> errSockets;
+	int flags = 0;
+#ifdef RTP_HAVE_MSG_NOSIGNAL
+	flags = MSG_NOSIGNAL;
+#endif // RTP_HAVE_MSG_NOSIGNAL
+
+	while (it != end)
+	{
+		uint8_t lengthBytes[4] = { '$', 0x01, (uint8_t)((len >> 8)&0xff), (uint8_t)(len&0xff) };
+		SocketType sock = it->first;
+
+		if (send(sock,(const char *)lengthBytes,4,flags) < 0 ||
+			send(sock,(const char *)data,len,flags) < 0)
+			errSockets.push_back(sock);
+		++it;
+	}
+	
+	MAINMUTEX_UNLOCK
+
+	if (errSockets.size() != 0)
+	{
+		for (size_t i = 0 ; i < errSockets.size() ; i++)
+			OnSendError(errSockets[i]);
+	}
+
+	// Don't return an error code to avoid the poll thread exiting
+	// due to one closed connection for example
+
+	return 0;
+}
+

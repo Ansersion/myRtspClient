@@ -54,6 +54,7 @@ using namespace std;
 
 #define RTPTCPTRANS_MAXPACKSIZE							65535
 
+// TODO: add jthread support
 #ifdef RTP_SUPPORT_THREAD
 	#define MAINMUTEX_LOCK 		{ if (m_threadsafe) m_mainMutex.Lock(); }
 	#define MAINMUTEX_UNLOCK	{ if (m_threadsafe) m_mainMutex.Unlock(); }
