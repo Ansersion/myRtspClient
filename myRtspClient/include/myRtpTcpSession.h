@@ -23,12 +23,14 @@
 #include <iostream>
 #include <string>
 #include "myRtpSession.h"
+#include <pthread.h>
 
 
 class MyRTPTCPSession : public MyRTPSession
 {
 	public:
 		MyRTPTCPSession();
+		virtual ~MyRTPTCPSession();
 		virtual int MyRTP_SetUp(MediaSession * media_session, SocketType tunnelling_sock);
 
 		/* Wait 1 second for TEARDOWN at default */
@@ -37,6 +39,11 @@ class MyRTPTCPSession : public MyRTPSession
 		virtual uint8_t * GetMyRTPPacket(uint8_t * packet_buf, size_t * size, unsigned long timeout_ms);
 
 		void SetDestroiedClbk(void (*clbk)()) {DestroiedClbk = clbk;}
+
+        virtual void LockSocket();
+        virtual void UnlockSocket();
+        virtual bool TryLockSocket();
+        virtual int GetTunnellingSocket() const { return TunnellingSock; }
     private:
         int MyTcpCreate(const RTPSessionParams &sessparams,const RTPTransmissionParams *transparams);
         // int Poll();
@@ -47,7 +54,10 @@ class MyRTPTCPSession : public MyRTPSession
 		void OnRemoveSource(RTPSourceData *dat);
 
 	private:
+        int TunnellingSock;
 		void (*DestroiedClbk)();
+        pthread_mutex_t SocketMutex;
+        int TrylockTimes;
 
 
 };

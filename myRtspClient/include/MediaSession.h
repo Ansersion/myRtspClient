@@ -71,6 +71,10 @@ class MediaSession
 		int MediaInfoCheck();
 		void SetRtpDestroiedClbk(void (*clbk)());
 
+        void LockSocket();
+        void UnlockSocket();
+        int GetTunnellingSocket();
+
 	public:
 		std::string MediaType;
 		std::vector<uint16_t> Ports; // RTP and RTCP ports, -1 indicate none. ###2015-01-11### //

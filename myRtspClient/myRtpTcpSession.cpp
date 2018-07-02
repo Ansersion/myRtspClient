@@ -35,7 +35,14 @@ using namespace jrtplib;
 MyRTPTCPSession::MyRTPTCPSession():
 	MyRTPSession()
 {
+    TunnellingSock = 0;
+    pthread_mutex_init(&SocketMutex, NULL);
+    TrylockTimes = 0;
+}
 
+MyRTPTCPSession::~MyRTPTCPSession()
+{
+    pthread_mutex_destroy(&SocketMutex);
 }
 
 int MyRTPTCPSession::MyRTP_SetUp(MediaSession * media_session, SocketType tunnelling_sock)
@@ -78,6 +85,7 @@ int MyRTPTCPSession::MyRTP_SetUp(MediaSession * media_session, SocketType tunnel
 
 	// status = Create(sessparams,&transparams, RTPTransmitter::TCPProto);  
 	status = MyTcpCreate(sessparams,&transparams);  
+    TunnellingSock = tunnelling_sock;
 	AddDestination(RTPTCPAddress(tunnelling_sock));
 	return IsError(status);
 }
@@ -115,9 +123,13 @@ uint8_t * MyRTPTCPSession::GetMyRTPData(uint8_t * data_buf, size_t * size, unsig
 
 	do {
 #ifndef RTP_SUPPORT_THREAD
-		int status = Poll();
-		// printf("DEBUG: end poll: %d\n", status);
-		if(!IsError(status)) return NULL;
+        if(TryLockSocket()) {
+            int status = Poll();
+            // printf("DEBUG: end poll: %d\n", status);
+            if(!IsError(status)) return NULL;
+            UnlockSocket();
+
+        }
 #endif 
 
 		BeginDataAccess();
@@ -238,6 +250,32 @@ uint8_t * MyRTPTCPSession::GetMyRTPPacket(uint8_t * packet_buf, size_t * size, u
 
 	return packet_buf;
 }
+
+void MyRTPTCPSession::LockSocket()
+{
+    pthread_mutex_lock(&SocketMutex);
+}
+
+void MyRTPTCPSession::UnlockSocket()
+{
+    pthread_mutex_unlock(&SocketMutex);
+}
+
+bool MyRTPTCPSession::TryLockSocket()
+{
+    if(0 != pthread_mutex_trylock(&SocketMutex)) {
+        TrylockTimes++;
+        if(TrylockTimes > 10) {
+            printf("WARNING: There are some RTSP packages unreceived\n");
+        }
+        return false;
+    }
+    if(TrylockTimes > 0) {
+        TrylockTimes--;
+    }
+    return true;
+}
+
 
 int MyRTPTCPSession::MyTcpCreate(const RTPSessionParams &sessparams,const RTPTransmissionParams *transparams)
 {

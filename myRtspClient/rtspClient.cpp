@@ -1373,10 +1373,14 @@ ErrorType RtspClient::SendRTSP(int fd, uint16_t http_tunnel_port, string msg)
 ErrorType RtspClient::RecvRTSP(int fd, uint16_t http_tunnel_port, string * msg)
 {
     if(http_tunnel_port != 0) {
+        // LockSocket();
+        // find the mediasession
+        // mediassion->locksocket
         if(RTSP_NO_ERROR != RecvRTSP(RtspOverHttpDataSockfd, &RtspResponse)) {
             Close(fd);
             return RTSP_RECV_ERROR;
         }
+        // mediassion->unlocksocket
     } else {
         if(RTSP_NO_ERROR != RecvRTSP(fd, &RtspResponse)) {
             Close(fd);

@@ -153,6 +153,29 @@ int MediaSession::MediaInfoCheck()
 	return 0;
 }
 
+void MediaSession::LockSocket()
+{
+    if(RTPInterface) {
+        RTPInterface->LockSocket();
+    }
+}
+
+void MediaSession::UnlockSocket()
+{
+    if(RTPInterface) {
+        RTPInterface->UnlockSocket();
+    }
+}
+
+int MediaSession::GetTunnellingSocket()
+{
+    if(RTPInterface) {
+        return RTPInterface->GetTunnellingSocket();
+    }
+    return -1;
+}
+
+
 void MediaSession::SetRtpDestroiedClbk(void (*clbk)()) { 
 	if(RTPInterface) {
 		RTPInterface->SetDestroiedClbk(clbk);

@@ -47,6 +47,7 @@ class MyRTPSession : public RTPSession
 {
 	public:
 		MyRTPSession() {};
+        virtual ~MyRTPSession() {};
 		virtual int MyRTP_SetUp(MediaSession * media_session, SocketType tunnelling_sock) {return 0;}
 		virtual int MyRTP_SetUp(MediaSession * media_session) { return 0;}
 
@@ -56,6 +57,11 @@ class MyRTPSession : public RTPSession
 		virtual uint8_t * GetMyRTPPacket(uint8_t * packet_buf, size_t * size, unsigned long timeout_ms) {return NULL;}
 
 		virtual void SetDestroiedClbk(void (*clbk)()) {DestroiedClbk = clbk;}
+        virtual void LockSocket() {}
+        virtual void UnlockSocket() {}
+        virtual bool TryLockSocket() {return true;}
+        virtual bool TryUnlockSocket() {return true;}
+        virtual int GetTunnellingSocket() const { return -1; }
 
 	protected:
 		virtual int IsError(int rtperr)

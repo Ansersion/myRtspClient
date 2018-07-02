@@ -16,6 +16,7 @@
 #include <time.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include "rtprawpacket.h"
 #include "myTCPTransmitter.h"
 
@@ -64,19 +65,33 @@ int MyTCPTransmitter::PollSocket(SocketType sock, SocketData &sdata)
                 case RECV_LEN: 
                     {
                         const int httpTunnelHeaderLen = 4;
-                        if(recv(sock, m_httpTunnelHeaderBuffer, 1, MSG_WAITALL) < 0) {
+                        if(recv(sock, m_httpTunnelHeaderBuffer, 1, MSG_WAITALL|MSG_PEEK) < 0) {
                             return ERR_RTP_TCPTRANS_ERRORINRECV;
                         }
-                        if(m_httpTunnelHeaderBuffer[0] != '$') {
+                        if(m_httpTunnelHeaderBuffer[0] != '$' && m_httpTunnelHeaderBuffer[0] != 'R') {
                             break;
-                        }
-                        if(recv(sock, m_httpTunnelHeaderBuffer + 1, 1, MSG_WAITALL) < 0) {
+                        } 
+                        if(recv(sock, m_httpTunnelHeaderBuffer, 2, MSG_WAITALL|MSG_PEEK) < 0) {
                             return ERR_RTP_TCPTRANS_ERRORINRECV;
                         }
-                        if(m_httpTunnelHeaderBuffer[1] != 0 && m_httpTunnelHeaderBuffer[1] != 1) {
+                        if(m_httpTunnelHeaderBuffer[1] != 0 && m_httpTunnelHeaderBuffer[1] != 1 && m_httpTunnelHeaderBuffer[1] != 'T') {
                             break;
+                        } 
+                        if(m_httpTunnelHeaderBuffer[0] == 'R') {
+                            if(recv(sock, m_httpTunnelHeaderBuffer, httpTunnelHeaderLen, MSG_WAITALL|MSG_PEEK) < 0) {
+                                return ERR_RTP_TCPTRANS_ERRORINRECV;
+                            }
+                            if(0 == strncmp((char *)m_httpTunnelHeaderBuffer, "RTSP", 4)) {
+                                printf("Got RTSP Command\n");
+                                break;
+                            } else {
+                                if(recv(sock, m_httpTunnelHeaderBuffer, 2, MSG_WAITALL) < 0) {
+                                    return ERR_RTP_TCPTRANS_ERRORINRECV;
+                                }
+                                break;
+                            }
                         }
-                        if(recv(sock, m_httpTunnelHeaderBuffer + 2, httpTunnelHeaderLen - 2, MSG_WAITALL) < 0) {
+                        if(recv(sock, m_httpTunnelHeaderBuffer, httpTunnelHeaderLen, MSG_WAITALL) < 0) {
                             return ERR_RTP_TCPTRANS_ERRORINRECV;
                         }
                         m_isrtp = 0 == m_httpTunnelHeaderBuffer[1] ? true : false;
