@@ -172,7 +172,7 @@ int MediaSession::GetTunnellingSocket()
     if(RTPInterface) {
         return RTPInterface->GetTunnellingSocket();
     }
-    return -1;
+    return 0;
 }
 
 

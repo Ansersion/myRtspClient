@@ -37,6 +37,8 @@
 using namespace std;
 using namespace jrtplib;
 
+typedef void (*RecvRtspCmdClbk)(string * rtsp_cmd);
+
 enum RecvStateEnm {
     RECV_LEN,
     RECV_DATA,
@@ -77,6 +79,7 @@ private:
     uint8_t m_httpTunnelHeaderBuffer[4];
     uint8_t * m_pDataBuffer;
     bool m_isrtp;
+	// RecvRtspCmdClbk RecvRtspCmd;
 };
 
 #endif

@@ -104,14 +104,14 @@ class RtspClient
 		RtspClient();
 		RtspClient(string uri);
 		~RtspClient();
-		ErrorType DoOPTIONS(string uri = "");
-		ErrorType DoDESCRIBE(string uri = "");
+		ErrorType DoOPTIONS(string uri = "", bool no_response = false);
+		ErrorType DoDESCRIBE(string uri = "", bool no_response = false);
 
 		/* To setup all of the media sessions in SDP */
 		ErrorType DoSETUP();
 
 		/* To setup the media sessions */
-		ErrorType DoSETUP(MediaSession * media_session);
+		ErrorType DoSETUP(MediaSession * media_session, bool no_response);
 
 		/* Example: DoSETUP("video");
 		 * To setup the first video session in SDP
@@ -131,7 +131,7 @@ class RtspClient
 		 * end_time: 
 		 *	end playing point, such as 20.5 means ending play at 20.5 seconds, default NULL=play to the end
 		 * */
-		ErrorType DoPLAY(MediaSession * media_session, float * scale = NULL, float * start_time = NULL, float * end_time = NULL);
+		ErrorType DoPLAY(MediaSession * media_session, float * scale = NULL, float * start_time = NULL, float * end_time = NULL, bool no_response = false);
 
 		/* Example: DoPLAY("video");
 		 * To play the first video session in SDP
@@ -145,18 +145,18 @@ class RtspClient
 		 *	end playing point, such as 20.5 means ending play at 20.5 seconds, default NULL=play to the end
 		 * 
 		 * */
-		ErrorType DoPLAY(string media_type, float * scale = NULL, float * start_time = NULL, float * end_time = NULL);
+		ErrorType DoPLAY(string media_type, float * scale = NULL, float * start_time = NULL, float * end_time = NULL, bool no_response = false);
 
 		/* To pause all of the media sessions in SDP */
 		ErrorType DoPAUSE();
 
 		/* To pause the media sessions */
-		ErrorType DoPAUSE(MediaSession * media_session);
+		ErrorType DoPAUSE(MediaSession * media_session, bool no_response);
 
 		/* Example: DoPAUSE("video");
 		 * To pause the first video session in SDP
 		 * */
-		ErrorType DoPAUSE(string media_type);
+		ErrorType DoPAUSE(string media_type, bool no_response = false);
 
 		/* To get parameters all of the media sessions in SDP 
 		* The most general use is to keep the RTSP session alive: 
@@ -164,23 +164,23 @@ class RtspClient
 		ErrorType DoGET_PARAMETER();
 
 		/* To get parameters of the media sessions */
-		ErrorType DoGET_PARAMETER(MediaSession * media_session);
+		ErrorType DoGET_PARAMETER(MediaSession * media_session, bool no_response);
 
 		/* Example: DoGET_PARAMETER("video");
 		 * To get parameters of the first video session in SDP
 		 * */
-		ErrorType DoGET_PARAMETER(string media_type);
+		ErrorType DoGET_PARAMETER(string media_type, bool no_response = false);
 
 		/* To teardown all of the media sessions in SDP */
 		ErrorType DoTEARDOWN();
 
 		/* To teardown the media sessions */
-		ErrorType DoTEARDOWN(MediaSession * media_session);
+		ErrorType DoTEARDOWN(MediaSession * media_session, bool no_response);
 
 		/* Example: DoTEARDOWN("video");
 		 * To teardown the first video session in SDP
 		 * */
-		ErrorType DoTEARDOWN(string media_type);
+		ErrorType DoTEARDOWN(string media_type, bool no_response = false);
 
         ErrorType DoRtspOverHttpGet();
         ErrorType DoRtspOverHttpPost();
@@ -218,6 +218,7 @@ class RtspClient
 		// "IsResponse_200_OK" is really a ineffective method, should be modified in future.
 		bool IsResponse_200_OK(ErrorType * err = NULL, string * response = NULL);
 		map<string, MediaSession> GetMediaSessions() const { return *MediaSessionMap; }
+
 
 	public:
 		uint8_t * GetMediaData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size);
