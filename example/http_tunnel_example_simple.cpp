@@ -25,9 +25,10 @@
 using std::cout;
 using std::endl;
 
-void * getdata(void * args);
-void * sendrtspcmd(void * args);
-
+void RtspCmdClbk(char * cmd)
+{
+    printf("Got rtsp cmd: %s", cmd);
+}
 
 bool ByeFromServerFlag = false;
 void ByeFromServerClbk()
@@ -36,14 +37,8 @@ void ByeFromServerClbk()
 	ByeFromServerFlag = true;
 }
 
-void RecvRtspCmdClbk(char * cmd) {
-	printf("RecvRtspCmdClbk: %s", cmd);
-}
-
 int main(int argc, char *argv[])
 {
-	pthread_t getdata_thread;
-	pthread_t sendrtspcmd_thread;
 	if(argc != 2) {
 		cout << "Usage: " << argv[0] << " <URL>" << endl;
 		cout << "For example: " << endl;
@@ -113,48 +108,47 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	printf("%s\n", Client.GetResponse().c_str());
-	Client.SetVideoByeFromServerClbk(ByeFromServerClbk);
 
 	if(!Client.IsResponse_200_OK()) {
 		printf("DoSETUP error\n");
 		return 0;
 	}
 
-	Client.SetRtspCmdClbk("video", RecvRtspCmdClbk);
-
-	pthread_create(&sendrtspcmd_thread, NULL, sendrtspcmd, (void*)(&Client));
-	pthread_create(&getdata_thread, NULL, getdata, (void*)(&Client));
-	pthread_join(sendrtspcmd_thread, NULL);
-	pthread_join(getdata_thread, NULL);
+	if(Client.DoPLAY("video", NULL, NULL, NULL) != RTSP_NO_ERROR) {
+		printf("DoPLAY error\n");
+		return 0;
+	}
 	
-    return 0;
-}
+	printf("%s\n", Client.GetResponse().c_str());
+    Client.SetVideoByeFromServerClbk(ByeFromServerClbk);
 
-void * getdata(void * args)
-{
-	/* Receive 1000 RTP 'video' packets
-	 * note(FIXME): 
-	 * if there are several 'video' session 
-	 * refered in SDP, only receive packets of the first 
-	 * 'video' session, the same as 'audio'.*/
+    printf("start PLAY\n");
+    printf("SDP: %s\n", Client.GetSDP().c_str());
+    
+    /* Send PLAY command to play only 'video' sessions.*/
+    // if(Client.DoPLAY("video") != RTSP_NO_ERROR) {
+    // }
+    //
+    //	/* Receive 1000 RTP 'video' packets
+    //	 * note(FIXME): 
+    //	 * if there are several 'video' session 
+    //	 * refered in SDP, only receive packets of the first 
+    //	 * 'video' session, the same as 'audio'.*/
+	int try_times = 0;
 	int packet_num = 0;
-	const size_t BufSize = 65534;
+	const size_t BufSize = 98304;
 	uint8_t buf[BufSize];
 	size_t size = 0;
-	int try_times = 0;
+    
+    /* Write h264 video data to file "test_packet_recv.h264" 
+     * Then it could be played by ffplay */
+    int fd = open("test_packet_recv.h264", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR);
 
-	RtspClient * Client = (RtspClient*)args;
-
-	/* Write h264 video data to file "test_packet_recv.h264" 
-	 * Then it could be played by ffplay */
-	int fd = open("test_packet_recv.h264", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR);
-
-	while(true) {
-		if(!Client->GetMediaData("video", buf, &size, BufSize)) {
-			if(ByeFromServerFlag) {
-				printf("ByeFromServerFlag\n");
-				break;
-			}
+    while(++packet_num < 1000) {
+    	if(ByeFromServerFlag) {
+    		break;
+    	}
+    	if(!Client.GetMediaData("video", buf, &size, BufSize)) {
 			if(try_times > 5) {
 				printf("try_times > 5\n");
 				break;
@@ -162,28 +156,16 @@ void * getdata(void * args)
 			try_times++;
 			continue;
 		}
-		if(write(fd, buf, size) < 0) {
-			perror("write");
-		}
-		printf("recv video data: %lu bytes\n", size);
-	}
-	return NULL;
-}
+    	if(write(fd, buf, size) < 0) {
+    		perror("write");
+    	}
+    	printf("recv %lu\n", size);
+		try_times = 0;
+    }
 
-void * sendrtspcmd(void * args)
-{
+    printf("start TEARDOWN\n");
+    /* Send TEARDOWN command to teardown all of the sessions */
+    Client.DoTEARDOWN();
 
-	bool no_response = true;
-	RtspClient * Client = (RtspClient*)args;
-
-	if(Client->DoPLAY("video", NULL, NULL, NULL, no_response) != RTSP_NO_ERROR) {
-		printf("DoPLAY error\n");
-		return 0;
-	}
-	sleep(5);
-	printf("start TEARDOWN\n");
-	/* Send TEARDOWN command to teardown all of the sessions */
-	Client->DoTEARDOWN("video", no_response);
-	return NULL;
-
+    return 0;
 }

@@ -24,6 +24,7 @@ Makefile_backup
 Makefile
 CoreDumpTest.sh
 example/http_tunnel_example
+example/http_tunnel_example_simple
 example/recv_video_and_audio_example
 example/test_audio_recv.mp3
 example/test_video_recv.h264
