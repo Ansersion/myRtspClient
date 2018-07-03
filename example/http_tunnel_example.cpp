@@ -25,6 +25,11 @@
 using std::cout;
 using std::endl;
 
+void RtspCmdClbk(char * cmd)
+{
+    printf("Got rtsp cmd: %s", cmd);
+}
+
 bool ByeFromServerFlag = false;
 void ByeFromServerClbk()
 {

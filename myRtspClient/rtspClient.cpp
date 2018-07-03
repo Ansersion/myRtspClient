@@ -2120,3 +2120,19 @@ string RtspClient::MakeMd5DigestResp(string realm, string cmd, string uri, strin
 
 }
 
+void RtspClient::SetRtspCmdClbk(string media_type, void (*clbk)(char * cmd)) 
+{
+	MyRegex Regex;
+	ErrorType Err = RTSP_NO_ERROR;
+	map<string, MediaSession>::iterator it;
+	bool IgnoreCase = true;
+
+	for(it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
+		if(Regex.Regex(it->first.c_str(), media_type.c_str(), IgnoreCase)) break;
+	}
+
+	if(it != MediaSessionMap->end()) {
+        it->second.SetRtspCmdClbk(clbk);
+	}
+}
+

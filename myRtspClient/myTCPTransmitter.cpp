@@ -17,8 +17,12 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
+
+#include "myRegex.h"
 #include "rtprawpacket.h"
 #include "myTCPTransmitter.h"
+#include "myRtpSession.h"
+#include "utils.h"
 
 #define RTPTCPTRANS_MAXPACKSIZE							65535
 
@@ -82,8 +86,46 @@ int MyTCPTransmitter::PollSocket(SocketType sock, SocketData &sdata)
                                 return ERR_RTP_TCPTRANS_ERRORINRECV;
                             }
                             if(0 == strncmp((char *)m_httpTunnelHeaderBuffer, "RTSP", 4)) {
-                                printf("Got RTSP Command\n");
-								// TODO: do clbk
+                                // printf("Got RTSP Command\n");
+                                if(RecvRtspCmd!= NULL) {
+                                    MyRegex Regex;
+                                    int RecvResult = 0;
+                                    int Index = 0;
+                                    int bufsize = 8192;
+                                    char * rtspbuf = new char[bufsize];
+                                    memset(rtspbuf, 0, bufsize);
+                                    while(bufsize > 0) {
+                                        RecvResult = ReadLine(sock, rtspbuf + Index, bufsize);
+                                        if(RecvResult < 0) {
+                                            if(errno == EINTR) continue;
+                                            else if(errno == EWOULDBLOCK || errno == EAGAIN) {
+                                                delete[] rtspbuf;
+                                                rtspbuf = NULL;
+                                                break;
+                                            } else {
+                                                delete[] rtspbuf;
+                                                rtspbuf = NULL;
+                                                break;
+                                            }
+                                        } else if(RecvResult == 0) {
+                                            break;
+                                        }
+                                        /*
+                                         * Single with "\r\n" or "\n" is the termination tag of RTSP.
+                                         * */
+                                        if(RecvResult <= (int)strlen("\r\n") &&
+                                                Regex.Regex(rtspbuf+Index, "^(\r\n|\n)$")) {
+                                            break;
+                                        }
+                                        Index += RecvResult;
+                                        bufsize -= RecvResult;
+                                    }
+                                    RecvRtspCmd(rtspbuf);
+                                    if(rtspbuf != NULL) {
+                                        delete[] rtspbuf;
+                                        rtspbuf = NULL;
+                                    }
+                                }
                                 break;
                             } else {
                                 if(recv(sock, m_httpTunnelHeaderBuffer, 2, MSG_WAITALL) < 0) {

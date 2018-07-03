@@ -37,7 +37,7 @@
 using namespace std;
 using namespace jrtplib;
 
-typedef void (*RecvRtspCmdClbk)(string * rtsp_cmd);
+typedef void (*RECV_RTSP_CMD_CLBK)(char * rtsp_cmd);
 
 enum RecvStateEnm {
     RECV_LEN,
@@ -49,7 +49,7 @@ enum RecvStateEnm {
 class MyTCPTransmitter : public RTPTCPTransmitter
 {
 public:
-	MyTCPTransmitter(const string &name) : RTPTCPTransmitter(0), m_name(name), m_recvstate(RECV_LEN) { }
+	MyTCPTransmitter(const string &name) : RTPTCPTransmitter(0), m_name(name), m_recvstate(RECV_LEN)  { }
 	MyTCPTransmitter(RTPMemoryManager *mgr) : RTPTCPTransmitter(mgr), m_name(""), m_recvstate(RECV_LEN) { }
 
 	void OnSendError(SocketType sock)
@@ -63,6 +63,7 @@ public:
 		cout << m_name << ": Error receiving from socket " << sock << ", removing destination" << endl;
 		DeleteDestination(RTPTCPAddress(sock));
 	}
+    virtual void SetRecvRtspCmdClbk(RECV_RTSP_CMD_CLBK clbk) {RecvRtspCmd = clbk;}
 
 protected:
 	// NOTE: functions override RTPTCPTransmitter, which should changed from 'private' to 'protected' of Jrtplib in rtptcptransmitter.h
@@ -79,7 +80,7 @@ private:
     uint8_t m_httpTunnelHeaderBuffer[4];
     uint8_t * m_pDataBuffer;
     bool m_isrtp;
-	// RecvRtspCmdClbk RecvRtspCmd;
+	RECV_RTSP_CMD_CLBK RecvRtspCmd;
 };
 
 #endif

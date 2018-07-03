@@ -181,3 +181,9 @@ void MediaSession::SetRtpDestroiedClbk(void (*clbk)()) {
 		RTPInterface->SetDestroiedClbk(clbk);
 	}
 }
+
+void MediaSession::SetRtspCmdClbk(void (*clbk)(char * cmd)) { 
+	if(RTPInterface) {
+		RTPInterface->SetRecvRtspCmdClbk(clbk);
+	}
+}

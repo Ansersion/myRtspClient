@@ -419,3 +419,11 @@ void MyRTPTCPSession::OnRemoveSource(RTPSourceData *dat)
 		DestroiedClbk();
 	}
 }
+
+void MyRTPTCPSession::SetRecvRtspCmdClbk(void (*clbk)(char * cmd))
+{
+    MyTCPTransmitter * session = static_cast<MyTCPTransmitter*>(rtptrans);
+    if(session != NULL) {
+        session->SetRecvRtspCmdClbk(clbk);
+    }
+}

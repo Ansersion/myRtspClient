@@ -70,6 +70,7 @@ class MediaSession
 
 		int MediaInfoCheck();
 		void SetRtpDestroiedClbk(void (*clbk)());
+        void SetRtspCmdClbk(void (*clbk)(char * cmd));
 
         void LockSocket();
         void UnlockSocket();

@@ -273,6 +273,7 @@ class RtspClient
 		bool GetObtainVpsSpsPpsPeriodly() const { return ObtainVpsSpsPpsPeriodly; };
         void UpdateXSessionCookie();
         void SetHttpTunnelPort(uint16_t port) { RtspOverHttpDataPort = port; };
+        void SetRtspCmdClbk(string media_type, void (*clbk)(char * cmd));
 
 
 	protected:

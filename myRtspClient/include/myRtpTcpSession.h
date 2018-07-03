@@ -44,6 +44,7 @@ class MyRTPTCPSession : public MyRTPSession
         virtual void UnlockSocket();
         virtual bool TryLockSocket();
         virtual int GetTunnellingSocket() const { return TunnellingSock; }
+        virtual void SetRecvRtspCmdClbk(void (*clbk)(char *cmd));
     private:
         int MyTcpCreate(const RTPSessionParams &sessparams,const RTPTransmissionParams *transparams);
         // int Poll();

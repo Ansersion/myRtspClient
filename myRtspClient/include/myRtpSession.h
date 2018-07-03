@@ -38,6 +38,7 @@
 
 typedef void (*DESTROIED_RTP_CLBK) ();
 
+
 using namespace jrtplib;
 class MediaSession;
 
@@ -46,7 +47,7 @@ int checkerror(int rtperr);
 class MyRTPSession : public RTPSession
 {
 	public:
-		MyRTPSession() {};
+		MyRTPSession() {DestroiedClbk = NULL; };
         virtual ~MyRTPSession() {};
 		virtual int MyRTP_SetUp(MediaSession * media_session, SocketType tunnelling_sock) {return 0;}
 		virtual int MyRTP_SetUp(MediaSession * media_session) { return 0;}
@@ -56,7 +57,10 @@ class MyRTPSession : public RTPSession
 		virtual uint8_t * GetMyRTPData(uint8_t * data_buf, size_t * size, unsigned long timeout_ms) {return NULL;}
 		virtual uint8_t * GetMyRTPPacket(uint8_t * packet_buf, size_t * size, unsigned long timeout_ms) {return NULL;}
 
-		virtual void SetDestroiedClbk(void (*clbk)()) {DestroiedClbk = clbk;}
+		virtual void SetDestroiedClbk(DESTROIED_RTP_CLBK clbk) {DestroiedClbk = clbk;}
+        // virtual DESTROIED_RTP_CLBK GetDestroiedClbk() { return DestroiedClbk; }
+		virtual void SetRecvRtspCmdClbk(void (*clbk)(char * cmd)) {}
+        // virtual RECV_RTSP_CMD_CLBK GetRecvRtspCmdClbk() { return RecvRtspCmd; }
         virtual void LockSocket() {}
         virtual void UnlockSocket() {}
         virtual bool TryLockSocket() {return true;}
@@ -85,7 +89,7 @@ class MyRTPSession : public RTPSession
         virtual void OnPollThreadStop() {}
 
 	private:
-		void (*DestroiedClbk)();
+		DESTROIED_RTP_CLBK DestroiedClbk;
 
     // private:
     //     bool isHttpTunneling;
