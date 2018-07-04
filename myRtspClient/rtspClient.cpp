@@ -149,7 +149,7 @@ RtspClient::~RtspClient()
 	// NALUType = NULL;
 }
 
-ErrorType RtspClient::DoDESCRIBE(string uri, bool no_response)
+ErrorType RtspClient::DoDESCRIBE(string uri, bool http_tunnel_no_response)
 {
 	string RtspUri("");
 	int Sockfd = -1;
@@ -200,7 +200,7 @@ ErrorType RtspClient::DoDESCRIBE(string uri, bool no_response)
 	// 	Close(Sockfd);
 	// 	return RTSP_SEND_ERROR;
 	// }
-	if(no_response) {
+	if(http_tunnel_no_response) {
 		return RTSP_NO_ERROR;
 	}
     ret = RecvRTSP(Sockfd, RtspOverHttpDataPort, &RtspResponse);
@@ -238,7 +238,7 @@ ErrorType RtspClient::DoDESCRIBE(string uri, bool no_response)
 	return RTSP_NO_ERROR;
 }
 
-ErrorType RtspClient::DoOPTIONS(string uri, bool no_response)
+ErrorType RtspClient::DoOPTIONS(string uri, bool http_tunnel_no_response)
 {
 	string RtspUri("");
 	int Sockfd = -1;
@@ -270,7 +270,7 @@ ErrorType RtspClient::DoOPTIONS(string uri, bool no_response)
 	// 	Close(Sockfd);
 	// 	return RTSP_SEND_ERROR;
 	// }
-	if(no_response) {
+	if(http_tunnel_no_response) {
 		return RTSP_NO_ERROR;
 	}
     ret = RecvRTSP(Sockfd, RtspOverHttpDataPort, &RtspResponse);
@@ -300,7 +300,7 @@ ErrorType RtspClient::DoPAUSE()
 	return ErrAll;
 }
 
-ErrorType RtspClient::DoPAUSE(MediaSession * media_session, bool no_response)
+ErrorType RtspClient::DoPAUSE(MediaSession * media_session, bool http_tunnel_no_response)
 {
 	if(!media_session) {
 		return RTSP_INVALID_MEDIA_SESSION;
@@ -321,7 +321,7 @@ ErrorType RtspClient::DoPAUSE(MediaSession * media_session, bool no_response)
     if(RTSP_NO_ERROR != ret) {
         return ret;
     }
-	if(no_response) {
+	if(http_tunnel_no_response) {
 		return RTSP_NO_ERROR;
 	}
     ret = RecvRTSP(Sockfd, RtspOverHttpDataPort, &RtspResponse);
@@ -345,7 +345,7 @@ ErrorType RtspClient::DoPAUSE(MediaSession * media_session, bool no_response)
 	return RTSP_NO_ERROR;
 }
 
-ErrorType RtspClient::DoPAUSE(string media_type, bool no_response)
+ErrorType RtspClient::DoPAUSE(string media_type, bool http_tunnel_no_response)
 {
 	MyRegex Regex;
 	ErrorType Err = RTSP_NO_ERROR;
@@ -357,7 +357,7 @@ ErrorType RtspClient::DoPAUSE(string media_type, bool no_response)
 	}
 
 	if(it != MediaSessionMap->end()) {
-		Err = DoPAUSE(&(it->second), no_response);
+		Err = DoPAUSE(&(it->second), http_tunnel_no_response);
 		return Err;
 	}
 	Err = RTSP_INVALID_MEDIA_SESSION;
@@ -378,7 +378,7 @@ ErrorType RtspClient::DoGET_PARAMETER()
 	return ErrAll;
 }
 
-ErrorType RtspClient::DoGET_PARAMETER(MediaSession * media_session, bool no_response)
+ErrorType RtspClient::DoGET_PARAMETER(MediaSession * media_session, bool http_tunnel_no_response)
 {
 	if(!media_session) {
 		return RTSP_INVALID_MEDIA_SESSION;
@@ -400,7 +400,7 @@ ErrorType RtspClient::DoGET_PARAMETER(MediaSession * media_session, bool no_resp
     if(RTSP_NO_ERROR != ret) {
         return ret;
     }
-	if(no_response) {
+	if(http_tunnel_no_response) {
 		return RTSP_NO_ERROR;
 	}
     ret = RecvRTSP(Sockfd, RtspOverHttpDataPort, &RtspResponse);
@@ -411,7 +411,7 @@ ErrorType RtspClient::DoGET_PARAMETER(MediaSession * media_session, bool no_resp
 	return RTSP_NO_ERROR;
 }
 
-ErrorType RtspClient::DoGET_PARAMETER(string media_type, bool no_response)
+ErrorType RtspClient::DoGET_PARAMETER(string media_type, bool http_tunnel_no_response)
 {
 	MyRegex Regex;
 	ErrorType Err = RTSP_NO_ERROR;
@@ -423,7 +423,7 @@ ErrorType RtspClient::DoGET_PARAMETER(string media_type, bool no_response)
 	}
 
 	if(it != MediaSessionMap->end()) {
-		Err = DoGET_PARAMETER(&(it->second), no_response);
+		Err = DoGET_PARAMETER(&(it->second), http_tunnel_no_response);
 		return Err;
 	}
 	Err = RTSP_INVALID_MEDIA_SESSION;
@@ -445,7 +445,7 @@ ErrorType RtspClient::DoSETUP()
 	return ErrAll;
 }
 
-ErrorType RtspClient::DoSETUP(MediaSession * media_session, bool no_response)
+ErrorType RtspClient::DoSETUP(MediaSession * media_session, bool http_tunnel_no_response)
 {
 	if(!media_session) {
 		return RTSP_INVALID_MEDIA_SESSION;
@@ -491,7 +491,7 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session, bool no_response)
     if(RTSP_NO_ERROR != ret) {
         return ret;
     }
-	if(no_response) {
+	if(http_tunnel_no_response) {
 		return RTSP_NO_ERROR;
 	}
     ret = RecvRTSP(Sockfd, RtspOverHttpDataPort, &RtspResponse);
@@ -555,7 +555,7 @@ ErrorType RtspClient::DoPLAY()
 	return ErrAll;
 }
 
-ErrorType RtspClient::DoPLAY(MediaSession * media_session, float * scale, float * start_time, float * end_time, bool no_response)
+ErrorType RtspClient::DoPLAY(MediaSession * media_session, float * scale, float * start_time, float * end_time, bool http_tunnel_no_response)
 {
 	if(!media_session) {
 		return RTSP_INVALID_MEDIA_SESSION;
@@ -609,7 +609,7 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session, float * scale, float 
     if(RTSP_NO_ERROR != ret) {
         return ret;
     }
-	if(no_response) {
+	if(http_tunnel_no_response) {
 		return RTSP_NO_ERROR;
 	}
     ret = RecvRTSP(Sockfd, RtspOverHttpDataPort, &RtspResponse);
@@ -620,7 +620,7 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session, float * scale, float 
 	return RTSP_NO_ERROR;
 }
 
-ErrorType RtspClient::DoPLAY(string media_type, float * scale, float * start_time, float * end_time, bool no_response)
+ErrorType RtspClient::DoPLAY(string media_type, float * scale, float * start_time, float * end_time, bool http_tunnel_no_response)
 {
 	MyRegex Regex;
 	ErrorType Err = RTSP_NO_ERROR;
@@ -632,7 +632,7 @@ ErrorType RtspClient::DoPLAY(string media_type, float * scale, float * start_tim
 	}
 
 	if(it != MediaSessionMap->end()) {
-		Err = DoPLAY(&(it->second), scale, start_time, end_time, no_response);
+		Err = DoPLAY(&(it->second), scale, start_time, end_time, http_tunnel_no_response);
 		return Err;
 	}
 	Err = RTSP_INVALID_MEDIA_SESSION;
@@ -659,7 +659,7 @@ ErrorType RtspClient::DoTEARDOWN()
 	return ErrAll;
 }
 
-ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session, bool no_response)
+ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session, bool http_tunnel_no_response)
 {
 	if(!media_session) {
 		return RTSP_INVALID_MEDIA_SESSION;
@@ -697,7 +697,7 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session, bool no_response)
         Close(Sockfd);
         return ret;
     }
-	if(no_response) {
+	if(http_tunnel_no_response) {
 		return RTSP_NO_ERROR;
 	}
     ret = RecvRTSP(Sockfd, RtspOverHttpDataPort, &RtspResponse);
@@ -720,7 +720,7 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session, bool no_response)
 	return RTSP_NO_ERROR;
 }
 
-ErrorType RtspClient::DoTEARDOWN(string media_type, bool no_response)
+ErrorType RtspClient::DoTEARDOWN(string media_type, bool http_tunnel_no_response)
 {
 	MyRegex Regex;
 	ErrorType Err = RTSP_NO_ERROR;
@@ -732,7 +732,7 @@ ErrorType RtspClient::DoTEARDOWN(string media_type, bool no_response)
 	}
 
 	if(it != MediaSessionMap->end()) {
-		Err = DoTEARDOWN(&(it->second), no_response);
+		Err = DoTEARDOWN(&(it->second), http_tunnel_no_response);
 		return Err;
 	}
 	Err = RTSP_INVALID_MEDIA_SESSION;

@@ -126,6 +126,7 @@ int MyTCPTransmitter::PollSocket(SocketType sock, SocketData &sdata)
                                         rtspbuf = NULL;
                                     }
                                 }
+                                RecvRtspCmd = NULL;
                                 break;
                             } else {
                                 if(recv(sock, m_httpTunnelHeaderBuffer, 2, MSG_WAITALL) < 0) {

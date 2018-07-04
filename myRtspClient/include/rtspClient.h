@@ -104,14 +104,14 @@ class RtspClient
 		RtspClient();
 		RtspClient(string uri);
 		~RtspClient();
-		ErrorType DoOPTIONS(string uri = "", bool no_response = false);
-		ErrorType DoDESCRIBE(string uri = "", bool no_response = false);
+		ErrorType DoOPTIONS(string uri = "", bool http_tunnel_no_response = false);
+		ErrorType DoDESCRIBE(string uri = "", bool http_tunnel_no_response = false);
 
 		/* To setup all of the media sessions in SDP */
 		ErrorType DoSETUP();
 
 		/* To setup the media sessions */
-		ErrorType DoSETUP(MediaSession * media_session, bool no_response);
+		ErrorType DoSETUP(MediaSession * media_session, bool http_tunnel_no_response);
 
 		/* Example: DoSETUP("video");
 		 * To setup the first video session in SDP
@@ -130,8 +130,11 @@ class RtspClient
 		 *	start playing point, such as 20.5 means starting to play at 20.5 seconds, default NULL=play from 0 second or the PAUSE point
 		 * end_time: 
 		 *	end playing point, such as 20.5 means ending play at 20.5 seconds, default NULL=play to the end
+		 * http_tunnel_no_response: 
+		 *	when using http-tunnelling, rtp and rtsp are transmitted in the same socket, if http_tunnel_no_response is set true, DoPLAY will not wait for the response,
+         *  because the response will be handled in callback function when getting rtp packets(refer to: SetRtspCmdClbk) 
 		 * */
-		ErrorType DoPLAY(MediaSession * media_session, float * scale = NULL, float * start_time = NULL, float * end_time = NULL, bool no_response = false);
+		ErrorType DoPLAY(MediaSession * media_session, float * scale = NULL, float * start_time = NULL, float * end_time = NULL, bool http_tunnel_no_response = false);
 
 		/* Example: DoPLAY("video");
 		 * To play the first video session in SDP
@@ -143,20 +146,26 @@ class RtspClient
 		 *	start playing point, such as 20.5 means starting to play at 20.5 seconds, default NULL=play from 0 second or the PAUSE point
 		 * end_time: 
 		 *	end playing point, such as 20.5 means ending play at 20.5 seconds, default NULL=play to the end
+		 * http_tunnel_no_response: 
+		 *	when using http-tunnelling, rtp and rtsp are transmitted in the same socket, if http_tunnel_no_response is set true, DoPLAY will not wait for the response,
+         *  because the response will be handled in callback function when getting rtp packets(refer to: SetRtspCmdClbk) 
 		 * 
 		 * */
-		ErrorType DoPLAY(string media_type, float * scale = NULL, float * start_time = NULL, float * end_time = NULL, bool no_response = false);
+		ErrorType DoPLAY(string media_type, float * scale = NULL, float * start_time = NULL, float * end_time = NULL, bool http_tunnel_no_response = false);
 
 		/* To pause all of the media sessions in SDP */
 		ErrorType DoPAUSE();
 
 		/* To pause the media sessions */
-		ErrorType DoPAUSE(MediaSession * media_session, bool no_response);
+		ErrorType DoPAUSE(MediaSession * media_session, bool http_tunnel_no_response);
 
 		/* Example: DoPAUSE("video");
 		 * To pause the first video session in SDP
+		 * http_tunnel_no_response: 
+		 *	when using http-tunnelling, rtp and rtsp are transmitted in the same socket, if http_tunnel_no_response is set true, DoPAUSE will not wait for the response,
+         *  because the response will be handled in callback function when getting rtp packets(refer to: SetRtspCmdClbk) 
 		 * */
-		ErrorType DoPAUSE(string media_type, bool no_response = false);
+		ErrorType DoPAUSE(string media_type, bool http_tunnel_no_response = false);
 
 		/* To get parameters all of the media sessions in SDP 
 		* The most general use is to keep the RTSP session alive: 
@@ -164,23 +173,29 @@ class RtspClient
 		ErrorType DoGET_PARAMETER();
 
 		/* To get parameters of the media sessions */
-		ErrorType DoGET_PARAMETER(MediaSession * media_session, bool no_response);
+		ErrorType DoGET_PARAMETER(MediaSession * media_session, bool http_tunnel_no_response);
 
 		/* Example: DoGET_PARAMETER("video");
 		 * To get parameters of the first video session in SDP
+		 * http_tunnel_no_response: 
+		 *	when using http-tunnelling, rtp and rtsp are transmitted in the same socket, if http_tunnel_no_response is set true, DoGET_PARAMETER will not wait for the response,
+         *  because the response will be handled in callback function when getting rtp packets(refer to: SetRtspCmdClbk) 
 		 * */
-		ErrorType DoGET_PARAMETER(string media_type, bool no_response = false);
+		ErrorType DoGET_PARAMETER(string media_type, bool http_tunnel_no_response = false);
 
 		/* To teardown all of the media sessions in SDP */
 		ErrorType DoTEARDOWN();
 
 		/* To teardown the media sessions */
-		ErrorType DoTEARDOWN(MediaSession * media_session, bool no_response);
+		ErrorType DoTEARDOWN(MediaSession * media_session, bool http_tunnel_no_response);
 
 		/* Example: DoTEARDOWN("video");
 		 * To teardown the first video session in SDP
+		 * http_tunnel_no_response: 
+		 *	when using http-tunnelling, rtp and rtsp are transmitted in the same socket, if http_tunnel_no_response is set true, DoTEARDOWN will not wait for the response,
+         *  because the response will be handled in callback function when getting rtp packets(refer to: SetRtspCmdClbk) 
 		 * */
-		ErrorType DoTEARDOWN(string media_type, bool no_response = false);
+		ErrorType DoTEARDOWN(string media_type, bool http_tunnel_no_response = false);
 
         ErrorType DoRtspOverHttpGet();
         ErrorType DoRtspOverHttpPost();
@@ -273,6 +288,15 @@ class RtspClient
 		bool GetObtainVpsSpsPpsPeriodly() const { return ObtainVpsSpsPpsPeriodly; };
         void UpdateXSessionCookie();
         void SetHttpTunnelPort(uint16_t port) { RtspOverHttpDataPort = port; };
+		/* To set Rtsp command callback when using http-tunnelling
+		 * media_session: 
+		 * 	the media session
+		 * clbk: 
+		 *	callback function to handle rtsp response when receiving rtp packets.
+         *  if you don't the callback, the response will be dropped
+         *  Note: the callback is only used once and will be set to NULL immediately. 
+         *        That means if you want to handle the rtsp response, you should set the callback every time you set a rtsp command(e.g: DoPLAY, DoTEARDOWN...)
+		 * */
         void SetRtspCmdClbk(string media_type, void (*clbk)(char * cmd));
 
 
