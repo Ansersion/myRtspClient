@@ -50,13 +50,13 @@ int MyTCPTransmitter::PollSocket(SocketType sock, SocketData &sdata)
 	size_t len;
 #endif // RTP_SOCKETTYPE_WINSOCK
 	bool dataavailable;
-    int status = 0;
-    int offset;
+    // int status = 0;
+    // int offset;
     bool complete = false;
 
     do {
         len = 0;
-        offset = 0;
+        // offset = 0;
         RTPIOCTL(sock, FIONREAD, &len);
 
         if (len <= 0) 
@@ -88,6 +88,7 @@ int MyTCPTransmitter::PollSocket(SocketType sock, SocketData &sdata)
                             if(0 == strncmp((char *)m_httpTunnelHeaderBuffer, "RTSP", 4)) {
                                 // printf("Got RTSP Command\n");
                                 if(RecvRtspCmd!= NULL) {
+									// printf("RecvRtspCmd != NULL\n");
                                     MyRegex Regex;
                                     int RecvResult = 0;
                                     int Index = 0;

@@ -111,7 +111,7 @@ class RtspClient
 		ErrorType DoSETUP();
 
 		/* To setup the media sessions */
-		ErrorType DoSETUP(MediaSession * media_session, bool http_tunnel_no_response);
+		ErrorType DoSETUP(MediaSession * media_session, bool http_tunnel_no_response = false);
 
 		/* Example: DoSETUP("video");
 		 * To setup the first video session in SDP
@@ -133,6 +133,7 @@ class RtspClient
 		 * http_tunnel_no_response: 
 		 *	when using http-tunnelling, rtp and rtsp are transmitted in the same socket, if http_tunnel_no_response is set true, DoPLAY will not wait for the response,
          *  because the response will be handled in callback function when getting rtp packets(refer to: SetRtspCmdClbk) 
+		 *  YOU MUST SET THE CALLBACK, OTHERWITH IT WILL BLOCKED WHEN GETTING MEDIA DATA
 		 * */
 		ErrorType DoPLAY(MediaSession * media_session, float * scale = NULL, float * start_time = NULL, float * end_time = NULL, bool http_tunnel_no_response = false);
 
@@ -148,7 +149,8 @@ class RtspClient
 		 *	end playing point, such as 20.5 means ending play at 20.5 seconds, default NULL=play to the end
 		 * http_tunnel_no_response: 
 		 *	when using http-tunnelling, rtp and rtsp are transmitted in the same socket, if http_tunnel_no_response is set true, DoPLAY will not wait for the response,
-         *  because the response will be handled in callback function when getting rtp packets(refer to: SetRtspCmdClbk) 
+         *  because the response will be handled in callback function when getting rtp packets(refer to: SetRtspCmdClbk).
+		 *  YOU MUST SET THE CALLBACK, OTHERWITH IT WILL BLOCKED WHEN GETTING MEDIA DATA
 		 * 
 		 * */
 		ErrorType DoPLAY(string media_type, float * scale = NULL, float * start_time = NULL, float * end_time = NULL, bool http_tunnel_no_response = false);
@@ -164,6 +166,7 @@ class RtspClient
 		 * http_tunnel_no_response: 
 		 *	when using http-tunnelling, rtp and rtsp are transmitted in the same socket, if http_tunnel_no_response is set true, DoPAUSE will not wait for the response,
          *  because the response will be handled in callback function when getting rtp packets(refer to: SetRtspCmdClbk) 
+		 *  YOU MUST SET THE CALLBACK, OTHERWITH IT WILL BLOCKED WHEN GETTING MEDIA DATA
 		 * */
 		ErrorType DoPAUSE(string media_type, bool http_tunnel_no_response = false);
 
@@ -180,6 +183,7 @@ class RtspClient
 		 * http_tunnel_no_response: 
 		 *	when using http-tunnelling, rtp and rtsp are transmitted in the same socket, if http_tunnel_no_response is set true, DoGET_PARAMETER will not wait for the response,
          *  because the response will be handled in callback function when getting rtp packets(refer to: SetRtspCmdClbk) 
+		 *  YOU MUST SET THE CALLBACK, OTHERWITH IT WILL BLOCKED WHEN GETTING MEDIA DATA
 		 * */
 		ErrorType DoGET_PARAMETER(string media_type, bool http_tunnel_no_response = false);
 
@@ -194,6 +198,7 @@ class RtspClient
 		 * http_tunnel_no_response: 
 		 *	when using http-tunnelling, rtp and rtsp are transmitted in the same socket, if http_tunnel_no_response is set true, DoTEARDOWN will not wait for the response,
          *  because the response will be handled in callback function when getting rtp packets(refer to: SetRtspCmdClbk) 
+		 *  YOU MUST SET THE CALLBACK, OTHERWITH IT WILL BLOCKED WHEN GETTING MEDIA DATA
 		 * */
 		ErrorType DoTEARDOWN(string media_type, bool http_tunnel_no_response = false);
 

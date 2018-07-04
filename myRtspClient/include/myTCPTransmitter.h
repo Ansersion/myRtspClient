@@ -49,8 +49,8 @@ enum RecvStateEnm {
 class MyTCPTransmitter : public RTPTCPTransmitter
 {
 public:
-	MyTCPTransmitter(const string &name) : RTPTCPTransmitter(0), m_name(name), m_recvstate(RECV_LEN)  { }
-	MyTCPTransmitter(RTPMemoryManager *mgr) : RTPTCPTransmitter(mgr), m_name(""), m_recvstate(RECV_LEN) { }
+	MyTCPTransmitter(const string &name) : RTPTCPTransmitter(0), m_name(name), m_recvstate(RECV_LEN), RecvRtspCmd(NULL)  { }
+	MyTCPTransmitter(RTPMemoryManager *mgr) : RTPTCPTransmitter(mgr), m_name(""), m_recvstate(RECV_LEN), RecvRtspCmd(NULL) { }
 
 	void OnSendError(SocketType sock)
 	{

@@ -13,20 +13,22 @@
 //   limitations under the License.
 //
 
-// a example to receive rtsp/rtp packets over http
-// there are 2 tcp sockets(one sending, one receiving) for http-tunnelling communication.
-// the receiving one will receiving both Rtsp response and media data. 
-// after you DoSETUP, the media session will set up RTP which will take over the receiving socket.
-//
-// the 'getdata' thead to get media data and the 'sendrtspcmd' thread to send rtsp command, the rtsp response will be handled in RecvRtspCmdClbk.
-// if you don't care about the response, it will be dropped if you don't set the callback(refer to http_tunnel_example_simple.cpp")
-// 
-// WARNING: you can receive more one media data within one RtspClient like 'recv_video_and_audio_example'
-// That means you should do something like:
-// RtspClient client_audio; (for audio receiving)
-// RtspClient client_video; (for video receiving)
-// NOT:
-// RtspClient client; (for audio and video receiving)
+/************************************************************************************************************************************************
+* a example to receive rtsp/rtp packets over http
+* there are 2 tcp sockets(one sending, one receiving) for http-tunnelling communication.
+* the receiving one will receiving both Rtsp response and media data. 
+* after you DoSETUP, the media session will set up RTP which will take over the receiving socket.
+*
+* the 'getdata' thead to get media data and the 'sendrtspcmd' thread to send rtsp command, the rtsp response will be handled in RecvRtspCmdClbk.
+* if you don't care about the response, it will be dropped if you don't set the callback(refer to http_tunnel_example_simple.cpp")
+* 
+* WARNING: you can receive more one media data within one RtspClient like 'recv_video_and_audio_example'
+* That means you should do something like:
+* RtspClient client_audio; (for audio receiving)
+* RtspClient client_video; (for video receiving)
+* NOT:
+* RtspClient client; (for audio and video receiving)
+************************************************************************************************************************************************/
 
 
 #include <iostream>

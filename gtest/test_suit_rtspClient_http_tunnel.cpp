@@ -29,6 +29,7 @@
 #include "rtspClient.h"
 using namespace std;
 
+
 TEST(rtspClient, HTTP_TUNNEL)
 {
 	string RtspUri("rtsp://192.168.137.16/ansersion");
@@ -59,15 +60,16 @@ TEST(rtspClient, HTTP_TUNNEL)
 
 	printf("start PLAY\n");
 	EXPECT_EQ(Client.DoPLAY("video"), RTSP_NO_ERROR);
-	EXPECT_TRUE(Client.IsResponse_200_OK());
 
 	int packet_num = 0;
 	printf("*******************\n");
 	while(++packet_num < 100) {
-		const size_t BufSize = 8192;
+		const size_t BufSize = 65534;
 		uint8_t buf[BufSize];
 		size_t size = 0;
-		if(Client.GetMediaData("video", buf, &size, BufSize)) printf("recv %lu\n", size);
+		if(Client.GetMediaData("video", buf, &size, BufSize)) {
+			printf("recv %lu\n", size);
+		}
 	}
 
 	printf("start TEARDOWN\n");
