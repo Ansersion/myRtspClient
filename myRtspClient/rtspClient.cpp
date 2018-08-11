@@ -277,6 +277,12 @@ ErrorType RtspClient::DoOPTIONS(string uri, bool http_tunnel_no_response)
     if(RTSP_NO_ERROR != ret) {
         return ret;
     }
+	// check username and password, if any
+	if(CheckAuth(Sockfd, Cmd, RtspUri) != CHECK_OK) {
+		cout << "CheckAuth: error" << endl;
+		Close(Sockfd);
+		return RTSP_RESPONSE_401;
+	}
 	// if(RTSP_NO_ERROR != RecvRTSP(Sockfd, &RtspResponse)) {
 	// 	// close(Sockfd);
 	// 	Close(Sockfd);
@@ -328,6 +334,12 @@ ErrorType RtspClient::DoPAUSE(MediaSession * media_session, bool http_tunnel_no_
     if(RTSP_NO_ERROR != ret) {
         return ret;
     }
+	// check username and password, if any
+	if(CheckAuth(Sockfd, Cmd, RtspURI) != CHECK_OK) {
+		cout << "CheckAuth: error" << endl;
+		Close(Sockfd);
+		return RTSP_RESPONSE_401;
+	}
 
 	// if(RTSP_NO_ERROR == Err && RTSP_NO_ERROR != SendRTSP(Sockfd, Msg.str())) {
 	// 	Close(Sockfd);
@@ -407,6 +419,12 @@ ErrorType RtspClient::DoGET_PARAMETER(MediaSession * media_session, bool http_tu
     if(RTSP_NO_ERROR != ret) {
         return ret;
     }
+	// check username and password, if any
+	if(CheckAuth(Sockfd, Cmd, RtspURI) != CHECK_OK) {
+		cout << "CheckAuth: error" << endl;
+		Close(Sockfd);
+		return RTSP_RESPONSE_401;
+	}
 
 	return RTSP_NO_ERROR;
 }
@@ -498,6 +516,12 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session, bool http_tunnel_no_
     if(RTSP_NO_ERROR != ret) {
         return ret;
     }
+	// check username and password, if any
+	if(CheckAuth(Sockfd, Cmd, RtspURI) != CHECK_OK) {
+		cout << "CheckAuth: error" << endl;
+		Close(Sockfd);
+		return RTSP_RESPONSE_401;
+	}
 
 	// if(CheckAuth(Sockfd, Cmd, media_session->ControlURI) != CHECK_OK) {
 	// 	cout << "CheckAuth: error" << endl;
@@ -616,6 +640,12 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session, float * scale, float 
     if(RTSP_NO_ERROR != ret) {
         return ret;
     }
+	// check username and password, if any
+	if(CheckAuth(Sockfd, Cmd, RtspURI) != CHECK_OK) {
+		cout << "CheckAuth: error" << endl;
+		Close(Sockfd);
+		return RTSP_RESPONSE_401;
+	}
 
 	return RTSP_NO_ERROR;
 }
@@ -705,6 +735,12 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session, bool http_tunnel_
         Close(Sockfd);
         return ret;
     }
+	// check username and password, if any
+	if(CheckAuth(Sockfd, Cmd, RtspURI) != CHECK_OK) {
+		cout << "CheckAuth: error" << endl;
+		Close(Sockfd);
+		return RTSP_RESPONSE_401;
+	}
 
 	if(RTSP_NO_ERROR == ret) {
 		map<string, MediaSession>::iterator it;
