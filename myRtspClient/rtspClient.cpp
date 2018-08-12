@@ -2060,7 +2060,7 @@ uint32_t RtspClient::CheckAuth(int sockfd, string cmd, string uri)
 	// 	WWW-Authenticate:Digest realm="HipcamRealServer", nonce="3b27a446bfa49b0c48c3edb83139543d"
 	MyRegex Regex;
 	list<string> Group;
-	string PatternDigest("WWW-Authenticate: *Digest +realm=\"([a-zA-Z_0-9 ]+)\", +nonce=\"([a-zA-Z0-9]+)\"");
+	string PatternDigest("WWW-Authenticate: *Digest +realm=\"([a-zA-Z_0-9 ]+)\", *nonce=\"([a-zA-Z0-9]+)\"");
 	string PatternBasic("WWW-Authenticate: *Digest +realm=\"([a-zA-Z_0-9 ]+)\"");
 	string RealmTmp("");
 	string NonceTmp("");
