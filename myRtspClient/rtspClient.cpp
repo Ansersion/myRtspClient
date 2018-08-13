@@ -847,7 +847,6 @@ ErrorType RtspClient::DoRtspOverHttpPost()
 
 int RtspClient::ParseSDP(string SDP)
 {
-	MyRegex Regex;
 	string Response("");
 	int Result = 0; // don't have meaning yet
 
@@ -855,110 +854,175 @@ int RtspClient::ParseSDP(string SDP)
 	else if(RtspResponse.length() != 0) Response.assign(SDPStr);
 	else return Result;
 
-	string Pattern = "([a-zA-Z])=(.*)";
-	list<string> Group;
-	bool CollectMediaInfo = false;
-	string CurrentMediaSession("");
-	while(Regex.RegexLine(&Response, &Pattern, &Group)) {
-		string Key(""), Value("");
-		if(!Group.empty()) {
-			Group.pop_front(); // pop the line
-			Group.pop_front(); // pop the matched part
-			Key.assign(Group.front()); Group.pop_front();
-			Value.assign(Group.front()); Group.pop_front();
-			// SDPInfo->insert(pair<string, string>(Key, Value));
+	// cout << "debug: start parse sdp" << endl;
+	sdpData->parse(Response);
+	map<string, SDPMediaInfo> mediaInfoMap = sdpData->getMediaInfoMap();
+	map<string, SDPMediaInfo>::iterator it1 = mediaInfoMap.begin();
+	while(it1 != mediaInfoMap.end()) {
+		if(MediaSessionMap->find(it1->second.mediaType) != MediaSessionMap->end()) {
+			it1++;
+			continue;
 		}
-		if(Key == "m") CollectMediaInfo = true;
-		if(Key == "s") CollectMediaInfo = false;
-		if(!CollectMediaInfo) continue;
-
-		if(Key == "m") { 
-            /* Pattern: (MediaType) +(Ports) +(Protocol) +(PayloadType)"
-               Example: "(audio) (0) (RTP/AVP) (14)"
-			   */
-			// string PatternTmp("([a-zA-Z]+) +.+ +(.+) +.*");
-			// string PatternTmp("([a-zA-Z]+) +([0-9/]+) +([A-Za-z/]+) +\\b([0-9]+)\\b");
-			string PatternTmp("([a-zA-Z]+) +([0-9/]+) +([A-Za-z/]+) +([0-9]+)");
-			if(!Regex.Regex(Value.c_str(), PatternTmp.c_str(), &Group)) {
-				continue;
+		MediaSession NewMediaSession;
+		NewMediaSession.MediaType.assign(it1->second.mediaType); 
+		// cout << "debug: mediaType=" << it1->second.mediaType << endl;;
+		NewMediaSession.Protocol.assign(it1->second.transProt);
+		// cout << "debug: transProt=" << it1->second.transProt << endl;;
+		/* TODO: we only use the first payload type now */
+		map<int, map<SDP_ATTR_ENUM, string> >::iterator it2 = it1->second.fmtMap.begin();
+		if(it2 != it1->second.fmtMap.end()) {
+			NewMediaSession.PayloadType.push_back(it2->first);	
+			if(it2->second.find(CODEC_TYPE) != it2->second.end()) {
+				NewMediaSession.EncodeType = it2->second[CODEC_TYPE];
+				// cout << "debug: EncodeType=" << NewMediaSession.EncodeType << endl;;
 			}
-			Group.pop_front();
-			CurrentMediaSession.assign(Group.front());
-			Group.pop_front();
-			Group.pop_front(); // FIXME: Ports are ignored
-			string Protocol(Group.front());
-			Group.pop_front();
-			int PayloadTypeTmp = -1;
-			stringstream ssPayloadType;
-			ssPayloadType << Group.front();
-			ssPayloadType >> PayloadTypeTmp;
-
-			MediaSession NewMediaSession;
-			NewMediaSession.MediaType.assign(CurrentMediaSession);
-			NewMediaSession.Protocol.assign(Protocol);
-			NewMediaSession.PayloadType.push_back(PayloadTypeTmp);
-			(*MediaSessionMap)[CurrentMediaSession] = NewMediaSession;
-
+			if(it2->second.find(TIME_RATE) != it2->second.end()) {
+				stringstream ssTimeRate;
+				ssTimeRate << it2->second[TIME_RATE];
+				ssTimeRate >> NewMediaSession.TimeRate;
+				// cout << "debug: TimeRate=" << NewMediaSession.TimeRate << endl;;
+			}
+			if(it2->second.find(CHANNEL_NUM) != it2->second.end()) {
+				stringstream ssChannelNum;
+				ssChannelNum << it2->second[CHANNEL_NUM];
+				ssChannelNum >> NewMediaSession.ChannelNum;
+				// cout << "debug: ChannelNum=" << NewMediaSession.ChannelNum << endl;;
+			}
+			if(it2->second.find(PACK_MODE) != it2->second.end()) {
+				stringstream ssPackMode;
+				ssPackMode << it2->second[PACK_MODE];
+				ssPackMode >> NewMediaSession.Packetization;
+				// cout << "debug: Packetization=" << NewMediaSession.Packetization << endl;;
+			}
+			/* 'Value' could be  
+			 * 1: "rtsp://127.0.0.1/ansersion/track=1"
+			 * 2: "track=1"
+			 * If is the '2', it should be prefixed with the URI. */
+			NewMediaSession.ControlURI.assign("");
+			MyRegex regex;
+			if(!regex.Regex(it1->second.controlURI.c_str(), "rtsp://")) {
+				NewMediaSession.ControlURI += RtspURI;
+				NewMediaSession.ControlURI += "/";
+			}
+			NewMediaSession.ControlURI += it1->second.controlURI;
+			// cout << "debug: ControlURI=" << NewMediaSession.ControlURI << endl;;
+			(*MediaSessionMap)[it1->second.mediaType] = NewMediaSession;
 		}
-		if("a" == Key) {
-			// string PatternRtpmap("rtpmap:.* +([0-9A-Za-z]+)/([0-9]+)");
-			string PatternRtpmap("rtpmap:.* +([0-9A-Za-z]+)/([0-9]+)/?([0-9])?");
-			string PatternFmtp_H264("fmtp:.*sprop-parameter-sets=([A-Za-z0-9+/=]+),([A-Za-z0-9+/=]+)");
-			string PatternFmtp_H265("fmtp:.*sprop-vps=([A-Za-z0-9+/=]+);.*sprop-sps=([A-Za-z0-9+/=]+);.*sprop-pps=([A-Za-z0-9+/=]+)");
-			string PatternControl("control:(.+)");
-			if(CurrentMediaSession.length() == 0) {
-				continue;
-			}
-			if(Regex.Regex(Value.c_str(), PatternRtpmap.c_str(), &Group)) {
-				Group.pop_front();
-				(*MediaSessionMap)[CurrentMediaSession].EncodeType = Group.front();;
-				Group.pop_front();
-				stringstream TimeRate;
-				TimeRate << Group.front();
-				TimeRate >> (*MediaSessionMap)[CurrentMediaSession].TimeRate;
-                Group.pop_front();
-                if(!Group.empty()) {
-                    stringstream ChannelNum;
-                    ChannelNum << Group.front();
-                    ChannelNum >> (*MediaSessionMap)[CurrentMediaSession].ChannelNum;
-                }
-
-			} else if(Regex.Regex(Value.c_str(), PatternControl.c_str(), &Group)) {
-				Group.pop_front();
-				string ControlURITmp("");
-				/* 'Value' could be  
-				 * 1: "rtsp://127.0.0.1/ansersion/track=1"
-				 * 2: "track=1"
-				 * If is the '2', it should be prefixed with the URI. */
-				if(!Regex.Regex(Value.c_str(), "rtsp://")) {
-					ControlURITmp += RtspURI;
-					ControlURITmp += "/";
-				}
-				ControlURITmp += Group.front();
-				printf("Control: %s\n", ControlURITmp.c_str());
-				(*MediaSessionMap)[CurrentMediaSession].ControlURI.assign(ControlURITmp);
-			} else if(Regex.Regex(Value.c_str(), PatternFmtp_H264.c_str(), &Group)) {
-				Group.pop_front();
-				SPS.assign(Group.front());
-				Group.pop_front();
-				PPS.assign(Group.front());
-
-				if(Regex.Regex(Value.c_str(), "packetization-mode=([0-2])", &Group)) {
-					Group.pop_front();
-					stringstream PacketizationMode;
-					PacketizationMode << Group.front();
-					PacketizationMode >> (*MediaSessionMap)[CurrentMediaSession].Packetization;
-				}
-			} else if(Regex.Regex(Value.c_str(), PatternFmtp_H265.c_str(), &Group)) {
-				Group.pop_front();
-				VPS.assign(Group.front());
-				Group.pop_front();
-				SPS.assign(Group.front());
-				Group.pop_front();
-				PPS.assign(Group.front());
-			}
-		}
+		it1++;
 	}
+
+	// MyRegex Regex;
+	// string Response("");
+	// int Result = 0; // don't have meaning yet
+
+	// if(SDP.length() != 0) Response.assign(SDP);
+	// else if(RtspResponse.length() != 0) Response.assign(SDPStr);
+	// else return Result;
+
+	// string Pattern = "([a-zA-Z])=(.*)";
+	// list<string> Group;
+	// bool CollectMediaInfo = false;
+	// string CurrentMediaSession("");
+	// while(Regex.RegexLine(&Response, &Pattern, &Group)) {
+	// 	string Key(""), Value("");
+	// 	if(!Group.empty()) {
+	// 		Group.pop_front(); // pop the line
+	// 		Group.pop_front(); // pop the matched part
+	// 		Key.assign(Group.front()); Group.pop_front();
+	// 		Value.assign(Group.front()); Group.pop_front();
+	// 		// SDPInfo->insert(pair<string, string>(Key, Value));
+	// 	}
+	// 	if(Key == "m") CollectMediaInfo = true;
+	// 	if(Key == "s") CollectMediaInfo = false;
+	// 	if(!CollectMediaInfo) continue;
+
+	// 	if(Key == "m") { 
+    //         /* Pattern: (MediaType) +(Ports) +(Protocol) +(PayloadType)"
+    //            Example: "(audio) (0) (RTP/AVP) (14)"
+	// 		   */
+	// 		// string PatternTmp("([a-zA-Z]+) +.+ +(.+) +.*");
+	// 		// string PatternTmp("([a-zA-Z]+) +([0-9/]+) +([A-Za-z/]+) +\\b([0-9]+)\\b");
+	// 		string PatternTmp("([a-zA-Z]+) +([0-9/]+) +([A-Za-z/]+) +([0-9]+)");
+	// 		if(!Regex.Regex(Value.c_str(), PatternTmp.c_str(), &Group)) {
+	// 			continue;
+	// 		}
+	// 		Group.pop_front();
+	// 		CurrentMediaSession.assign(Group.front());
+	// 		Group.pop_front();
+	// 		Group.pop_front(); // FIXME: Ports are ignored
+	// 		string Protocol(Group.front());
+	// 		Group.pop_front();
+	// 		int PayloadTypeTmp = -1;
+	// 		stringstream ssPayloadType;
+	// 		ssPayloadType << Group.front();
+	// 		ssPayloadType >> PayloadTypeTmp;
+
+	// 		MediaSession NewMediaSession;
+	// 		NewMediaSession.MediaType.assign(CurrentMediaSession);
+	// 		NewMediaSession.Protocol.assign(Protocol);
+	// 		NewMediaSession.PayloadType.push_back(PayloadTypeTmp);
+	// 		(*MediaSessionMap)[CurrentMediaSession] = NewMediaSession;
+
+	// 	}
+	// 	if("a" == Key) {
+	// 		// string PatternRtpmap("rtpmap:.* +([0-9A-Za-z]+)/([0-9]+)");
+	// 		string PatternRtpmap("rtpmap:.* +([0-9A-Za-z]+)/([0-9]+)/?([0-9])?");
+	// 		string PatternFmtp_H264("fmtp:.*sprop-parameter-sets=([A-Za-z0-9+/=]+),([A-Za-z0-9+/=]+)");
+	// 		string PatternFmtp_H265("fmtp:.*sprop-vps=([A-Za-z0-9+/=]+);.*sprop-sps=([A-Za-z0-9+/=]+);.*sprop-pps=([A-Za-z0-9+/=]+)");
+	// 		string PatternControl("control:(.+)");
+	// 		if(CurrentMediaSession.length() == 0) {
+	// 			continue;
+	// 		}
+	// 		if(Regex.Regex(Value.c_str(), PatternRtpmap.c_str(), &Group)) {
+	// 			Group.pop_front();
+	// 			(*MediaSessionMap)[CurrentMediaSession].EncodeType = Group.front();;
+	// 			Group.pop_front();
+	// 			stringstream TimeRate;
+	// 			TimeRate << Group.front();
+	// 			TimeRate >> (*MediaSessionMap)[CurrentMediaSession].TimeRate;
+    //             Group.pop_front();
+    //             if(!Group.empty()) {
+    //                 stringstream ChannelNum;
+    //                 ChannelNum << Group.front();
+    //                 ChannelNum >> (*MediaSessionMap)[CurrentMediaSession].ChannelNum;
+    //             }
+
+	// 		} else if(Regex.Regex(Value.c_str(), PatternControl.c_str(), &Group)) {
+	// 			Group.pop_front();
+	// 			string ControlURITmp("");
+	// 			/* 'Value' could be  
+	// 			 * 1: "rtsp://127.0.0.1/ansersion/track=1"
+	// 			 * 2: "track=1"
+	// 			 * If is the '2', it should be prefixed with the URI. */
+	// 			if(!Regex.Regex(Value.c_str(), "rtsp://")) {
+	// 				ControlURITmp += RtspURI;
+	// 				ControlURITmp += "/";
+	// 			}
+	// 			ControlURITmp += Group.front();
+	// 			printf("Control: %s\n", ControlURITmp.c_str());
+	// 			(*MediaSessionMap)[CurrentMediaSession].ControlURI.assign(ControlURITmp);
+	// 		} else if(Regex.Regex(Value.c_str(), PatternFmtp_H264.c_str(), &Group)) {
+	// 			Group.pop_front();
+	// 			SPS.assign(Group.front());
+	// 			Group.pop_front();
+	// 			PPS.assign(Group.front());
+
+	// 			if(Regex.Regex(Value.c_str(), "packetization-mode=([0-2])", &Group)) {
+	// 				Group.pop_front();
+	// 				stringstream PacketizationMode;
+	// 				PacketizationMode << Group.front();
+	// 				PacketizationMode >> (*MediaSessionMap)[CurrentMediaSession].Packetization;
+	// 			}
+	// 		} else if(Regex.Regex(Value.c_str(), PatternFmtp_H265.c_str(), &Group)) {
+	// 			Group.pop_front();
+	// 			VPS.assign(Group.front());
+	// 			Group.pop_front();
+	// 			SPS.assign(Group.front());
+	// 			Group.pop_front();
+	// 			PPS.assign(Group.front());
+	// 		}
+	// 	}
+	// }
 	
 	for(map<string, MediaSession>::iterator it = MediaSessionMap->begin(); it != MediaSessionMap->end(); it++) {
 		it->second.MediaInfoCheck();
@@ -1895,6 +1959,7 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 		}
 		int NT; 
 		NT = NALUTypeBaseTmp->ParseNALUHeader_Type(VideoBuffer.Buf);
+		// printf("debug: %d:%d", PM, NT);
 		NALUType = NALUTypeBaseTmp->GetNaluRtpType(PM, NT);
 		if(NULL == NALUType) {
 			printf("Unknown NALU Type: %s\n", media_session->EncodeType.c_str());
@@ -2066,7 +2131,7 @@ uint32_t RtspClient::CheckAuth(int sockfd, string cmd, string uri)
 	MyRegex Regex;
 	list<string> Group;
 	string PatternDigest("WWW-Authenticate: *Digest +realm=\"([a-zA-Z_0-9 ]+)\", *nonce=\"([a-zA-Z0-9]+)\"");
-	string PatternBasic("WWW-Authenticate: *Digest +realm=\"([a-zA-Z_0-9 ]+)\"");
+	string PatternBasic("WWW-Authenticate: *Basic +realm=\"([a-zA-Z_0-9 ]+)\"");
 	string RealmTmp("");
 	string NonceTmp("");
 	string Md5Response("");

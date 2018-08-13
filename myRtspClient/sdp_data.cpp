@@ -19,6 +19,8 @@
 #include <stdlib.h>
 
 using std::stringstream;
+using std::cout;
+using std::endl;
 
 #include <string.h>
 
@@ -26,19 +28,18 @@ static const char * SDP_ORIGIN_PATTERN = "(.*) +(.*) +(.*) +(.*) +(.*) +(.*)";
 static const char * SDP_CONNECTION_DATA_PATTERN = "(.*) +(.*) +(.*)";
 static const char * SDP_SESSION_TIME_PATTERN = "(.*) +(.*)";
 static const char * SDP_RTPMAP_PATTERN("rtpmap:(.+) +([0-9A-Za-z]+)/([0-9]+)/?([0-9])?");
-static const char * SDP_FMTP_H264_PATTERN("fmtp:(.+) +packetization-mode=([0-2]);sprop-parameter-sets=([A-Za-z0-9+/=]+),([A-Za-z0-9+/=]+)");
-static const char * SDP_FMTP_H265_PATTERN("fmtp:(.+) +packetization-mode=([0-2]);sprop-vps=([A-Za-z0-9+/=]+);.*sprop-sps=([A-Za-z0-9+/=]+);.*sprop-pps=([A-Za-z0-9+/=]+)");
+static const char * SDP_FMTP_H264_PATTERN("fmtp:(.+) +packetization-mode=([0-2]);.*sprop-parameter-sets=([A-Za-z0-9+/=]+),([A-Za-z0-9+/=]+)");
+static const char * SDP_FMTP_H265_PATTERN("fmtp:(.+) +packetization-mode=([0-2]);.*sprop-vps=([A-Za-z0-9+/=]+);.*sprop-sps=([A-Za-z0-9+/=]+);.*sprop-pps=([A-Za-z0-9+/=]+)");
 static const char * SDP_CONTROL_PATTERN("control:(.+)");
 
 SDPData::~SDPData() 
 {
 }
 
-void SDPData::parse(string sdp)
+void SDPData::parse(string &sdp)
 {
 	MyRegex regex;
-	string response("");
-	string pattern = "^([a-zA-Z])=(.*)$";
+	string pattern = "([a-zA-Z])=(.*)";
     string key("");
     string value("");
 	list<string> group;
@@ -46,14 +47,17 @@ void SDPData::parse(string sdp)
     bool sessionInfo = true, mediaInfo = false, timeInfo = false;
     stringstream ssTmp;
     SDPMediaInfo * currentMediaInfo = NULL;
-    while(regex.RegexLine(&response, &pattern, &group)) {
+
+	// int debugCount=0;
+    while(regex.RegexLine(&sdp, &pattern, &group)) {
+		// cout << "debug: Count " << debugCount++ << endl;
         if(group.empty()) {
             break;
         }
         group.pop_front();
         group.pop_front();
         key.assign(group.front()); group.pop_front();
-        key.assign(group.front()); group.pop_front();
+        value.assign(group.front()); group.pop_front();
         /* 's': session info start flag */
         /* 'm': media info start flag */
         /* 't': time info start flag */
@@ -82,7 +86,6 @@ void SDPData::parse(string sdp)
             } else if("o" == key) {
                 if(regex.Regex(value.c_str(), SDP_ORIGIN_PATTERN, &group)) {
                     group.pop_front();
-                    group.pop_front();
                     ssTmp.clear();
                     ssTmp.str("");
                     sdpOriginStruct.userName.assign(group.front());
@@ -96,7 +99,6 @@ void SDPData::parse(string sdp)
                 }
                 if(regex.Regex(value.c_str(), SDP_CONNECTION_DATA_PATTERN, &group)) {
                     group.pop_front();
-                    group.pop_front();
                     sdpConnectionData.networkType.assign(group.front());group.pop_front();
                     sdpConnectionData.addressType.assign(group.front());group.pop_front();
                     sdpConnectionData.address.assign(group.front());group.pop_front();
@@ -106,7 +108,6 @@ void SDPData::parse(string sdp)
         if(timeInfo) {
             if("t" == key) {
                 if(regex.Regex(value.c_str(), SDP_SESSION_TIME_PATTERN, &group)) {
-                    group.pop_front();
                     group.pop_front();
                     ssTmp.clear();
                     ssTmp.str("");
@@ -128,19 +129,20 @@ void SDPData::parse(string sdp)
                 ssTmp >> currentMediaInfo->ports;
                 ssTmp >> currentMediaInfo->transProt;
                 ssTmp >> tmp;
-                while(!tmp.empty()) {
+                while(ssTmp && !tmp.empty()) {
                     stringstream ss;
                     int payloadId;
                     ss << tmp;
                     ss >> payloadId;
                     map<SDP_ATTR_ENUM, string> * fmtMapTmp = &currentMediaInfo->fmtMap[payloadId];
                     (*fmtMapTmp)[MEDIA_TYPE_NAME] = currentMediaInfo->mediaType;
+					ssTmp >> tmp;
                 }
                 
             } else if("a" == key) {
                 group.clear();
+				// cout << "debug: mt=" << currentMediaInfo->mediaType << ",line=" << value << endl;
                 if(currentMediaInfo != NULL && regex.Regex(value.c_str(), SDP_RTPMAP_PATTERN, &group)) {
-                    group.pop_front();
                     group.pop_front();
                     stringstream ss;
                     int payloadId;
@@ -156,7 +158,7 @@ void SDPData::parse(string sdp)
                         }
                     }
                 } else if(currentMediaInfo != NULL && "video" == currentMediaInfo->mediaType && regex.Regex(value.c_str(), SDP_FMTP_H264_PATTERN, &group)) {
-                    group.pop_front();
+					cout << "SDP_FMTP_H264_PATTERN" << endl;
                     group.pop_front();
                     stringstream ss;
                     int payloadId;
@@ -170,7 +172,6 @@ void SDPData::parse(string sdp)
                     }
                 } else if(currentMediaInfo != NULL && "video" == currentMediaInfo->mediaType && regex.Regex(value.c_str(), SDP_FMTP_H265_PATTERN, &group)) {
                     group.pop_front();
-                    group.pop_front();
                     stringstream ss;
                     int payloadId;
                     ss << group.front(); group.pop_front();
@@ -183,7 +184,6 @@ void SDPData::parse(string sdp)
                         it->second[PPS] = group.front(); group.pop_front();
                     }
                 } else if(currentMediaInfo != NULL && regex.Regex(value.c_str(), SDP_CONTROL_PATTERN, &group)) {
-                    group.pop_front();
                     group.pop_front();
                     currentMediaInfo->controlURI = group.front(); group.pop_front();
                 }

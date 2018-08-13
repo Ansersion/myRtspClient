@@ -164,3 +164,37 @@ TEST(rtspClient, RtspClient_ParseSDP_2_RegularInput)
 		EXPECT_EQ(14, *it);
 	}
 }
+
+// issue: #7
+TEST(rtspClient, RtspClient_ParseSDP_3_RegularInput)
+{
+	string SDP("\
+			v=0\r\n\
+			o=- 0 0 IN IP4 192.168.0.22\r\n\
+			s=LIVE VIEW\r\n\
+			c=IN IP4 0.0.0.0\r\n\
+			t=0 0\r\n\
+			a=control:*\r\n\
+			m=video 0 RTP/AVP 35\r\n\
+			a=rtpmap:35 H264/90000\r\n\
+			a=rtpmap:102 H265/90000\r\n\
+			a=control:video\r\n\
+			a=recvonly\r\n\
+			a=fmtp:35 packetization-mode=1;profile-level-id=4d402a;sprop-parameter-sets=Z01AKo2NIA8ARPy4CAQ=,aO44gA==\r\n\r\n");
+
+	RtspClient Client;
+	Client.ParseSDP(SDP);
+	map<string, MediaSession> MediaSessionMap = Client.GetMediaSessions();
+
+	EXPECT_EQ(true, MediaSessionMap["video"].MediaType == "video");
+	EXPECT_EQ(true, MediaSessionMap["video"].EncodeType == "H264");
+	EXPECT_EQ(true, MediaSessionMap["video"].Protocol == "RTP/AVP");
+	EXPECT_EQ(true, MediaSessionMap["video"].TimeRate == 90000);
+	EXPECT_EQ(true, MediaSessionMap["video"].ControlURI == "/video");
+
+	EXPECT_EQ(1, MediaSessionMap["video"].PayloadType.size());
+	for(vector<int>::iterator it = MediaSessionMap["video"].PayloadType.begin(); it != MediaSessionMap["video"].PayloadType.end(); it++) {
+		EXPECT_EQ(35, *it);
+	}
+
+}

@@ -100,7 +100,13 @@ class SDPData
 {
 	public:
         ~SDPData();
-        void parse(string sdp);
+        void parse(string &sdp);
+        int getSdpVersion() {return sdpVersion;}
+        string getSessionName() {return sessionName;}
+        SDPOriginStruct getSdpOriginStruct() {return sdpOriginStruct;}
+        SDPConnectionData getSdpConnectionData() {return sdpConnectionData;}
+        SDPSessionTime getSdpSessionTime() {return sdpSessionTime;}
+        map<string, SDPMediaInfo> getMediaInfoMap() {return mediaInfoMap;}
 
 	private:
         /* RFC2327.6 */
