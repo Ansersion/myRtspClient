@@ -12,6 +12,7 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
+// refer to RFC7798
 
 #include "nalu_types_h265.h"
 #include <string.h>

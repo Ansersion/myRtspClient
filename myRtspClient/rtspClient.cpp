@@ -98,6 +98,8 @@ RtspClient::RtspClient():
     HttpHeadContentTypeContent = "application/x-rtsp-tunnelled";
     HttpHeadContentLengthContent = "32767";
     HttpHeadExpiresContent = "Sun, 9 Jan 1972 00:00:00 GMT";
+
+    sdpData = new SDPData();
 }
 
 // RtspClient::RtspClient(string uri):
@@ -144,6 +146,9 @@ RtspClient::~RtspClient()
 		VideoBuffer.Buf = NULL;
 		VideoBuffer.Size = 0;
 	}
+
+    delete sdpData;
+    sdpData = NULL;
 
 	// delete NALUType;
 	// NALUType = NULL;

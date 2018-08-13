@@ -25,6 +25,7 @@
 #include "MediaSession.h"
 #include "nalu_types.h"
 #include "nalu_types_h265.h"
+#include "sdp_data.h"
 
 using std::map;
 using std::string;
@@ -353,6 +354,9 @@ class RtspClient
         string HttpHeadContentTypeContent;
         string HttpHeadContentLengthContent;
         string HttpHeadExpiresContent;
+
+    protected:
+        SDPData * sdpData;
 };
 
 #endif
