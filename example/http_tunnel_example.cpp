@@ -88,10 +88,10 @@ int main(int argc, char *argv[])
     }
 
     // /* Set rtsp access username */
-    // Client.SetUsername("Ansersion");
+    Client.SetUsername("Ansersion");
 
     // /* Set rtsp access password */
-    // Client.SetPassword("AnsersionPassword");
+    Client.SetPassword("AnsersionPassword");
 
     // /* Send DESCRIBE command to server */
 	if(Client.DoOPTIONS() != RTSP_NO_ERROR) {

@@ -894,6 +894,15 @@ int RtspClient::ParseSDP(string SDP)
 				ssPackMode >> NewMediaSession.Packetization;
 				// cout << "debug: Packetization=" << NewMediaSession.Packetization << endl;;
 			}
+			if(it2->second.find(ATTR_VPS) != it2->second.end()) {
+                VPS.assign(it2->second[ATTR_VPS]);
+			}
+			if(it2->second.find(ATTR_SPS) != it2->second.end()) {
+                SPS.assign(it2->second[ATTR_SPS]);
+			}
+			if(it2->second.find(ATTR_PPS) != it2->second.end()) {
+                PPS.assign(it2->second[ATTR_PPS]);
+			}
 			/* 'Value' could be  
 			 * 1: "rtsp://127.0.0.1/ansersion/track=1"
 			 * 2: "track=1"

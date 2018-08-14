@@ -158,7 +158,7 @@ void SDPData::parse(string &sdp)
                         }
                     }
                 } else if(currentMediaInfo != NULL && "video" == currentMediaInfo->mediaType && regex.Regex(value.c_str(), SDP_FMTP_H264_PATTERN, &group)) {
-					cout << "SDP_FMTP_H264_PATTERN" << endl;
+					// cout << "SDP_FMTP_H264_PATTERN" << endl;
                     group.pop_front();
                     stringstream ss;
                     int payloadId;
@@ -167,8 +167,8 @@ void SDPData::parse(string &sdp)
                     map<int, map<SDP_ATTR_ENUM, string>>::iterator it = currentMediaInfo->fmtMap.find(payloadId);
                     if(it != currentMediaInfo->fmtMap.end()) {
                         it->second[PACK_MODE] = group.front(); group.pop_front();
-                        it->second[SPS] = group.front(); group.pop_front();
-                        it->second[PPS] = group.front(); group.pop_front();
+                        it->second[ATTR_SPS] = group.front(); group.pop_front();
+                        it->second[ATTR_PPS] = group.front(); group.pop_front();
                     }
                 } else if(currentMediaInfo != NULL && "video" == currentMediaInfo->mediaType && regex.Regex(value.c_str(), SDP_FMTP_H265_PATTERN, &group)) {
                     group.pop_front();
@@ -179,9 +179,9 @@ void SDPData::parse(string &sdp)
                     map<int, map<SDP_ATTR_ENUM, string>>::iterator it = currentMediaInfo->fmtMap.find(payloadId);
                     if(it != currentMediaInfo->fmtMap.end()) {
                         it->second[PACK_MODE] = group.front(); group.pop_front();
-                        it->second[VPS] = group.front(); group.pop_front();
-                        it->second[SPS] = group.front(); group.pop_front();
-                        it->second[PPS] = group.front(); group.pop_front();
+                        it->second[ATTR_VPS] = group.front(); group.pop_front();
+                        it->second[ATTR_SPS] = group.front(); group.pop_front();
+                        it->second[ATTR_PPS] = group.front(); group.pop_front();
                     }
                 } else if(currentMediaInfo != NULL && regex.Regex(value.c_str(), SDP_CONTROL_PATTERN, &group)) {
                     group.pop_front();

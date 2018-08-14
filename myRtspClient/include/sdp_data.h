@@ -30,9 +30,9 @@ enum SDP_ATTR_ENUM {
     TIME_RATE, // "90000", "8000"...
     CHANNEL_NUM, // "1", "2"...
     PACK_MODE, // for h264/h265
-    SPS, // for h264/h265
-    PPS, // for h264/h265
-    VPS, // for h265
+    ATTR_SPS, // for h264/h265
+    ATTR_PPS, // for h264/h265
+    ATTR_VPS, // for h265
     CONTROL_URI, // "rtsp://127.0.0.1:554/ansersion/trackID=0"...
 
 };
