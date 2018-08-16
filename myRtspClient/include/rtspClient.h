@@ -92,6 +92,7 @@ typedef struct Buffer_t {
 class RtspClient
 {
     public:
+        static const string PatternRtspUriWithUserPwd;
         static const string HttpHeadUserAgent;
         static const string HttpHeadXSessionCookie;
         static const string HttpHeadAccept;
@@ -218,7 +219,6 @@ class RtspClient
 
 		string ParseError(ErrorType et);
 
-		void SetURI(const string uri) { RtspURI.assign(uri); };
 		string GetURI() const { return RtspURI; };
 		void SetPort(const int port) { RtspPort = port; };
 		string GetResponse() const { return RtspResponse; };
@@ -232,9 +232,16 @@ class RtspClient
 		/* "CreateUdpSockfd" is only for test. 
 		 * We will use jrtplib instead later. */
 		int SetAvailableRTPPort(MediaSession * media_session, uint16_t RTP_port = 0); 
+        string parseUriWithUserPwd(string uri);
 		in_addr_t GetIP(string uri = "");
 		uint16_t GetPort(string uri = "");
         string GetResource(string uri = "");
+
+		void SetURI(const string uri) { 
+            string uriTmp(uri);
+            uriTmp = parseUriWithUserPwd(uriTmp);
+            RtspURI.assign(uri); 
+        };
 
 		// "IsResponse_200_OK" is really a ineffective method, should be modified in future.
 		bool IsResponse_200_OK(ErrorType * err = NULL, string * response = NULL);
@@ -256,6 +263,8 @@ class RtspClient
 		string MakeMd5DigestResp(string realm, string cmd, string uri, string nonce, string username = "", string password = "");
 		void SetUsername(string username) {Username.assign(username);}
 		void SetPassword(string password) {Password.assign(password);}
+		string GetUsername() const {return Username;}
+		string GetPassword() const {return Password;}
 
 	public:
 		void SetDestroiedClbk(MediaSession * media_session, DESTROIED_CLBK clbk);

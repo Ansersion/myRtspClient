@@ -95,5 +95,14 @@ TEST(rtspClient, ToolMethods_RegularInput)
 	EXPECT_EQ(Err, RTSP_RESPONSE_40X);
 	EXPECT_FALSE(RtspResponseTest.IsResponse_200_OK(&Err, &Response_500));
 	EXPECT_EQ(Err, RTSP_RESPONSE_50X);
+
+    string uriWithUserPassword = "rtsp://admin:12345@172.6.22.106:554/h264/ch33/main/av_stream";
+    string uriWithoutUserPassword = Client1.parseUriWithUserPwd(uriWithUserPassword);
+    printf("uri: %s\n", uriWithoutUserPassword.c_str());
+    printf("username: %s\n", Client1.GetUsername().c_str());
+    printf("password: %s\n", Client1.GetPassword().c_str());
+    EXPECT_EQ(true, uriWithoutUserPassword == "rtsp://172.6.22.106:554/h264/ch33/main/av_stream");
+    EXPECT_EQ(true, Client1.GetUsername() == "admin");
+    EXPECT_EQ(true, Client1.GetPassword() == "12345");
 }
 

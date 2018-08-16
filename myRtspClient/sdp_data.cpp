@@ -52,7 +52,7 @@ void SDPData::parse(string &sdp)
     while(regex.RegexLine(&sdp, &pattern, &group)) {
 		// cout << "debug: Count " << debugCount++ << endl;
         if(group.empty()) {
-            break;
+            continue;
         }
         group.pop_front();
         group.pop_front();

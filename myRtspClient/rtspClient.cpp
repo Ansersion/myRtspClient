@@ -1,4 +1,4 @@
-//   Copyright 2015-2016 Ansersion
+//   Copyright 2015-2018 Ansersion
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -55,6 +55,11 @@ extern PCMU_Audio PCMU_AudioObj;
 extern NALUTypeBase_H265 NaluBaseType_H265Obj;
 
 #define MEDIA_BUFSIZ 8192
+
+/* example: 
+ * rtsp://admin:12345@172.6.22.106:554/h264/ch33/main/av_stream
+ ***/
+const string RtspClient::PatternRtspUriWithUserPwd("(rtsp://)(.+):(.*)@(.+)");
 
 const string RtspClient::HttpHeadUserAgent("User-Agent: ");
 const string RtspClient::HttpHeadXSessionCookie("x-sessioncookie: ");
@@ -126,7 +131,22 @@ RtspClient::RtspClient():
 
 RtspClient::RtspClient(string uri): RtspClient()
 {
+    uri = parseUriWithUserPwd(uri);
     RtspURI.assign(uri);
+}
+
+string RtspClient::parseUriWithUserPwd(string uri)
+{
+	MyRegex Regex;
+	list<string> Group;
+    if(Regex.Regex(uri.c_str(), PatternRtspUriWithUserPwd.c_str(), &Group)) {
+        Group.pop_front();
+        uri.assign(Group.front());Group.pop_front();
+        Username.assign(Group.front());Group.pop_front();
+        Password.assign(Group.front());Group.pop_front();
+        uri += Group.front();Group.pop_front();
+    }
+    return uri;
 }
 
 RtspClient::~RtspClient()
@@ -160,6 +180,7 @@ ErrorType RtspClient::DoDESCRIBE(string uri, bool http_tunnel_no_response)
 	int Sockfd = -1;
 
 	if(uri.length() != 0) {
+        uri = parseUriWithUserPwd(uri);
 		RtspUri.assign(uri);
 		RtspURI.assign(uri);
 	}
@@ -249,6 +270,7 @@ ErrorType RtspClient::DoOPTIONS(string uri, bool http_tunnel_no_response)
 	int Sockfd = -1;
 
 	if(uri.length() != 0) {
+        uri = parseUriWithUserPwd(uri);
 		RtspUri.assign(uri);
 		RtspURI.assign(uri);
 	}
