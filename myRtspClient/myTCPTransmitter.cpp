@@ -73,12 +73,16 @@ int MyTCPTransmitter::PollSocket(SocketType sock, SocketData &sdata)
                             return ERR_RTP_TCPTRANS_ERRORINRECV;
                         }
                         if(m_httpTunnelHeaderBuffer[0] != '$' && m_httpTunnelHeaderBuffer[0] != 'R') {
+                            /* clear the bytes in socket buffer */
+                            recv(sock, m_httpTunnelHeaderBuffer, 1, MSG_WAITALL);
                             break;
                         } 
                         if(recv(sock, m_httpTunnelHeaderBuffer, 2, MSG_WAITALL|MSG_PEEK) < 0) {
                             return ERR_RTP_TCPTRANS_ERRORINRECV;
                         }
                         if(m_httpTunnelHeaderBuffer[1] != 0 && m_httpTunnelHeaderBuffer[1] != 1 && m_httpTunnelHeaderBuffer[1] != 'T') {
+                            /* clear the bytes in socket buffer */
+                            recv(sock, m_httpTunnelHeaderBuffer, 1+1, MSG_WAITALL);
                             break;
                         } 
                         if(m_httpTunnelHeaderBuffer[0] == 'R') {
@@ -87,14 +91,19 @@ int MyTCPTransmitter::PollSocket(SocketType sock, SocketData &sdata)
                             }
                             if(0 == strncmp((char *)m_httpTunnelHeaderBuffer, "RTSP", 4)) {
                                 // printf("Got RTSP Command\n");
+                                /* clear the bytes in socket buffer */
+                                recv(sock, m_httpTunnelHeaderBuffer, 1+1, MSG_WAITALL);
+
                                 if(RecvRtspCmd!= NULL) {
 									// printf("RecvRtspCmd != NULL\n");
                                     MyRegex Regex;
                                     int RecvResult = 0;
-                                    int Index = 0;
+                                    int Index;
                                     int bufsize = 8192;
                                     char * rtspbuf = new char[bufsize];
                                     memset(rtspbuf, 0, bufsize);
+                                    memcpy(rtspbuf, m_httpTunnelHeaderBuffer, 4);
+                                    Index = 4;
                                     while(bufsize > 0) {
                                         RecvResult = ReadLine(sock, rtspbuf + Index, bufsize);
                                         if(RecvResult < 0) {
