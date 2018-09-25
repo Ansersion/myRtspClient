@@ -261,6 +261,7 @@ class RtspClient
 
 		uint32_t CheckAuth(int sockfd, string cmd, string uri);
 		string MakeMd5DigestResp(string realm, string cmd, string uri, string nonce, string username = "", string password = "");
+		string MakeBasicResp(string username = "", string password = "");
 		void SetUsername(string username) {Username.assign(username);}
 		void SetPassword(string password) {Password.assign(password);}
 		string GetUsername() const {return Username;}

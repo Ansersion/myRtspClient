@@ -518,6 +518,7 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session, bool http_tunnel_no_
     }
 	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
 	if(Realm.length() > 0 && Nonce.length() > 0) {
+        /* digest auth */
 		string RealmTmp = Realm;
 		string NonceTmp = Nonce;
 		string Md5Response  = MakeMd5DigestResp(RealmTmp, Cmd, media_session->ControlURI, NonceTmp);
@@ -528,7 +529,11 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session, bool http_tunnel_no_
 		Msg << "Authorization: Digest username=\"" << Username << "\", realm=\""
 			<< RealmTmp << "\", nonce=\"" << NonceTmp << "\", uri=\"" << media_session->ControlURI
 			<< "\", response=\"" << Md5Response << "\"\r\n";
-	}
+	} else if(Realm.length() > 0) {
+        /* basic auth */
+        string BasicResponse = MakeBasicResp();
+        Msg << "Authorization: Basic " << BasicResponse;
+    }
 	Msg << "\r\n";
     // cout << "DEBUG: " << Msg.str() << endl;
 
@@ -642,6 +647,7 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session, float * scale, float 
 	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
 	Msg << "Session: " << media_session->SessionID << "\r\n";
 	if(Realm.length() > 0 && Nonce.length() > 0) {
+        /* digest auth */
 		string RealmTmp = Realm;
 		string NonceTmp = Nonce;
 		string Md5Response  = MakeMd5DigestResp(RealmTmp, Cmd, RtspURI,  NonceTmp);
@@ -652,7 +658,11 @@ ErrorType RtspClient::DoPLAY(MediaSession * media_session, float * scale, float 
 		Msg << "Authorization: Digest username=\"" << Username << "\", realm=\""
 			<< RealmTmp << "\", nonce=\"" << NonceTmp << "\", uri=\"" << RtspURI
 			<< "\", response=\"" << Md5Response << "\"\r\n";
-	}
+	} else if(Realm.length() > 0) {
+        /* basic auth */
+        string BasicResponse = MakeBasicResp();
+        Msg << "Authorization: Basic " << BasicResponse;
+    }
 	Msg << "\r\n";
     // cout << "DEBUG: " << Msg.str();
 
@@ -736,6 +746,7 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session, bool http_tunnel_
 	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
 	Msg << "Session: " << media_session->SessionID << "\r\n";
 	if(Realm.length() > 0 && Nonce.length() > 0) {
+        /* digest auth */
 		string RealmTmp = Realm;
 		string NonceTmp = Nonce;
 		string Md5Response  = MakeMd5DigestResp(RealmTmp, Cmd, RtspURI,  NonceTmp);
@@ -746,7 +757,11 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session, bool http_tunnel_
 		Msg << "Authorization: Digest username=\"" << Username << "\", realm=\""
 			<< RealmTmp << "\", nonce=\"" << NonceTmp << "\", uri=\"" << RtspURI
 			<< "\", response=\"" << Md5Response << "\"\r\n";
-	}
+	} else if(Realm.length() > 0) {
+        /* basic auth */
+        string BasicResponse = MakeBasicResp();
+        Msg << "Authorization: Basic " << BasicResponse;
+    }
 	Msg << "\r\n";
 
 	ErrorType ret = SendRTSP(Sockfd, RtspOverHttpDataPort, Msg.str());
@@ -2140,6 +2155,7 @@ uint8_t * RtspClient::GetPPSNalu(uint8_t * buf, size_t * size)
 
 uint32_t RtspClient::CheckAuth(int sockfd, string cmd, string uri)
 {
+    /* RFC2617 */
 	ErrorType err;
 	IsResponse_200_OK(&err);
 	// cout << "Start CheckAuth" << endl;
@@ -2154,69 +2170,65 @@ uint32_t RtspClient::CheckAuth(int sockfd, string cmd, string uri)
 	// cout << "**********" << endl;
 	// cout << RtspResponse << endl;
 	// cout << "**********" << endl;
-	// Response e.g:
+	// Response digest e.g:
 	// 	RTSP/1.0 401 Unauthorized
 	// 	Server: HiIpcam/V100R003 VodServer/1.0.0
 	//	Cseq: 2
 	// 	WWW-Authenticate:Digest realm="HipcamRealServer", nonce="3b27a446bfa49b0c48c3edb83139543d"
+    //
+	// Response basic e.g:
+    // RTSP/1.0 401 Unauthorized\r\n
+    // CSeq: 2\r\n 
+    // WWW-Authenticate: Basic realm="ansersion_realm"\r\n\r\n 
 	MyRegex Regex;
 	list<string> Group;
 	string PatternDigest("WWW-Authenticate: *Digest +realm=\"([a-zA-Z_0-9 ]+)\", *nonce=\"([a-zA-Z0-9]+)\"");
 	string PatternBasic("WWW-Authenticate: *Basic +realm=\"([a-zA-Z_0-9 ]+)\"");
 	string RealmTmp("");
-	string NonceTmp("");
-	string Md5Response("");
-
-
-	if(Regex.Regex(RtspResponse.c_str(), PatternDigest.c_str(), &Group)) {
-		// cout << "Regex hit" << endl;
-		Group.pop_front();
-		RealmTmp.assign(Group.front());
-		Group.pop_front();
-		NonceTmp.assign(Group.front());
-		Realm.assign(RealmTmp);
-		Nonce.assign(NonceTmp);
-	} else if(Regex.Regex(RtspResponse.c_str(), PatternBasic.c_str(), &Group)) {
-		Group.pop_front();
-		RealmTmp.assign(Group.front());
-		// Not supported now
-		// TODO:
-		cout << "BASIC Authentication not supported now" << endl;
-		return CHECK_ERROR;
-	}
-	Md5Response  = MakeMd5DigestResp(RealmTmp, cmd, uri,  NonceTmp);
-	if(Md5Response.length() != MD5_SIZE) {
-		cout << "Make MD5 digest response error" << endl;
-		return CHECK_ERROR;
-	}
-
 	stringstream Msg("");
 	string RtspUri = RtspURI;
-	// cout << "username=" << Username << ";password=" << Password << endl;;
+
 	Msg << cmd << " " << RtspUri << " " << "RTSP/" << VERSION_RTSP << "\r\n";
 	Msg << "CSeq: " << ++RtspCSeq << "\r\n";
-	Msg << "Authorization: Digest username=\"" << Username << "\", realm=\""
-		<< RealmTmp << "\", nonce=\"" << NonceTmp << "\", uri=\"" << uri 
-		<< "\", response=\"" << Md5Response << "\"\r\n";
+    if(Regex.Regex(RtspResponse.c_str(), PatternDigest.c_str(), &Group)) {
+        string Md5Response("");
+        string NonceTmp("");
+        // cout << "Regex hit" << endl;
+        Group.pop_front();
+        RealmTmp.assign(Group.front());
+        Group.pop_front();
+        NonceTmp.assign(Group.front());
+        Realm.assign(RealmTmp);
+        Nonce.assign(NonceTmp);
+        Md5Response  = MakeMd5DigestResp(RealmTmp, cmd, uri,  NonceTmp);
+        if(Md5Response.length() != MD5_SIZE) {
+            cout << "Make MD5 digest response error" << endl;
+            return CHECK_ERROR;
+        }
+        Msg << "Authorization: Digest username=\"" << Username << "\", realm=\""
+            << RealmTmp << "\", nonce=\"" << NonceTmp << "\", uri=\"" << uri 
+            << "\", response=\"" << Md5Response << "\"\r\n";
+    } else if(Regex.Regex(RtspResponse.c_str(), PatternBasic.c_str(), &Group)) {
+        string BasicResponse("");
+		Group.pop_front();
+		RealmTmp.assign(Group.front());
+        Realm.assign(RealmTmp);
+        BasicResponse = MakeBasicResp();
+        Msg << "Authorization: Basic " << BasicResponse;
+	}
+
 	Msg << "\r\n";
 	// cout << Msg.str() << endl;
 
-	// if(RTSP_NO_ERROR != SendRTSP(sockfd, Msg.str())) {
-	// 	return CHECK_ERROR;
-	// }
     ErrorType ret = SendRTSP(sockfd, RtspOverHttpDataPort, Msg.str());
     if(RTSP_NO_ERROR != ret) {
         return CHECK_ERROR;
     }
-	// if(RTSP_NO_ERROR != RecvRTSP(sockfd, &RtspResponse)) {
-	// 	return CHECK_ERROR;
-	// }
     ret = RecvRTSP(sockfd, RtspOverHttpDataPort, &RtspResponse);
     if(RTSP_NO_ERROR != ret) {
         return CHECK_ERROR;
     }
 	if(!IsResponse_200_OK()) {
-		// cout << RtspResponse << endl;
 		return CHECK_ERROR;
 	}
 
@@ -2255,6 +2267,23 @@ string RtspClient::MakeMd5DigestResp(string realm, string cmd, string uri, strin
 
 	return tmp;
 
+}
+
+string RtspClient::MakeBasicResp(string username, string password)
+{
+	if(username.length() <= 0) {
+		username.assign(Username);
+		password.assign(Password);
+	}
+    string tmp = username + ":" + password;
+    char * encodedBytes = base64Encode(tmp.c_str(), tmp.length());
+    if(NULL == encodedBytes) {
+        return "";
+    }
+    tmp.assign(encodedBytes);
+    delete[] encodedBytes;
+
+    return tmp;
 }
 
 void RtspClient::SetRtspCmdClbk(string media_type, void (*clbk)(char * cmd)) 
