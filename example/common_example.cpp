@@ -49,16 +49,16 @@ int main(int argc, char *argv[])
 
 	/* Set up rtsp server resource URI */
 	Client.SetURI(RtspUri);
-    Client.SetHttpTunnelPort(8000);
-    Client.SetPort(8000);
-    if(RTSP_NO_ERROR == Client.DoRtspOverHttpGet()) {
-        cout << "DoGet OK" << endl;
-    }
-    cout << Client.GetResource();
-    if(RTSP_NO_ERROR == Client.DoRtspOverHttpPost()) {
-        cout << "DoPost OK" << endl;
-    }
-    cout << Client.GetResource();
+    //Client.SetHttpTunnelPort(8000);
+    //Client.SetPort(8000);
+    //if(RTSP_NO_ERROR == Client.DoRtspOverHttpGet()) {
+    //    cout << "DoGet OK" << endl;
+    //}
+    //cout << Client.GetResource();
+    //if(RTSP_NO_ERROR == Client.DoRtspOverHttpPost()) {
+    //    cout << "DoPost OK" << endl;
+    //}
+    //cout << Client.GetResource();
 
 	// /* Set rtsp access username */
 	// Client.SetUsername("Ansersion");
@@ -74,7 +74,9 @@ int main(int argc, char *argv[])
 
 	/* Send SETUP command to set up all 'audio' and 'video' 
 	 * sessions which SDP refers. */
-	Client.DoSETUP();
+
+    /* USE TCP for receving */
+	Client.DoSETUP("video", true);
 	Client.SetVideoByeFromServerClbk(ByeFromServerClbk);
 
 	printf("start PLAY\n");

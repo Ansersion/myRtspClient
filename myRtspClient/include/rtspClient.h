@@ -112,13 +112,22 @@ class RtspClient
 		/* To setup all of the media sessions in SDP */
 		ErrorType DoSETUP();
 
-		/* To setup the media sessions */
-		ErrorType DoSETUP(MediaSession * media_session, bool http_tunnel_no_response = false);
+		/* To setup the media sessions 
+		 * media_session: 
+		 * 	the media session
+		 * rtp_over_tcp: 
+		 *	if set true, means using the rtsp tcp socket to transmit rtp packets. If 'http_tunnel_no_response' is also set true, it will be ignored.
+		 * http_tunnel_no_response: 
+		 *	when using http-tunnelling, rtp and rtsp are transmitted in the same socket, if http_tunnel_no_response is set true, DoPLAY will not wait for the response,
+         *  because the response will be handled in callback function when getting rtp packets(refer to: SetRtspCmdClbk), and 'rtp_over_tcp' will be ignored.
+		 *  YOU MUST SET THE CALLBACK, OTHERWITH IT WILL BLOCKED WHEN GETTING MEDIA DATA
+		 * */
+		ErrorType DoSETUP(MediaSession * media_session, bool rtp_over_tcp = false, bool http_tunnel_no_response = false);
 
 		/* Example: DoSETUP("video");
 		 * To setup the first video session in SDP
 		 * */
-		ErrorType DoSETUP(string media_type);
+		ErrorType DoSETUP(string media_type, bool rtp_over_tcp = false);
 
 		/* To play all of the media sessions in SDP */
 		ErrorType DoPLAY();

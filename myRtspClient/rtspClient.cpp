@@ -490,7 +490,7 @@ ErrorType RtspClient::DoSETUP()
 	return ErrAll;
 }
 
-ErrorType RtspClient::DoSETUP(MediaSession * media_session, bool http_tunnel_no_response)
+ErrorType RtspClient::DoSETUP(MediaSession * media_session, bool rtp_over_tcp, bool http_tunnel_no_response)
 {
 	if(!media_session) {
 		return RTSP_INVALID_MEDIA_SESSION;
@@ -510,6 +510,9 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session, bool http_tunnel_no_
 	stringstream Msg("");
 	Msg << Cmd << " " << media_session->ControlURI << " " << "RTSP/" << VERSION_RTSP << "\r\n";
     if(RtspOverHttpDataPort > 0) {
+	    Msg << "Transport:" << " " << media_session->Protocol << "/TCP;";
+        Msg << "interleaved=0-1\r\n";
+    } else if(rtp_over_tcp) {
 	    Msg << "Transport:" << " " << media_session->Protocol << "/TCP;";
         Msg << "interleaved=0-1\r\n";
     } else {
@@ -568,7 +571,12 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session, bool http_tunnel_no_
 	}
 	media_session->Timeout = timeout;
 
-	media_session->RTP_SetUp(RtspOverHttpDataSockfd);
+    
+    if(rtp_over_tcp) {
+        media_session->RTP_SetUp(Sockfd);
+    } else {
+        media_session->RTP_SetUp(RtspOverHttpDataSockfd);
+    }
 	SetDestroiedClbk("audio", ByeFromServerAudioClbk);
 	SetDestroiedClbk("video", ByeFromServerVideoClbk);
 
@@ -577,7 +585,7 @@ ErrorType RtspClient::DoSETUP(MediaSession * media_session, bool http_tunnel_no_
 	return RTSP_NO_ERROR;
 }
 
-ErrorType RtspClient::DoSETUP(string media_type)
+ErrorType RtspClient::DoSETUP(string media_type, bool rtp_over_tcp)
 {
 	MyRegex Regex;
 	ErrorType Err = RTSP_NO_ERROR;
@@ -590,7 +598,7 @@ ErrorType RtspClient::DoSETUP(string media_type)
 	}
 
 	if(it != MediaSessionMap->end()) {
-		Err = DoSETUP(&(it->second), false);
+		Err = DoSETUP(&(it->second), rtp_over_tcp, false);
 		return Err;
 	}
 	Err = RTSP_INVALID_MEDIA_SESSION;
