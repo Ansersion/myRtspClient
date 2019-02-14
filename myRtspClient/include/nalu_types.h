@@ -22,6 +22,7 @@
 
 #include <string>
 #include <stdint.h>
+#include <frame_type_base.h>
 
 #define NAL_UNIT_TYPE_NUM_H264          32
 #define PACKETIZATION_MODE_NUM_H264     3
@@ -37,7 +38,7 @@
 
 /* More info refer to H264 'nal_unit_type' */
 
-class NALUTypeBase
+class NALUTypeBase : public FrameTypeBase
 {
 	public:
 		// NALU types map for h264 

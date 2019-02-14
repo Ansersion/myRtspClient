@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 	 * Then it could be played by ffplay */
 	int fd = open("test_packet_recv.h264", O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR | S_IXUSR);
 
-	while(++packet_num < 1000) {
+	while(true) {
 		if(!Client.GetMediaData("video", buf, &size, BufSize)) continue;
 		if(write(fd, buf, size) < 0) {
 			perror("write");

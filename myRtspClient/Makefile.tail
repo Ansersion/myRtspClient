@@ -20,14 +20,14 @@ $(MY_RTSP_CLIENT_DYN_LIB): $(MY_RTSP_CLIENT_LIB)
 .$(CPP).$(OBJ):
 	$(CPLUSPLUS_COMPILER) -c $(CPLUSPLUS_FLAGS) $<
 
-include/rtspClient.h: include/myRegex.h  include/MediaSession.h include/nalu_types_h265.h include/nalu_types_h264.h include/pcmu_types.h include/mpeg4_types.h include/sdp_data.h
+include/rtspClient.h: include/myRegex.h  include/MediaSession.h include/nalu_types_h265.h include/nalu_types_h264.h include/pcmu_types.h include/mpeg4_types.h include/sdp_data.h include/frame_type_base.h include/nalu_types.h include/frame_type_base.h
 include/myRtpSession.h: $(JRTPLIB_INCLUDE)/rtpsession.h $(JRTPLIB_INCLUDE)/rtppacket.h $(JRTPLIB_INCLUDE)/rtpudpv4transmitter.h $(JRTPLIB_INCLUDE)/rtpipv4address.h $(JRTPLIB_INCLUDE)/rtpsessionparams.h $(JRTPLIB_INCLUDE)/rtperrors.h $(JRTPLIB_INCLUDE)/rtpsourcedata.h
 include/myRtpTcpSession.h: include/myRtpSession.h
 include/myRtpUdpSession.h: include/myRtpSession.h
 include/nalu_types_h264.h: include/nalu_types.h
 include/nalu_types_h265.h: include/nalu_types.h
 myRegex.cpp: include/myRegex.h
-MediaSession.cpp: include/MediaSession.h include/myRtpSession.h include/myRtpTcpSession.h include/myRtpUdpSession.h
+MediaSession.cpp: include/MediaSession.h include/myRtpSession.h include/myRtpTcpSession.h include/myRtpUdpSession.h include/frame_type_base.h
 myRtpUdpSession.cpp: include/myRtpSession.h include/MediaSession.h
 myRtpTcpSession.cpp: include/myRtpTcpSession.h include/MediaSession.h
 myTCPTransmitter.cpp: include/myTCPTransmitter.h

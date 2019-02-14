@@ -1984,6 +1984,20 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 		}
 	}
 
+    /*
+       if(media_session.NeedPrefixParameterOnce()) {
+        media_session.PrefixParameterOnce();
+       }
+       media_session.PrefixFrame();
+       do{
+        EndFlag = true;
+        EndFlag = ParsePacket();
+        CopyData();
+       }
+       while(!EndFlag);
+       return buf;
+       */
+
 	size_t SizeTmp = 0;
 	bool EndFlag = false;
 	NALUTypeBase * NALUTypeBaseTmp = NULL;

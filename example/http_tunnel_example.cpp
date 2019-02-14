@@ -198,11 +198,11 @@ void * sendrtspcmd(void * args)
 		printf("DoPLAY error\n");
 		return 0;
 	}
-	sleep(5);
-	printf("start TEARDOWN\n");
-	/* Send TEARDOWN command to teardown all of the sessions */
-	Client->SetRtspCmdClbk("video", RecvRtspCmdClbk);
-	Client->DoTEARDOWN("video", no_response);
+	// sleep(5);
+	// printf("start TEARDOWN\n");
+	// /* Send TEARDOWN command to teardown all of the sessions */
+	// Client->SetRtspCmdClbk("video", RecvRtspCmdClbk);
+	// Client->DoTEARDOWN("video", no_response);
 	return NULL;
 
 }
