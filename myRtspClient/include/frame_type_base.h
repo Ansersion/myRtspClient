@@ -26,8 +26,9 @@ class FrameTypeBase
 		virtual ~FrameTypeBase() {};
 
 	public:
-        virtual int PrefixParameterOnce() {return 0;}
-        virtual int NeedPrefixParameterOnce() {return 0;}
+        virtual void Init() {}
+        virtual uint8_t * PrefixParameterOnce(uint8_t * buf, size_t * size) {return NULL;}
+        virtual bool NeedPrefixParameterOnce() {return false;}
         virtual int PrefixParameterEveryFrame() {return 0;}
         virtual int PrefixParameterEveryPacket() {return 0;}
         virtual int SuffixParameterOnce() {return 0;}
@@ -40,7 +41,7 @@ class FrameTypeBase
 		 * return: 
 		 * 	0: not a complete frame, which means there are more packets; other: a complete frame
 		 * */
-		virtual int IsFrameComplete(const uint8_t * RTPPayload) {return 1;}
+		virtual bool IsFrameComplete(const uint8_t * RTPPayload) {return true;}
 		// virtual int AssemblePacket(const uint8_t * RTPPayload) {return 0;}
 		// virtual int GetFlagOffset(const uint8_t * RTPPayload) {return 0;}
 		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size) {return 0;}

@@ -36,6 +36,7 @@
 #define IS_PACKET_MODE_VALID_H264(P) 	\
 	((P) >= PACKET_MODE_SINGAL_NAL && (P) <= PACKET_MODE_INTERLEAVED)
 
+using std::string;
 /* More info refer to H264 'nal_unit_type' */
 
 class NALUTypeBase : public FrameTypeBase
@@ -64,6 +65,7 @@ class NALUTypeBase : public FrameTypeBase
 		virtual std::string GetName() const { return Name; }
 		virtual bool GetEndFlag() { return EndFlag; }
 		virtual bool GetStartFlag() { return StartFlag; }
+        virtual uint8_t * PrefixXPS(uint8_t * buf, size_t * size, string & xps);
 	protected:
 		std::string Name;
 		bool EndFlag;

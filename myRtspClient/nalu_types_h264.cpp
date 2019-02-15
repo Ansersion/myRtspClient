@@ -64,6 +64,19 @@ NALUTypeBase * NALUTypeBase::NalUnitType_H264[PACKETIZATION_MODE_NUM_H264][NAL_U
 	}
 };
 
+NALUTypeBase_H264::NALUTypeBase_H264() 
+{
+    prefixParameterOnce = true;
+    SPS.assign("");
+    PPS.assign("");
+}
+
+
+void NALUTypeBase_H264::Init() 
+{
+    prefixParameterOnce = true;
+}
+
 uint16_t NALUTypeBase_H264::ParseNALUHeader_F(const uint8_t * rtp_payload) 
 {
 	if(!rtp_payload) return 0;
@@ -116,6 +129,29 @@ NALUTypeBase * NALUTypeBase_H264::GetNaluRtpType(int packetization, int nalu_typ
 	}
 
 	return NALUTypeBase::NalUnitType_H264[packetization][nalu_type_id];
+}
+
+uint8_t * NALUTypeBase_H264::PrefixParameterOnce(uint8_t * buf, size_t * size)
+{
+    if(!buf) return NULL;
+    if(!size) return NULL;
+    const size_t NALU_StartCodeSize = 4;
+    size_t SizeTmp = 0;
+    *size = 0;
+
+    if(!NALUTypeBase::PrefixXPS(buf + (*size), &SizeTmp, SPS) || SizeTmp <= NALU_StartCodeSize) {
+        fprintf(stderr, "\033[31mWARNING: No SPS\033[0m\n");
+        return NULL;
+    }
+    *size += SizeTmp;
+
+    if(!NALUTypeBase::PrefixXPS(buf + (*size), &SizeTmp, PPS) || SizeTmp <= NALU_StartCodeSize) {
+        fprintf(stderr, "\033[31mWARNING: No SPS\033[0m\n");
+        return NULL;
+    }
+    *size += SizeTmp;
+
+    return buf;
 }
 
 std::string STAP_A::GetName() const 

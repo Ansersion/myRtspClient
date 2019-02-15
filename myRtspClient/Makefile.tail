@@ -6,7 +6,7 @@ MY_RTSP_CLIENT_DYN_LIB = $(NAME).$(DYN_LIB_SUFFIX)
 ALL = $(MY_RTSP_CLIENT_LIB) $(MY_RTSP_CLIENT_DYN_LIB)
 all: $(ALL)
 
-OBJS = myRegex.$(OBJ) myRtpUdpSession.$(OBJ) MediaSession.$(OBJ) nalu_types_h264.$(OBJ) rtspClient.$(OBJ) utils.$(OBJ) mpeg_types.$(OBJ) nalu_types_h265.$(OBJ) pcmu_types.$(OBJ) myRtpTcpSession.$(OBJ) myTCPTransmitter.$(OBJ) mpeg4_types.$(OBJ) sdp_data.$(OBJ)
+OBJS = myRegex.$(OBJ) myRtpUdpSession.$(OBJ) MediaSession.$(OBJ) nalu_types.$(OBJ) nalu_types_h264.$(OBJ) rtspClient.$(OBJ) utils.$(OBJ) mpeg_types.$(OBJ) nalu_types_h265.$(OBJ) pcmu_types.$(OBJ) myRtpTcpSession.$(OBJ) myTCPTransmitter.$(OBJ) mpeg4_types.$(OBJ) sdp_data.$(OBJ)
 
 $(MY_RTSP_CLIENT_LIB): $(OBJS) 
 	$(LIBRARY_LINK) $@ $(STC_LIBRARY_LINK_OPTS) $(OBJS) $(BASE64_BUILD)/*.$(OBJ) $(MD5_BUILD)/*.$(OBJ) $(JRTPLIB_STC_BUILD_DIR)/*.$(OBJ) $(JTHREAD_STC_BUILD)/*.$(OBJ)
@@ -20,7 +20,7 @@ $(MY_RTSP_CLIENT_DYN_LIB): $(MY_RTSP_CLIENT_LIB)
 .$(CPP).$(OBJ):
 	$(CPLUSPLUS_COMPILER) -c $(CPLUSPLUS_FLAGS) $<
 
-include/rtspClient.h: include/myRegex.h  include/MediaSession.h include/nalu_types_h265.h include/nalu_types_h264.h include/pcmu_types.h include/mpeg4_types.h include/sdp_data.h include/frame_type_base.h include/nalu_types.h include/frame_type_base.h
+include/rtspClient.h: include/myRegex.h  include/MediaSession.h include/nalu_types.h include/nalu_types_h265.h include/nalu_types_h264.h include/pcmu_types.h include/mpeg4_types.h include/sdp_data.h include/frame_type_base.h include/nalu_types.h include/frame_type_base.h
 include/myRtpSession.h: $(JRTPLIB_INCLUDE)/rtpsession.h $(JRTPLIB_INCLUDE)/rtppacket.h $(JRTPLIB_INCLUDE)/rtpudpv4transmitter.h $(JRTPLIB_INCLUDE)/rtpipv4address.h $(JRTPLIB_INCLUDE)/rtpsessionparams.h $(JRTPLIB_INCLUDE)/rtperrors.h $(JRTPLIB_INCLUDE)/rtpsourcedata.h
 include/myRtpTcpSession.h: include/myRtpSession.h
 include/myRtpUdpSession.h: include/myRtpSession.h
@@ -31,6 +31,7 @@ MediaSession.cpp: include/MediaSession.h include/myRtpSession.h include/myRtpTcp
 myRtpUdpSession.cpp: include/myRtpSession.h include/MediaSession.h
 myRtpTcpSession.cpp: include/myRtpTcpSession.h include/MediaSession.h
 myTCPTransmitter.cpp: include/myTCPTransmitter.h
+nalu_types.cpp: include/nalu_types.h
 nalu_types_h264.cpp: include/nalu_types.h include/nalu_types_h264.h include/audio_type_base.h
 nalu_types_h265.cpp: include/nalu_types.h include/nalu_types_h265.h include/audio_type_base.h
 pcmu_types.cpp: include/pcmu_types.h include/audio_type_base.h

@@ -56,7 +56,6 @@ class NALUTypeBase_H264 : public NALUTypeBase
 		virtual bool IsPacketEnd(const uint8_t * rtp_payload) {return true;}
 		virtual bool IsPacketReserved(const uint8_t * rtp_payload) {return false;}
 		virtual bool IsPacketThisType(const uint8_t * rtp_payload);
-		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size);
 		virtual NALUTypeBase * GetNaluRtpType(int packetization, int nalu_type_id);
 		virtual std::string GetName() const { return Name; }
 		virtual bool GetEndFlag() { return EndFlag; }
@@ -66,7 +65,32 @@ class NALUTypeBase_H264 : public NALUTypeBase
 		virtual uint16_t ParseNALUHeader_Layer_ID(const uint8_t * RTPPayload) {return 0;}
 		virtual uint16_t ParseNALUHeader_Temp_ID_Plus_1(const uint8_t * RTPPayload) {return 0;}
 	public:
+        NALUTypeBase_H264();
 		virtual ~NALUTypeBase_H264() {};
+
+    public:
+        virtual void Init();
+        virtual uint8_t * PrefixParameterOnce(uint8_t * buf, size_t * size);
+        virtual bool NeedPrefixParameterOnce() {return prefixParameterOnce;}
+
+        virtual void SetSPS(const string &s) { SPS.assign(s);}
+        virtual void SetPPS(const string &s) { PPS.assign(s);}
+        virtual const string GetSPS() { return SPS;}
+        virtual const string GetPPS() { return PPS;}
+
+    private:
+        bool prefixParameterOnce;
+        string SPS;
+        string PPS;
+    //     virtual int PrefixParameterEveryFrame() {return 0;}
+    //     virtual int PrefixParameterEveryPacket() {return 0;}
+    //     virtual int SuffixParameterOnce() {return 0;}
+    //     virtual int SuffixParameterEveryFrame() {return 0;}
+    //     virtual int SuffixParameterEveryPacket() {return 0;}
+	// 	virtual int ParsePacket(const uint8_t * RTPPayload) {return 0;}
+	// 	virtual int ParseFrame(const uint8_t * RTPPayload) {return 0;}
+        // virtual bool IsFrameComplete(const uint8_t * RTPPayload) {return true;}
+		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size);
 };
 
 class STAP_A : public NALUTypeBase_H264
@@ -180,6 +204,10 @@ class FU_A : public NALUTypeBase_H264
 
 		/* Reserved */
 		bool IsPacketReserved(const uint8_t * rtp_payload);
+
+    public:
+        virtual uint8_t * PrefixParameterOnce(uint8_t * buf, size_t * size) {return NALUTypeBase_H264::PrefixParameterOnce(buf, size);}
+        virtual bool NeedPrefixParameterOnce() {return NALUTypeBase_H264::NeedPrefixParameterOnce();}
 
 };
 
