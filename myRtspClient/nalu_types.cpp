@@ -17,6 +17,20 @@
 #include "Base64.hh"
 #include <string.h>
 
+NALUTypeBase::NALUTypeBase(): FrameTypeBase() 
+{
+}
+
+bool NALUTypeBase::NeedPrefixParameterOnce() 
+{
+    return false;
+}
+
+int NALUTypeBase::ParseParaFromSDP(SDPMediaInfo & sdpMediaInfo)
+{
+    return 0;
+}
+
 uint8_t * NALUTypeBase::PrefixXPS(uint8_t * buf, size_t * size, string & xps)
 {
 	if(!buf) return NULL;

@@ -23,6 +23,8 @@ APs_H265 APs_H265Obj;
 FUs_H265 FUs_H265Obj;
 NALUTypeBase_H265 NaluBaseType_H265Obj;
 
+const string NALUTypeBase_H265::ENCODE_TYPE = "H264";
+
 NALUTypeBase * NALUTypeBase::NalUnitType_H265[1][NAL_UNIT_TYPE_NUM_H265] =
 {
 	{
@@ -119,6 +121,21 @@ NALUTypeBase * NALUTypeBase_H265::GetNaluRtpType(int packetization, int nalu_typ
 	}
 
 	return NALUTypeBase::NalUnitType_H265[packetization][nalu_type_id];
+}
+
+int NALUTypeBase_H265::ParseParaFromSDP(SDPMediaInfo & sdpMediaInfo)
+{
+    map<int, map<SDP_ATTR_ENUM, string> >::iterator it = sdpMediaInfo.fmtMap.begin();
+    if(it->second.find(ATTR_VPS) != it->second.end()) {
+        SetVPS(it->second[ATTR_VPS]);
+    }
+    if(it->second.find(ATTR_SPS) != it->second.end()) {
+        SetSPS(it->second[ATTR_SPS]);
+    }
+    if(it->second.find(ATTR_PPS) != it->second.end()) {
+        SetPPS(it->second[ATTR_PPS]);
+    }
+    return 0;
 }
 
 const uint16_t APs_H265::APs_ID_H265 = 0x30; // decimal: 48;

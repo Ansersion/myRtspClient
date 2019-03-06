@@ -254,7 +254,7 @@ class RtspClient
 
 		// "IsResponse_200_OK" is really a ineffective method, should be modified in future.
 		bool IsResponse_200_OK(ErrorType * err = NULL, string * response = NULL);
-		map<string, MediaSession> GetMediaSessions() const { return *MediaSessionMap; }
+		map<string, MediaSession *> GetMediaSessions() const { return *MediaSessionMap; }
 
 
 	public:
@@ -334,7 +334,7 @@ class RtspClient
 		string RtspResponse;
 		// multimap<string, string> *SDPInfo;
 		string SDPStr;
-		map<string, MediaSession> *MediaSessionMap;
+		map<string, MediaSession *> *MediaSessionMap;
 
 		string VPS;
 		string SPS;

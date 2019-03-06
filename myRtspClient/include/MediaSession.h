@@ -98,12 +98,12 @@ class MediaSession
 		int Packetization;
 		int Timeout;
 
-	protected:
-		MyRTPSession * RTPInterface;
+    public: 
         FrameTypeBase * frameTypeBase;
 
-	public:
-		NALUTypeBase *** NalUnitType;
+	protected:
+		MyRTPSession * RTPInterface;
+
 };
  
 #endif

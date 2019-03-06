@@ -36,6 +36,8 @@
 
 class NALUTypeBase_H265 : public NALUTypeBase
 {
+    public:
+        static const string ENCODE_TYPE;
 	public:
 		NALUTypeBase_H265() { Name.assign("TypeBase_H265"); }
 		virtual ~NALUTypeBase_H265() {};
@@ -52,7 +54,18 @@ class NALUTypeBase_H265 : public NALUTypeBase
 		virtual std::string GetName() const { return Name; }
 		virtual bool GetEndFlag() { return EndFlag; }
 		virtual bool GetStartFlag() { return StartFlag; }
+        int ParseParaFromSDP(SDPMediaInfo & sdpMediaInfo);
+    public:
+        virtual void SetVPS(const string &s) { VPS.assign(s);}
+        virtual void SetSPS(const string &s) { SPS.assign(s);}
+        virtual void SetPPS(const string &s) { PPS.assign(s);}
+        virtual const string GetVPS() { return VPS;}
+        virtual const string GetSPS() { return SPS;}
+        virtual const string GetPPS() { return PPS;}
 	protected:
+        string VPS;
+        string SPS;
+        string PPS;
 		std::string Name;
 		bool EndFlag;
 		bool StartFlag;

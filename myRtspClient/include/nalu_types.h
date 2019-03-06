@@ -47,6 +47,7 @@ class NALUTypeBase : public FrameTypeBase
 		// NALU types map for h265 
 		static NALUTypeBase * NalUnitType_H265[1][NAL_UNIT_TYPE_NUM_H265];
 	public:
+		NALUTypeBase();
 		virtual ~NALUTypeBase() {};
 	public:
 		virtual uint16_t ParseNALUHeader_F(const uint8_t * RTPPayload) = 0;
@@ -66,6 +67,9 @@ class NALUTypeBase : public FrameTypeBase
 		virtual bool GetEndFlag() { return EndFlag; }
 		virtual bool GetStartFlag() { return StartFlag; }
         virtual uint8_t * PrefixXPS(uint8_t * buf, size_t * size, string & xps);
+    public:
+        virtual bool NeedPrefixParameterOnce();
+        virtual int ParseParaFromSDP(SDPMediaInfo & sdpMediaInfo);
 	protected:
 		std::string Name;
 		bool EndFlag;

@@ -71,8 +71,7 @@ MediaSession::MediaSession():
 	// RTCPSockfd(-1),
 	Packetization(PACKET_MODE_SINGAL_NAL),
 	RTPInterface(NULL),
-	NalUnitType(NULL)
-
+	frameTypeBase(NULL)
 {
 	ChannelNum = 1;
 }
@@ -81,7 +80,14 @@ MediaSession::~MediaSession()
 {
 	RTP_Teardown();
 
-	if(RTPInterface) delete RTPInterface;
+	if(RTPInterface) {
+        delete RTPInterface;
+        RTPInterface = NULL;
+    }
+	if(frameTypeBase) {
+        delete frameTypeBase;
+        frameTypeBase = NULL;
+    }
 }
 
 int MediaSession::RTP_SetUp(int tunnelling_sock)

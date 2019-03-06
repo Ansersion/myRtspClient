@@ -48,6 +48,8 @@
 
 class NALUTypeBase_H264 : public NALUTypeBase
 {
+    public: 
+        static const string ENCODE_TYPE;
 	public:
 		virtual uint16_t ParseNALUHeader_F(const uint8_t * RTPPayload);
 		virtual uint16_t ParseNALUHeader_NRI(const uint8_t * RTPPayload);
@@ -71,13 +73,17 @@ class NALUTypeBase_H264 : public NALUTypeBase
     public:
         virtual void Init();
         virtual uint8_t * PrefixParameterOnce(uint8_t * buf, size_t * size);
-        virtual bool NeedPrefixParameterOnce() {return prefixParameterOnce;}
+        virtual bool NeedPrefixParameterOnce();
+        virtual int ParseParaFromSDP(SDPMediaInfo & sdpMediaInfo);
 
         virtual void SetSPS(const string &s) { SPS.assign(s);}
         virtual void SetPPS(const string &s) { PPS.assign(s);}
         virtual const string GetSPS() { return SPS;}
         virtual const string GetPPS() { return PPS;}
 
+
+        void InsertXPS() { prefixParameterOnce = true; }
+        void NotInsertXPSAgain() { prefixParameterOnce = false; }
     private:
         bool prefixParameterOnce;
         string SPS;

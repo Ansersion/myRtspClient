@@ -14,6 +14,7 @@
 //
 
 #include "nalu_types_h264.h"
+#include "nalu_types_h265.h"
 #include <string.h>
 // #include <stdio.h>
 
@@ -24,6 +25,9 @@ MTAP_24 MTAP_24Obj;
 FU_A 	FU_AObj;
 FU_B 	FU_BObj;
 NALUTypeBase_H264 NaluBaseType_H264Obj;
+
+const string NALUTypeBase_H264::ENCODE_TYPE = "H264";
+
 
 NALUTypeBase * NALUTypeBase::NalUnitType_H264[PACKETIZATION_MODE_NUM_H264][NAL_UNIT_TYPE_NUM_H264] =
 {
@@ -64,7 +68,7 @@ NALUTypeBase * NALUTypeBase::NalUnitType_H264[PACKETIZATION_MODE_NUM_H264][NAL_U
 	}
 };
 
-NALUTypeBase_H264::NALUTypeBase_H264() 
+NALUTypeBase_H264::NALUTypeBase_H264():NALUTypeBase()
 {
     prefixParameterOnce = true;
     SPS.assign("");
@@ -74,7 +78,7 @@ NALUTypeBase_H264::NALUTypeBase_H264()
 
 void NALUTypeBase_H264::Init() 
 {
-    prefixParameterOnce = true;
+    InsertXPS();
 }
 
 uint16_t NALUTypeBase_H264::ParseNALUHeader_F(const uint8_t * rtp_payload) 
@@ -137,21 +141,39 @@ uint8_t * NALUTypeBase_H264::PrefixParameterOnce(uint8_t * buf, size_t * size)
     if(!size) return NULL;
     const size_t NALU_StartCodeSize = 4;
     size_t SizeTmp = 0;
-    *size = 0;
 
     if(!NALUTypeBase::PrefixXPS(buf + (*size), &SizeTmp, SPS) || SizeTmp <= NALU_StartCodeSize) {
-        fprintf(stderr, "\033[31mWARNING: No SPS\033[0m\n");
+        fprintf(stderr, "\033[31mWARNING: No [X]PS\033[0m\n");
         return NULL;
     }
     *size += SizeTmp;
 
     if(!NALUTypeBase::PrefixXPS(buf + (*size), &SizeTmp, PPS) || SizeTmp <= NALU_StartCodeSize) {
-        fprintf(stderr, "\033[31mWARNING: No SPS\033[0m\n");
+        fprintf(stderr, "\033[31mWARNING: No [X]PS\033[0m\n");
         return NULL;
     }
     *size += SizeTmp;
 
+    NotInsertXPSAgain();
+
     return buf;
+}
+
+bool NALUTypeBase_H264::NeedPrefixParameterOnce() 
+{
+    return prefixParameterOnce;
+}
+
+int NALUTypeBase_H264::ParseParaFromSDP(SDPMediaInfo & sdpMediaInfo)
+{
+    map<int, map<SDP_ATTR_ENUM, string> >::iterator it = sdpMediaInfo.fmtMap.begin();
+    if(it->second.find(ATTR_SPS) != it->second.end()) {
+        SetSPS(it->second[ATTR_SPS]);
+    }
+    if(it->second.find(ATTR_PPS) != it->second.end()) {
+        SetPPS(it->second[ATTR_PPS]);
+    }
+    return 0;
 }
 
 std::string STAP_A::GetName() const 
