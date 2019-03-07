@@ -35,14 +35,19 @@ class FrameTypeBase
 
 	public:
         virtual void Init() {}
-        virtual uint8_t * PrefixParameterOnce(uint8_t * buf, size_t * size) {return NULL;}
-        virtual bool NeedPrefixParameterOnce() = 0;
+        virtual uint8_t * PrefixParameterOnce(uint8_t * buf, size_t * size) {return buf;}
+        virtual bool NeedPrefixParameterOnce() { return false; }
+        virtual uint8_t * SuffixParameterOnce(uint8_t * buf, size_t * size) {return buf;}
+        virtual bool NeedSuffixParameterOnce() { return false; }
         virtual int PrefixParameterEveryFrame() {return 0;}
         virtual int PrefixParameterEveryPacket() {return 0;}
         virtual int SuffixParameterOnce() {return 0;}
         virtual int SuffixParameterEveryFrame() {return 0;}
         virtual int SuffixParameterEveryPacket() {return 0;}
-		virtual int ParsePacket(const uint8_t * RTPPayload) {return 0;}
+	 	virtual int ParsePacket(const uint8_t * RTPPayload, bool * EndFlag) {
+            if(EndFlag) *EndFlag = true;
+            return 0;
+        }
 		virtual int ParseFrame(const uint8_t * RTPPayload) {return 0;}
 
         virtual int ParseParaFromSDP(SDPMediaInfo & sdpMediaInfo) {return 0;}

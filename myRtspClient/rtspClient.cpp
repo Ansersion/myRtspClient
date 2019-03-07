@@ -1858,40 +1858,72 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 
 	*size = 0;
 
-	const size_t GetSPS_PPS_Period = GET_SPS_PPS_PERIOD; // 30 times
-	if(true == get_vps_sps_pps_periodly) {
-		if(GetVideoDataCount >= GetSPS_PPS_Period) {
-			GetVideoDataCount = 0;
+	// const size_t GetSPS_PPS_Period = GET_SPS_PPS_PERIOD; // 30 times
+	// if(true == get_vps_sps_pps_periodly) {
+	// 	if(GetVideoDataCount >= GetSPS_PPS_Period) {
+	// 		GetVideoDataCount = 0;
 
-			const size_t NALU_StartCodeSize = 4;
-			size_t SizeTmp = 0;
-			if(!GetVPSNalu(buf + (*size), &SizeTmp) || SizeTmp <= NALU_StartCodeSize) {
-				// fprintf(stderr, "\033[31mWARNING: No H264 VPS\033[0m\n");
-			} else {
-				*size += SizeTmp;
-			}
-			if(!GetSPSNalu(buf + (*size), &SizeTmp) || SizeTmp <= NALU_StartCodeSize) {
-				fprintf(stderr, "\033[31mWARNING: No SPS\033[0m\n");
-			} else {
-				*size += SizeTmp;
-			}
-			if(!GetPPSNalu(buf + (*size), &SizeTmp) || SizeTmp <= NALU_StartCodeSize) {
-				fprintf(stderr, "\033[31mWARNING: No PPS\033[0m\n");
-			} else {
-				*size += SizeTmp;
-			}
-			return buf;
-		} else {
-			GetVideoDataCount++;
+	// 		const size_t NALU_StartCodeSize = 4;
+	// 		size_t SizeTmp = 0;
+	// 		if(!GetVPSNalu(buf + (*size), &SizeTmp) || SizeTmp <= NALU_StartCodeSize) {
+	// 			// fprintf(stderr, "\033[31mWARNING: No H264 VPS\033[0m\n");
+	// 		} else {
+	// 			*size += SizeTmp;
+	// 		}
+	// 		if(!GetSPSNalu(buf + (*size), &SizeTmp) || SizeTmp <= NALU_StartCodeSize) {
+	// 			fprintf(stderr, "\033[31mWARNING: No SPS\033[0m\n");
+	// 		} else {
+	// 			*size += SizeTmp;
+	// 		}
+	// 		if(!GetPPSNalu(buf + (*size), &SizeTmp) || SizeTmp <= NALU_StartCodeSize) {
+	// 			fprintf(stderr, "\033[31mWARNING: No PPS\033[0m\n");
+	// 		} else {
+	// 			*size += SizeTmp;
+	// 		}
+	// 		return buf;
+	// 	} else {
+	// 		GetVideoDataCount++;
+	// 	}
+	// }
+    if(NULL == media_session->frameTypeBase) return NULL;
+
+    if(media_session->frameTypeBase->NeedPrefixParameterOnce()) {
+        media_session->frameTypeBase->PrefixParameterOnce(buf+(*size), size);
+    }
+    if(media_session->frameTypeBase->PrefixParameterEveryFrame() != 0) {
+        return NULL;
+    }
+
+	size_t SizeTmp = 0;
+	bool EndFlag;
+    do {
+        EndFlag = true;
+		if(!media_session->GetMediaData(VideoBuffer.Buf, &SizeTmp)) return NULL;
+		if(0 == SizeTmp) {
+			cerr << "No RTP data" << endl;
+			return NULL;
 		}
-	}
-    // if(NULL == media_session->frameTypeBase) return NULL;
-    // printf("type: %s\r\n", typeid(*(media_session->frameTypeBase)).name());
+		if(SizeTmp > VideoBuffer.Size) {
+			cerr << "Error: RTP Packet too large(" << SizeTmp << " bytes > " << VideoBuffer.Size << "bytes)" << endl;
+			return NULL;
+		}
 
-    // if(media_session->frameTypeBase->NeedPrefixParameterOnce()) {
-    //     printf("prefix SPS\n");
-    //     media_session->frameTypeBase->PrefixParameterOnce(buf+(*size), size);
-    // }
+		if(*size + SizeTmp > max_size) {
+			fprintf(stderr, "\033[31mWARNING: NALU truncated because larger than buffer: %lu(NALU size) > %lu(Buffer size)\033[0m\n", *size + SizeTmp, max_size);
+			return buf;
+		}
+        if(media_session->frameTypeBase->PrefixParameterEveryPacket() != 0) {
+            return NULL;
+        }
+        if(media_session->frameTypeBase->ParsePacket(VideoBuffer.Buf, &EndFlag) != 0) {
+            return NULL;
+        }
+        if(media_session->frameTypeBase->SuffixParameterEveryPacket() != 0) {
+            return NULL;
+        }
+		SizeTmp = media_session->frameTypeBase->CopyData(buf + (*size), VideoBuffer.Buf, SizeTmp);
+		*size += SizeTmp;
+    } while(!EndFlag);
 
     /*
        if(media_session.NeedPrefixParameterOnce()) {
@@ -1900,13 +1932,36 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
        media_session.PrefixFrame();
        do{
         EndFlag = true;
+		if(!media_session->GetMediaData(VideoBuffer.Buf, &SizeTmp)) return NULL;
+		if(0 == SizeTmp) {
+			cerr << "No RTP data" << endl;
+			return NULL;
+		}
+		if(SizeTmp > VideoBuffer.Size) {
+			cerr << "Error: RTP Packet too large(" << SizeTmp << " bytes > " << VideoBuffer.Size << "bytes)" << endl;
+			return NULL;
+		}
+
+		if(*size + SizeTmp > max_size) {
+			fprintf(stderr, "\033[31mWARNING: NALU truncated because larger than buffer: %lu(NALU size) > %lu(Buffer size)\033[0m\n", *size + SizeTmp, max_size);
+			return buf;
+		}
+        // PrefixParameterEveryPacket()
         EndFlag = ParsePacket();
+        // SuffixParameterEveryPacket()
         CopyData();
+		SizeTmp = NALUType->CopyData(buf + (*size), VideoBuffer.Buf, SizeTmp);
+		*size += SizeTmp;
        }
        while(!EndFlag);
+       media_session.SuffixParameterEveryFrame();
+       if(media_session.NeedSuffixParameterOnce()) {
+        media_session.SuffixParameterOnce();
+       }
        return buf;
        */
 
+    /*
 	size_t SizeTmp = 0;
 	bool EndFlag = false;
 	NALUTypeBase * NALUTypeBaseTmp = NULL;
@@ -1957,6 +2012,7 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 		*size += SizeTmp;
 		EndFlag = NALUType->GetEndFlag();
 	} while(!EndFlag);
+    */
 
 	return buf;
 }
