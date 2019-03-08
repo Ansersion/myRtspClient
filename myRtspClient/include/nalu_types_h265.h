@@ -34,6 +34,60 @@
       ((N) == FUs_H265::FUs_ID_H265) \
 	)
 
+/* H265TypeInterface */
+class H265TypeInterface
+{
+    public:
+		static H265TypeInterface * NalUnitType_H265[PACKETIZATION_MODE_NUM_H265][NAL_UNIT_TYPE_NUM_H265];
+        virtual ~H265TypeInterface() {};
+        virtual uint16_t ParseNALUHeader_F(const uint8_t * rtp_payload) {
+            if(!rtp_payload) return 0;
+            const uint16_t NALUHeader_F_Mask = 0x8000; // binary: 1000_0000_0000_0000
+            uint16_t HeaderTmp = 0;
+            HeaderTmp = ((rtp_payload[0] << 8) | rtp_payload[1]);
+            HeaderTmp = HeaderTmp & NALUHeader_F_Mask;
+            return HeaderTmp;
+        }
+        virtual uint16_t ParseNALUHeader_NRI(const uint8_t * rtp_payload) {
+            if(!rtp_payload) return 0;
+            uint16_t NALUHeader_NRI_Mask = 0x0060; // binary: 0110_0000
+            return (rtp_payload[0] & NALUHeader_NRI_Mask);
+        }
+
+        virtual uint16_t ParseNALUHeader_Type(const uint8_t * rtp_payload) {
+            if(!rtp_payload) return 0;
+            const uint16_t NALUHeader_Type_Mask = 0x7E00; // binary: 0111_1110_0000_0000
+            uint16_t HeaderTmp = 0;
+            HeaderTmp = ((rtp_payload[0] << 8) | rtp_payload[1]);
+            HeaderTmp = HeaderTmp & NALUHeader_Type_Mask;
+            return HeaderTmp;
+        }
+
+        virtual uint16_t ParseNALUHeader_Layer_ID(const uint8_t * rtp_payload) {
+            if(!rtp_payload) return 0;
+            const uint16_t NALUHeader_Layer_ID_Mask = 0x01F8; // binary: 0000_0001_1111_1000
+            uint16_t HeaderTmp = 0;
+            HeaderTmp = ((rtp_payload[0] << 8) | rtp_payload[1]);
+            HeaderTmp = HeaderTmp & NALUHeader_Layer_ID_Mask;
+            return HeaderTmp;
+        }
+
+        virtual uint16_t ParseNALUHeader_Temp_ID_Plus_1(const uint8_t * rtp_payload) {
+            if(!rtp_payload) return 0;
+            const uint16_t NALUHeader_Temp_ID_Mask = 0x0007; // binary: 0000_0000_0000_0111
+            uint16_t HeaderTmp = 0;
+            HeaderTmp = ((rtp_payload[0] << 8) | rtp_payload[1]);
+            HeaderTmp = HeaderTmp & NALUHeader_Temp_ID_Mask;
+            return HeaderTmp;
+        }
+
+        virtual bool IsPacketStart(const uint8_t * rtp_payload) {return false;}
+        virtual bool IsPacketEnd(const uint8_t * rtp_payload) {return true;}
+        virtual bool IsPacketReserved(const uint8_t * rtp_payload) {return false;}
+        virtual bool IsPacketThisType(const uint8_t * rtp_payload) {return true;}
+};
+
+
 class NALUTypeBase_H265 : public NALUTypeBase
 {
     public:
@@ -112,4 +166,42 @@ class FUs_H265 : public NALUTypeBase_H265
 
 };
 
+class H265TypeInterfaceAPs : public H265TypeInterface
+{
+	public:
+		H265TypeInterfaceAPs() {}
+		virtual ~H265TypeInterfaceAPs() {};
+
+	public:
+		virtual bool IsPacketStart(const uint8_t * rtp_payload);
+		virtual bool IsPacketEnd(const uint8_t * rtp_payload);
+		virtual bool IsPacketThisType(const uint8_t * rtp_payload);
+
+	public:
+		static const uint16_t APs_ID_H265;
+};
+
+class H265TypeInterfaceFUs : public H265TypeInterface
+{
+	public:
+		H265TypeInterfaceFUs() {}
+		virtual ~H265TypeInterfaceFUs() {};
+	public:
+		/* Function: "ParseNALUHeader_*":
+		 * 	Return 'FU_A_ERR'(0xFF) if error occurred */
+		virtual uint16_t ParseNALUHeader_Type(const uint8_t * RTPPayload);
+	public:
+		static const uint16_t FUs_ID_H265;
+
+	public:
+		/* if FU_A payload type */
+		bool IsPacketThisType(const uint8_t * rtp_payload);
+
+		/* Packet Start Flag */
+		bool IsPacketStart(const uint8_t * rtp_payload);
+
+		/* Packet End Flag */
+		bool IsPacketEnd(const uint8_t * rtp_payload);
+
+};
 #endif

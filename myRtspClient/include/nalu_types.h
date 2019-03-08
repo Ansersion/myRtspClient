@@ -28,6 +28,7 @@
 #define PACKETIZATION_MODE_NUM_H264     3
 
 #define NAL_UNIT_TYPE_NUM_H265          64
+#define PACKETIZATION_MODE_NUM_H265     1
 
 #define PACKET_MODE_SINGAL_NAL          0
 #define PACKET_MODE_NON_INTERLEAVED     1
@@ -42,8 +43,6 @@ using std::string;
 class NALUTypeBase : public FrameTypeBase
 {
 	public:
-		// NALU types map for h264 
-		static NALUTypeBase * NalUnitType_H264[PACKETIZATION_MODE_NUM_H264][NAL_UNIT_TYPE_NUM_H264];
 		// NALU types map for h265 
 		static NALUTypeBase * NalUnitType_H265[1][NAL_UNIT_TYPE_NUM_H265];
 	public:
@@ -62,7 +61,7 @@ class NALUTypeBase : public FrameTypeBase
 		virtual bool IsPacketReserved(const uint8_t * rtp_payload) { return false;}
 		virtual bool IsPacketThisType(const uint8_t * rtp_payload) = 0;
 		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size) = 0;
-		virtual NALUTypeBase * GetNaluRtpType(int packetization, int nalu_type_id) = 0;
+		// virtual NALUTypeBase * GetNaluRtpType(int packetization, int nalu_type_id) = 0;
 		virtual std::string GetName() const { return Name; }
 		virtual bool GetEndFlag() { return EndFlag; }
 		virtual bool GetStartFlag() { return StartFlag; }

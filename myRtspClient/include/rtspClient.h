@@ -264,10 +264,6 @@ class RtspClient
 		uint8_t * GetMediaPacket(MediaSession * media_session, uint8_t * buf, size_t * size);
 		uint8_t * GetMediaPacket(string media_type, uint8_t * buf, size_t * size);
 
-		uint8_t * GetVPSNalu(uint8_t * buf, size_t * size);
-		uint8_t * GetSPSNalu(uint8_t * buf, size_t * size);
-		uint8_t * GetPPSNalu(uint8_t * buf, size_t * size);
-
 		uint32_t CheckAuth(int sockfd, string cmd, string uri);
 		string MakeMd5DigestResp(string realm, string cmd, string uri, string nonce, string username = "", string password = "");
 		string MakeBasicResp(string username = "", string password = "");
@@ -332,17 +328,11 @@ class RtspClient
 		string RtspIP;
 		uint16_t RtspPort;
 		string RtspResponse;
-		// multimap<string, string> *SDPInfo;
 		string SDPStr;
 		map<string, MediaSession *> *MediaSessionMap;
 
-		string VPS;
-		string SPS;
-		string PPS;
 		bool CmdPLAYSent;
 
-		// uint8_t AudioBuffer[BUFSIZ];
-		// uint8_t VideoBuffer[BUFSIZ];
 		Buffer_t AudioBuffer;
 		Buffer_t VideoBuffer;
 

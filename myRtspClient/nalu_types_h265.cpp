@@ -23,24 +23,28 @@ APs_H265 APs_H265Obj;
 FUs_H265 FUs_H265Obj;
 NALUTypeBase_H265 NaluBaseType_H265Obj;
 
-const string NALUTypeBase_H265::ENCODE_TYPE = "H264";
+H265TypeInterfaceAPs H265TypeInterfaceAPs_H265Obj;
+H265TypeInterfaceFUs H265TypeInterfaceFUs_H265Obj;
+H265TypeInterface H265TypeInterface_H265Obj;
 
-NALUTypeBase * NALUTypeBase::NalUnitType_H265[1][NAL_UNIT_TYPE_NUM_H265] =
+const string NALUTypeBase_H265::ENCODE_TYPE = "H265";
+
+H265TypeInterface * H265TypeInterface::NalUnitType_H265[PACKETIZATION_MODE_NUM_H265][NAL_UNIT_TYPE_NUM_H265] =
 {
 	{
-		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj, 
-		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj, 
-		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj, 
-		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj, 
-		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj, 
-		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj, 
-		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj, 
-		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,
-		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj, 
-		&NaluBaseType_H265Obj,     &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,            &NaluBaseType_H265Obj,
-		&NaluBaseType_H265Obj, 	   NULL,                             NULL,                             NULL,                
+		&H265TypeInterface_H265Obj,     &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj, 
+		&H265TypeInterface_H265Obj,     &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj, 
+		&H265TypeInterface_H265Obj,     &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj, 
+		&H265TypeInterface_H265Obj,     &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj, 
+		&H265TypeInterface_H265Obj,     &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj, 
+		&H265TypeInterface_H265Obj,     &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj, 
+		&H265TypeInterface_H265Obj,     &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj, 
+		&H265TypeInterface_H265Obj,     &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj,
+		&H265TypeInterface_H265Obj,     &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj, 
+		&H265TypeInterface_H265Obj,     &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj,            &H265TypeInterface_H265Obj,
+		&H265TypeInterface_H265Obj, 	   NULL,                             NULL,                             NULL,                
         NULL,                      NULL,                             NULL,                             NULL, 
-        &APs_H265Obj,               &FUs_H265Obj,                    NULL,                             NULL, 
+        &H265TypeInterfaceAPs_H265Obj,               &H265TypeInterfaceFUs_H265Obj,                    NULL,                             NULL, 
         NULL,                      NULL,                             NULL,                             NULL, 
         NULL,                      NULL,                             NULL,                             NULL, 
         NULL,                      NULL,                             NULL,                             NULL
@@ -114,13 +118,15 @@ size_t NALUTypeBase_H265::CopyData(uint8_t * buf, uint8_t * data, size_t size)
 
 NALUTypeBase * NALUTypeBase_H265::GetNaluRtpType(int packetization, int nalu_type_id)
 {
-	nalu_type_id = nalu_type_id >> (NUH_LAYER_ID_BIT_NUM + NUH_TEMPORAL_ID_PLUS1_BIT_NUM);
+	// nalu_type_id = nalu_type_id >> (NUH_LAYER_ID_BIT_NUM + NUH_TEMPORAL_ID_PLUS1_BIT_NUM);
 
-	if(!IS_NALU_TYPE_VALID_H265(nalu_type_id)) {
-		return NULL;
-	}
+	// if(!IS_NALU_TYPE_VALID_H265(nalu_type_id)) {
+	// 	return NULL;
+	// }
 
-	return NALUTypeBase::NalUnitType_H265[packetization][nalu_type_id];
+	// return NALUTypeBase::NalUnitType_H265[packetization][nalu_type_id];
+    /* TODO */
+    return NULL;
 }
 
 int NALUTypeBase_H265::ParseParaFromSDP(SDPMediaInfo & sdpMediaInfo)
@@ -224,6 +230,61 @@ bool FUs_H265::IsPacketStart(const uint8_t * rtp_payload)
 }
 
 bool FUs_H265::IsPacketEnd(const uint8_t * rtp_payload)
+{
+	if(!IsPacketThisType(rtp_payload)) return false;
+	uint8_t PacketE_Mask = 0x40; // binary:0100_0000
+	return (rtp_payload[2] & PacketE_Mask);
+}
+
+
+/* */
+
+bool H265TypeInterfaceAPs::IsPacketStart(const uint8_t * rtp_payload)
+{
+	return 0;
+}
+
+bool H265TypeInterfaceAPs::IsPacketEnd(const uint8_t * rtp_payload)
+{
+	return 0;
+}
+
+bool H265TypeInterfaceAPs::IsPacketThisType(const uint8_t * rtp_payload)
+{
+	return 0;
+}
+
+uint16_t H265TypeInterfaceFUs::ParseNALUHeader_Type(const uint8_t * rtp_payload)
+{
+	if(!rtp_payload) return FUs_H265_ERR;
+	// if(FUs_ID_H265 != (rtp_payload[3] & FUs_ID_H265)) return H265TypeInterfaceFUs_ERR;
+
+	uint8_t NALUHeader_Type_Mask = 0x3F; // binary: 0011_1111
+	uint16_t NALUHeader_Type = 0;
+	NALUHeader_Type |= (rtp_payload[2] & NALUHeader_Type_Mask) << (NUH_LAYER_ID_BIT_NUM + NUH_TEMPORAL_ID_PLUS1_BIT_NUM);
+
+	return NALUHeader_Type;
+}
+
+bool H265TypeInterfaceFUs::IsPacketThisType(const uint8_t * rtp_payload)
+{
+	// if(!rtp_payload) return false;
+
+	// uint16_t NalType = NALUTypeBase_H265::ParseNALUHeader_Type(rtp_payload);
+	// NalType = NalType >> (NUH_LAYER_ID_BIT_NUM + NUH_TEMPORAL_ID_PLUS1_BIT_NUM);
+	// return (NalType == FUs_ID_H265);
+    /* TODO */
+    return true;
+}
+
+bool H265TypeInterfaceFUs::IsPacketStart(const uint8_t * rtp_payload)
+{
+	if(!IsPacketThisType(rtp_payload)) return false;
+	uint8_t PacketS_Mask = 0x80; // binary:1000_0000
+	return (rtp_payload[2] & PacketS_Mask);
+}
+
+bool H265TypeInterfaceFUs::IsPacketEnd(const uint8_t * rtp_payload)
 {
 	if(!IsPacketThisType(rtp_payload)) return false;
 	uint8_t PacketE_Mask = 0x40; // binary:0100_0000

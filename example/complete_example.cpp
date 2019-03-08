@@ -142,21 +142,21 @@ int main(int argc, char *argv[])
     /* For convenience, you could refer to "simple_example.cpp" */
     /* Get SPS, PPS, VPS manually start */
     Client.SetObtainVpsSpsPpsPeriodly(false);
-    if(!Client.GetVPSNalu(buf, &size)) {
-		if(write(fd, buf, size) < 0) {
-			perror("write");
-		}
-    } 
-    if(!Client.GetSPSNalu(buf, &size)) {
-		if(write(fd, buf, size) < 0) {
-			perror("write");
-		}
-    } 
-    if(!Client.GetPPSNalu(buf, &size)) {
-		if(write(fd, buf, size) < 0) {
-			perror("write");
-		}
-    } 
+    // if(!Client.GetVPSNalu(buf, &size)) {
+	// 	if(write(fd, buf, size) < 0) {
+	// 		perror("write");
+	// 	}
+    // } 
+    // if(!Client.GetSPSNalu(buf, &size)) {
+	// 	if(write(fd, buf, size) < 0) {
+	// 		perror("write");
+	// 	}
+    // } 
+    // if(!Client.GetPPSNalu(buf, &size)) {
+	// 	if(write(fd, buf, size) < 0) {
+	// 		perror("write");
+	// 	}
+    // } 
     /* Get SPS, PPS, VPS manually end */
     
 
