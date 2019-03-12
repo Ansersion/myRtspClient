@@ -73,6 +73,7 @@ class H264TypeInterface
         virtual bool IsPacketEnd(const uint8_t * rtp_payload) {return true;}
         virtual bool IsPacketReserved(const uint8_t * rtp_payload) {return false;}
         virtual bool IsPacketThisType(const uint8_t * rtp_payload) {return true;}
+        virtual bool SkipHeaderSize(const uint8_t * rtp_payload) {return 0;}
 };
 
 class H264TypeInterfaceSTAP_A : public H264TypeInterface
@@ -121,9 +122,10 @@ class H264TypeInterfaceFU_A : public H264TypeInterface
 	public:
 		/* Function: "ParseNALUHeader_*":
 		 * 	Return 'FU_A_ERR'(0xFF) if error occurred */
-		uint16_t ParseNALUHeader_F(const uint8_t * rtp_payload);
-		uint16_t ParseNALUHeader_NRI(const uint8_t * rtp_payload);
-		uint16_t ParseNALUHeader_Type(const uint8_t * rtp_payload);
+		virtual uint16_t ParseNALUHeader_F(const uint8_t * rtp_payload);
+		virtual uint16_t ParseNALUHeader_NRI(const uint8_t * rtp_payload);
+		virtual uint16_t ParseNALUHeader_Type(const uint8_t * rtp_payload);
+        virtual bool SkipHeaderSize(const uint8_t * rtp_payload) {return 2;}
 	public:
 		static const uint8_t FU_A_ID;
 
@@ -154,6 +156,9 @@ class NALUTypeBase_H264 : public NALUTypeBase
     public: 
         static const string ENCODE_TYPE;
 	public:
+        NALUTypeBase_H264();
+		virtual ~NALUTypeBase_H264() {};
+	public:
 		virtual uint16_t ParseNALUHeader_F(const uint8_t * RTPPayload);
 		virtual uint16_t ParseNALUHeader_NRI(const uint8_t * RTPPayload);
 		virtual uint16_t ParseNALUHeader_Type(const uint8_t * RTPPayload);
@@ -169,9 +174,6 @@ class NALUTypeBase_H264 : public NALUTypeBase
 		// H265 interface with no use
 		virtual uint16_t ParseNALUHeader_Layer_ID(const uint8_t * RTPPayload) {return 0;}
 		virtual uint16_t ParseNALUHeader_Temp_ID_Plus_1(const uint8_t * RTPPayload) {return 0;}
-	public:
-        NALUTypeBase_H264();
-		virtual ~NALUTypeBase_H264() {};
 
     public:
         virtual void Init();

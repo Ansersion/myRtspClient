@@ -138,9 +138,9 @@ size_t NALUTypeBase_H264::CopyData(uint8_t * buf, uint8_t * data, size_t size)
 		memcpy(buf + CopySize, &NALUHeader, sizeof(NALUHeader));
 		CopySize += sizeof(NALUHeader);
 	}
-	const int FU_A_HeaderSize = 2;
-	memcpy(buf + CopySize, data + FU_A_HeaderSize, size - FU_A_HeaderSize);
-	CopySize += size - FU_A_HeaderSize;
+	const int SkipHeaderSize = NALUType->SkipHeaderSize(data);
+	memcpy(buf + CopySize, data + SkipHeaderSize, size - SkipHeaderSize);
+	CopySize += size - SkipHeaderSize;
 
 	return CopySize;
 }
@@ -162,13 +162,13 @@ uint8_t * NALUTypeBase_H264::PrefixParameterOnce(uint8_t * buf, size_t * size)
     size_t SizeTmp = 0;
 
     if(!NALUTypeBase::PrefixXPS(buf + (*size), &SizeTmp, SPS) || SizeTmp <= NALU_StartCodeSize) {
-        fprintf(stderr, "\033[31mWARNING: No [X]PS\033[0m\n");
+        fprintf(stderr, "\033[31mWARNING: No SPS\033[0m\n");
         return NULL;
     }
     *size += SizeTmp;
 
     if(!NALUTypeBase::PrefixXPS(buf + (*size), &SizeTmp, PPS) || SizeTmp <= NALU_StartCodeSize) {
-        fprintf(stderr, "\033[31mWARNING: No [X]PS\033[0m\n");
+        fprintf(stderr, "\033[31mWARNING: No PPS\033[0m\n");
         return NULL;
     }
     *size += SizeTmp;
@@ -180,11 +180,6 @@ uint8_t * NALUTypeBase_H264::PrefixParameterOnce(uint8_t * buf, size_t * size)
 
 bool NALUTypeBase_H264::NeedPrefixParameterOnce() 
 {
-    static int x = 0;
-    if(x++ > 30) {
-       // InsertXPS(); 
-       x = 0;
-    }
     return prefixParameterOnce;
 }
 
