@@ -82,11 +82,11 @@ class H265TypeInterface
             return HeaderTmp;
         }
 
-        virtual bool IsPacketStart(const uint8_t * rtp_payload) {return false;}
+        virtual bool IsPacketStart(const uint8_t * rtp_payload) {return true;}
         virtual bool IsPacketEnd(const uint8_t * rtp_payload) {return true;}
         virtual bool IsPacketReserved(const uint8_t * rtp_payload) {return false;}
         virtual bool IsPacketThisType(const uint8_t * rtp_payload) {return true;}
-        virtual bool SkipHeaderSize(const uint8_t * rtp_payload) {return 0;}
+        virtual int SkipHeaderSize(const uint8_t * rtp_payload) {return 2;}
 };
 
 
@@ -149,7 +149,7 @@ class H265TypeInterfaceAPs : public H265TypeInterface
 		virtual bool IsPacketStart(const uint8_t * rtp_payload);
 		virtual bool IsPacketEnd(const uint8_t * rtp_payload);
 		virtual bool IsPacketThisType(const uint8_t * rtp_payload);
-        virtual bool SkipHeaderSize(const uint8_t * rtp_payload) {return 0;}
+        virtual int SkipHeaderSize(const uint8_t * rtp_payload) {return 2;}
 
 	public:
 		static const uint16_t APs_ID_H265;
@@ -163,7 +163,7 @@ class H265TypeInterfaceFUs : public H265TypeInterface
 		/* Function: "ParseNALUHeader_*":
 		 * 	Return 'FU_A_ERR'(0xFF) if error occurred */
 		virtual uint16_t ParseNALUHeader_Type(const uint8_t * RTPPayload);
-        virtual bool SkipHeaderSize(const uint8_t * rtp_payload) {return 3;}
+        virtual int SkipHeaderSize(const uint8_t * rtp_payload) {return 3;}
 	public:
 		static const uint16_t FUs_ID_H265;
 

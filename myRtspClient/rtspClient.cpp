@@ -42,12 +42,12 @@ using std::cerr;
 using std::endl;
 using std::pair;
 
-extern STAP_A 		STAP_AObj;
-extern STAP_B 		STAP_BObj;
-extern MTAP_16 		MTAP_16Obj;
-extern MTAP_24 		MTAP_24Obj;
-extern FU_A 		FU_AObj;
-extern FU_B 		FU_BObj;
+// extern STAP_A 		STAP_AObj;
+// extern STAP_B 		STAP_BObj;
+// extern MTAP_16 		MTAP_16Obj;
+// extern MTAP_24 		MTAP_24Obj;
+// extern FU_A 		FU_AObj;
+// extern FU_B 		FU_BObj;
 extern NALUTypeBase_H264 NaluBaseType_H264Obj;
 
 extern MPEG_Audio MPEG_AudioObj;

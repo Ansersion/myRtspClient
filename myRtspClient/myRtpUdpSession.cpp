@@ -65,6 +65,7 @@ int MyRTPUDPSession::MyRTP_SetUp(MediaSession * media_session)
 
 	sessparams.SetAcceptOwnPackets(true);
 	transparams.SetPortbase(media_session->RTPPort);
+	transparams.SetRTPReceiveBuffer(100000);
 	status = Create(sessparams,&transparams);  
 	// printf("DEBUG: create udpsession\n");
 	return IsError(status);

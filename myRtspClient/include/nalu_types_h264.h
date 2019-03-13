@@ -73,7 +73,7 @@ class H264TypeInterface
         virtual bool IsPacketEnd(const uint8_t * rtp_payload) {return true;}
         virtual bool IsPacketReserved(const uint8_t * rtp_payload) {return false;}
         virtual bool IsPacketThisType(const uint8_t * rtp_payload) {return true;}
-        virtual bool SkipHeaderSize(const uint8_t * rtp_payload) {return 0;}
+        virtual int SkipHeaderSize(const uint8_t * rtp_payload) {return 0;}
 };
 
 class H264TypeInterfaceSTAP_A : public H264TypeInterface
@@ -125,7 +125,7 @@ class H264TypeInterfaceFU_A : public H264TypeInterface
 		virtual uint16_t ParseNALUHeader_F(const uint8_t * rtp_payload);
 		virtual uint16_t ParseNALUHeader_NRI(const uint8_t * rtp_payload);
 		virtual uint16_t ParseNALUHeader_Type(const uint8_t * rtp_payload);
-        virtual bool SkipHeaderSize(const uint8_t * rtp_payload) {return 2;}
+        virtual int SkipHeaderSize(const uint8_t * rtp_payload) {return 2;}
 	public:
 		static const uint8_t FU_A_ID;
 

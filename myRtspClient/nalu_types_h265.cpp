@@ -123,15 +123,18 @@ size_t NALUTypeBase_H265::CopyData(uint8_t * buf, uint8_t * data, size_t size)
 	uint16_t NALUHeader = 0;
 	NALUHeader = (  
 			NALUType->ParseNALUHeader_F(data)      | 
-			NALUType->ParseNALUHeader_NRI(data)    | 
-			NALUType->ParseNALUHeader_Type(data)
+			NALUType->ParseNALUHeader_Type(data)   |
+			NALUType->ParseNALUHeader_Layer_ID(data)    | 
+			NALUType->ParseNALUHeader_Temp_ID_Plus_1(data)
 			);
 
     if(StartFlag) {
         buf[0] = 0; buf[1] = 0; buf[2] = 0; buf[3] = 1;
         CopySize += 4; 
-		memcpy(buf + CopySize, &NALUHeader, sizeof(NALUHeader));
-		CopySize += sizeof(NALUHeader);
+		// memcpy(buf + CopySize, &NALUHeader, sizeof(NALUHeader));
+        buf[CopySize++] = (uint8_t)((NALUHeader >> 8) & 0xFF);
+        buf[CopySize++] = (uint8_t)(NALUHeader & 0xFF);
+		// CopySize += sizeof(NALUHeader);
     }
 	const int SkipHeaderSize = NALUType->SkipHeaderSize(data);
 	memcpy(buf + CopySize, data + SkipHeaderSize, size - SkipHeaderSize);
@@ -224,111 +227,19 @@ int NALUTypeBase_H265::ParsePacket(const uint8_t * packet, bool * EndFlagTmp)
 const uint16_t H265TypeInterfaceAPs::APs_ID_H265 = 0x30; // decimal: 48;
 const uint16_t H265TypeInterfaceFUs::FUs_ID_H265 = 0x31; // decimal: 49;
 
-
-// bool APs_H265::IsPacketStart(const uint8_t * rtp_payload)
-// {
-// 	return 0;
-// }
-// 
-// bool APs_H265::IsPacketEnd(const uint8_t * rtp_payload)
-// {
-// 	return 0;
-// }
-// 
-// bool APs_H265::IsPacketThisType(const uint8_t * rtp_payload)
-// {
-// 	return 0;
-// }
-// 
-// size_t APs_H265::CopyData(uint8_t * buf, uint8_t * data, size_t size)
-// {
-// 	return 0;
-// }
-// 
-// 
-// uint16_t FUs_H265::ParseNALUHeader_Type(const uint8_t * rtp_payload)
-// {
-// 	if(!rtp_payload) return FUs_H265_ERR;
-// 	// if(FUs_ID_H265 != (rtp_payload[3] & FUs_ID_H265)) return FUs_H265_ERR;
-// 
-// 	uint8_t NALUHeader_Type_Mask = 0x3F; // binary: 0011_1111
-// 	uint16_t NALUHeader_Type = 0;
-// 	NALUHeader_Type |= (rtp_payload[2] & NALUHeader_Type_Mask) << (NUH_LAYER_ID_BIT_NUM + NUH_TEMPORAL_ID_PLUS1_BIT_NUM);
-// 
-// 	return NALUHeader_Type;
-// }
-// 
-// size_t FUs_H265::CopyData(uint8_t * buf, uint8_t * data, size_t size)
-// {
-// 	size_t CopySize = 0;
-// 	if(!buf || !data) return 0;
-// 
-// 	StartFlag = IsPacketStart(data);
-// 	EndFlag = IsPacketEnd(data);
-// 
-// 	uint16_t NALUHeader = 0;
-// 	NALUHeader = (  
-// 			ParseNALUHeader_F(data) 		| 
-// 			ParseNALUHeader_Type(data) 		| 
-// 			ParseNALUHeader_Layer_ID(data) 	|
-// 			ParseNALUHeader_Temp_ID_Plus_1(data)
-// 			);
-// 	NALUHeader = htons(NALUHeader);
-// 
-// 	if(StartFlag) {
-// 
-// 		// NALU start code size
-// 		buf[0] = 0; buf[1] = 0; buf[2] = 0; buf[3] = 1;
-// 		CopySize += 4; 
-// 		memcpy(buf + CopySize, &NALUHeader, sizeof(NALUHeader));
-// 		CopySize += sizeof(NALUHeader);
-// 	}
-// 	const int FU_A_HeaderSize = 3; // NALUHeader(2) + FUHeader(1) = 3
-// 	memcpy(buf + CopySize, data + FU_A_HeaderSize, size - FU_A_HeaderSize);
-// 	CopySize += size - FU_A_HeaderSize;
-// 
-// 	return CopySize;
-// }
-// 
-// bool FUs_H265::IsPacketThisType(const uint8_t * rtp_payload)
-// {
-// 	if(!rtp_payload) return false;
-// 
-// 	uint16_t NalType = NALUTypeBase_H265::ParseNALUHeader_Type(rtp_payload);
-// 	NalType = NalType >> (NUH_LAYER_ID_BIT_NUM + NUH_TEMPORAL_ID_PLUS1_BIT_NUM);
-// 	return (NalType == FUs_ID_H265);
-// }
-// 
-// bool FUs_H265::IsPacketStart(const uint8_t * rtp_payload)
-// {
-// 	if(!IsPacketThisType(rtp_payload)) return false;
-// 	uint8_t PacketS_Mask = 0x80; // binary:1000_0000
-// 	return (rtp_payload[2] & PacketS_Mask);
-// }
-// 
-// bool FUs_H265::IsPacketEnd(const uint8_t * rtp_payload)
-// {
-// 	if(!IsPacketThisType(rtp_payload)) return false;
-// 	uint8_t PacketE_Mask = 0x40; // binary:0100_0000
-// 	return (rtp_payload[2] & PacketE_Mask);
-// }
-
-
-/* */
-
 bool H265TypeInterfaceAPs::IsPacketStart(const uint8_t * rtp_payload)
 {
-	return 0;
+	return true;
 }
 
 bool H265TypeInterfaceAPs::IsPacketEnd(const uint8_t * rtp_payload)
 {
-	return 0;
+	return true;
 }
 
 bool H265TypeInterfaceAPs::IsPacketThisType(const uint8_t * rtp_payload)
 {
-	return 0;
+	return true;
 }
 
 /* RFC7798 4.4.3. Fragmentation Units */

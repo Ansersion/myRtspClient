@@ -29,7 +29,7 @@ static const char * SDP_CONNECTION_DATA_PATTERN = "(.*) +(.*) +(.*)";
 static const char * SDP_SESSION_TIME_PATTERN = "(.*) +(.*)";
 static const char * SDP_RTPMAP_PATTERN("rtpmap:(.+) +([0-9A-Za-z]+)/([0-9]+)/?([0-9])?");
 static const char * SDP_FMTP_H264_PATTERN("fmtp:(.+) +packetization-mode=([0-2]);.*sprop-parameter-sets=([A-Za-z0-9+/=]+),([A-Za-z0-9+/=]+)");
-static const char * SDP_FMTP_H265_PATTERN("fmtp:(.+) +packetization-mode=([0-2]);.*sprop-vps=([A-Za-z0-9+/=]+);.*sprop-sps=([A-Za-z0-9+/=]+);.*sprop-pps=([A-Za-z0-9+/=]+)");
+static const char * SDP_FMTP_H265_PATTERN("fmtp:(.+) .*sprop-vps=([A-Za-z0-9+/=]+);.*sprop-sps=([A-Za-z0-9+/=]+);.*sprop-pps=([A-Za-z0-9+/=]+)");
 static const char * SDP_CONTROL_PATTERN("control:(.+)");
 
 SDPData::~SDPData() 
@@ -141,7 +141,7 @@ void SDPData::parse(string &sdp)
                 
             } else if("a" == key) {
                 group.clear();
-				// cout << "debug: mt=" << currentMediaInfo->mediaType << ",line=" << value << endl;
+				cout << "debug: mt=" << currentMediaInfo->mediaType << ",line=" << value << endl;
                 if(currentMediaInfo != NULL && regex.Regex(value.c_str(), SDP_RTPMAP_PATTERN, &group)) {
                     group.pop_front();
                     stringstream ss;
@@ -157,6 +157,19 @@ void SDPData::parse(string &sdp)
                             it->second[CHANNEL_NUM] = group.front(); group.pop_front();
                         }
                     }
+                } else if(currentMediaInfo != NULL && "video" == currentMediaInfo->mediaType && regex.Regex(value.c_str(), SDP_FMTP_H265_PATTERN, &group)) {
+                    cout << "debug: Parse h265" << endl;
+                    group.pop_front();
+                    stringstream ss;
+                    int payloadId;
+                    ss << group.front(); group.pop_front();
+                    ss >> payloadId;
+                    map<int, map<SDP_ATTR_ENUM, string>>::iterator it = currentMediaInfo->fmtMap.find(payloadId);
+                    if(it != currentMediaInfo->fmtMap.end()) {
+                        it->second[ATTR_VPS] = group.front(); group.pop_front();
+                        it->second[ATTR_SPS] = group.front(); group.pop_front();
+                        it->second[ATTR_PPS] = group.front(); group.pop_front();
+                    }
                 } else if(currentMediaInfo != NULL && "video" == currentMediaInfo->mediaType && regex.Regex(value.c_str(), SDP_FMTP_H264_PATTERN, &group)) {
 					// cout << "SDP_FMTP_H264_PATTERN" << endl;
                     group.pop_front();
@@ -167,19 +180,6 @@ void SDPData::parse(string &sdp)
                     map<int, map<SDP_ATTR_ENUM, string>>::iterator it = currentMediaInfo->fmtMap.find(payloadId);
                     if(it != currentMediaInfo->fmtMap.end()) {
                         it->second[PACK_MODE] = group.front(); group.pop_front();
-                        it->second[ATTR_SPS] = group.front(); group.pop_front();
-                        it->second[ATTR_PPS] = group.front(); group.pop_front();
-                    }
-                } else if(currentMediaInfo != NULL && "video" == currentMediaInfo->mediaType && regex.Regex(value.c_str(), SDP_FMTP_H265_PATTERN, &group)) {
-                    group.pop_front();
-                    stringstream ss;
-                    int payloadId;
-                    ss << group.front(); group.pop_front();
-                    ss >> payloadId;
-                    map<int, map<SDP_ATTR_ENUM, string>>::iterator it = currentMediaInfo->fmtMap.find(payloadId);
-                    if(it != currentMediaInfo->fmtMap.end()) {
-                        it->second[PACK_MODE] = group.front(); group.pop_front();
-                        it->second[ATTR_VPS] = group.front(); group.pop_front();
                         it->second[ATTR_SPS] = group.front(); group.pop_front();
                         it->second[ATTR_PPS] = group.front(); group.pop_front();
                     }
