@@ -69,11 +69,11 @@ class H264TypeInterface
             uint16_t NALUHeader_Type_Mask = 0x001F; // binary: 0001_1111
             return (rtp_payload[0] & NALUHeader_Type_Mask);
         }
-        virtual bool IsPacketStart(const uint8_t * rtp_payload) {return false;}
+        virtual bool IsPacketStart(const uint8_t * rtp_payload) {return true;}
         virtual bool IsPacketEnd(const uint8_t * rtp_payload) {return true;}
         virtual bool IsPacketReserved(const uint8_t * rtp_payload) {return false;}
         virtual bool IsPacketThisType(const uint8_t * rtp_payload) {return true;}
-        virtual int SkipHeaderSize(const uint8_t * rtp_payload) {return 0;}
+        virtual int SkipHeaderSize(const uint8_t * rtp_payload) {return 1;}
 };
 
 class H264TypeInterfaceSTAP_A : public H264TypeInterface
@@ -162,7 +162,7 @@ class NALUTypeBase_H264 : public NALUTypeBase
 		virtual uint16_t ParseNALUHeader_F(const uint8_t * RTPPayload);
 		virtual uint16_t ParseNALUHeader_NRI(const uint8_t * RTPPayload);
 		virtual uint16_t ParseNALUHeader_Type(const uint8_t * RTPPayload);
-		virtual bool IsPacketStart(const uint8_t * rtp_payload) {return false;}
+		virtual bool IsPacketStart(const uint8_t * rtp_payload) {return true;}
 		virtual bool IsPacketEnd(const uint8_t * rtp_payload) {return true;}
 		virtual bool IsPacketReserved(const uint8_t * rtp_payload) {return false;}
 		virtual bool IsPacketThisType(const uint8_t * rtp_payload);

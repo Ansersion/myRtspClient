@@ -131,12 +131,12 @@ size_t NALUTypeBase_H264::CopyData(uint8_t * buf, uint8_t * data, size_t size)
 			);
 
 	if(StartFlag) {
-
 		// NALU start code size
 		buf[0] = 0; buf[1] = 0; buf[2] = 0; buf[3] = 1;
 		CopySize += 4; 
-		memcpy(buf + CopySize, &NALUHeader, sizeof(NALUHeader));
-		CopySize += sizeof(NALUHeader);
+        buf[CopySize++] = (NALUHeader & 0xFF);
+		// memcpy(buf + CopySize, &NALUHeader, sizeof(NALUHeader));
+		// CopySize += sizeof(NALUHeader);
 	}
 	const int SkipHeaderSize = NALUType->SkipHeaderSize(data);
 	memcpy(buf + CopySize, data + SkipHeaderSize, size - SkipHeaderSize);
@@ -234,7 +234,7 @@ const uint8_t H264TypeInterfaceFU_B::FU_B_ID = 0x1D; // decimal: 29
 
 bool H264TypeInterfaceSTAP_A::IsPacketStart(const uint8_t * rtp_payload) 
 {
-	return false;
+	return true;
 }
 
 bool H264TypeInterfaceSTAP_A::IsPacketEnd(const uint8_t * rtp_payload)
