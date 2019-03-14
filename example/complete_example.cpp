@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
        SPS, PPS, VPS by yourself just at the begining of the video data */
     /* For convenience, you could refer to "simple_example.cpp" */
     /* Get SPS, PPS, VPS manually start */
-    Client.SetObtainVpsSpsPpsPeriodly(false);
+    // Client.SetObtainVpsSpsPpsPeriodly(false);
     // if(!Client.GetVPSNalu(buf, &size)) {
 	// 	if(write(fd, buf, size) < 0) {
 	// 		perror("write");

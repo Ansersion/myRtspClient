@@ -1,4 +1,4 @@
-//   Copyright 2015-2016 Ansersion
+//   Copyright 2015-2019 Ansersion
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -13,7 +13,10 @@
 //   limitations under the License.
 //
 
-/* refer to RFC7798 */
+/*******************************/
+/* More info refer to RFC 7798 */
+/*******************************/
+
 #ifndef NALU_TYPES_H265_H
 #define NALU_TYPES_H265_H
 

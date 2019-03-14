@@ -70,8 +70,8 @@ MediaSession::MediaSession():
 	RTCPPort(0),
 	// RTCPSockfd(-1),
 	Packetization(PACKET_MODE_SINGAL_NAL),
-	RTPInterface(NULL),
-	frameTypeBase(NULL)
+	frameTypeBase(NULL),
+	RTPInterface(NULL)
 {
 	ChannelNum = 1;
 }

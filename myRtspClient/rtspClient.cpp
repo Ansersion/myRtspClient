@@ -1,4 +1,4 @@
-//   Copyright 2015-2018 Ansersion
+//   Copyright 2015-2019 Ansersion
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -91,7 +91,6 @@ RtspClient::RtspClient():
 
 	/* Temporary only FU_A supported */
 	// NALUType = new FU_A;
-    ObtainVpsSpsPpsPeriodly = true;
 
     RtspOverHttpDataPort = 0;
     RtspOverHttpDataSockfd = 0;
@@ -1644,11 +1643,11 @@ bool RtspClient::IsResponse_200_OK(ErrorType * err, string * response)
 	return Result;
 }
 
-uint8_t * RtspClient::GetMediaData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size) 
-{
-	if(!media_session) return NULL;
-	return media_session->GetMediaData(buf, size, max_size);
-}
+// uint8_t * RtspClient::GetMediaData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size) 
+// {
+// 	if(!media_session) return NULL;
+// 	return media_session->GetMediaData(buf, size, max_size);
+// }
 
 uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * size, size_t max_size) 
 {
@@ -1672,8 +1671,9 @@ uint8_t * RtspClient::GetMediaData(string media_type, uint8_t * buf, size_t * si
 		return NULL;
 	}
 
-	if(it->second->MediaType == "video") return GetVideoData(it->second, buf, size, max_size, ObtainVpsSpsPpsPeriodly);
-	if(it->second->MediaType == "audio") return GetAudioData(it->second, buf, size, max_size);
+	return GetMediaData(it->second, buf, size, max_size);
+	// if(it->second->MediaType == "video") return GetMediaData2(it->second, buf, size, max_size);
+	// if(it->second->MediaType == "audio") return GetAudioData(it->second, buf, size, max_size);
 	return NULL;
 }
 
@@ -1766,7 +1766,7 @@ void RtspClient::SetDestroiedClbk(string media_type, DESTROIED_CLBK clbk)
 	it->second->SetRtpDestroiedClbk(clbk);
 }
 
-uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size, bool get_vps_sps_pps_periodly) 
+uint8_t * RtspClient::GetMediaData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size) 
 {
 	if(!media_session || !buf || !size) return NULL;
 
@@ -1774,9 +1774,13 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
     if(NULL == media_session->frameTypeBase) return NULL;
 
     if(media_session->frameTypeBase->NeedPrefixParameterOnce()) {
-        media_session->frameTypeBase->PrefixParameterOnce(buf+(*size), size);
+        if(!media_session->frameTypeBase->PrefixParameterOnce(buf+(*size), size)) {
+            fprintf(stderr, "PrefixParameterOnce error\n");
+            return NULL;
+        }
     }
     if(media_session->frameTypeBase->PrefixParameterEveryFrame() != 0) {
+        fprintf(stderr, "PrefixParameterEveryFrame error\n");
         return NULL;
     }
 
@@ -1799,12 +1803,15 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 			return buf;
 		}
         if(media_session->frameTypeBase->PrefixParameterEveryPacket() != 0) {
+            fprintf(stderr, "PrefixParameterEveryPacket error\n");
             return NULL;
         }
         if(media_session->frameTypeBase->ParsePacket(VideoBuffer.Buf, &EndFlag) != 0) {
+            fprintf(stderr, "ParsePacket error\n");
             return NULL;
         }
         if(media_session->frameTypeBase->SuffixParameterEveryPacket() != 0) {
+            fprintf(stderr, "SuffixParameterEveryPacket error\n");
             return NULL;
         }
 		SizeTmp = media_session->frameTypeBase->CopyData(buf + (*size), VideoBuffer.Buf, SizeTmp);
@@ -1814,44 +1821,44 @@ uint8_t * RtspClient::GetVideoData(MediaSession * media_session, uint8_t * buf, 
 	return buf;
 }
 
-uint8_t * RtspClient::GetAudioData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size)
-{
-	if(!media_session || !buf || !size) return NULL;
-
-	*size = 0;
-
-	size_t SizeTmp = 0;
-	AudioTypeBase * AudioType;
-
-	if(!media_session->GetMediaData(AudioBuffer.Buf, &SizeTmp)) return NULL;
-	if(0 == SizeTmp) {
-		cerr << "No RTP data" << endl;
-		return NULL;
-	}
-
-
-	MyRegex Regex;
-    if(Regex.Regex(media_session->EncodeType.c_str(), "PCMU", true)) {
-        AudioType = &PCMU_AudioObj;
-    } else {
-        AudioType = &MPEG_AudioObj;
-    }
-
-	if(SizeTmp > AudioBuffer.Size) {
-		cerr << "Error: RTP Packet too large(" << SizeTmp << " bytes > " << AudioBuffer.Size << "bytes)" << endl;
-		return NULL;
-	}
-
-	if(*size + SizeTmp > max_size) {
-		fprintf(stderr, "\033[31mWARNING: NALU truncated because larger than buffer: %lu(NALU size) > %lu(Buffer size)\033[0m\n", *size + SizeTmp, max_size);
-		return buf;
-	}
-
-	SizeTmp = AudioType->CopyData(buf + (*size), AudioBuffer.Buf, SizeTmp);
-	*size += SizeTmp;
-
-	return buf;
-}
+// uint8_t * RtspClient::GetAudioData(MediaSession * media_session, uint8_t * buf, size_t * size, size_t max_size)
+// {
+// 	if(!media_session || !buf || !size) return NULL;
+// 
+// 	*size = 0;
+// 
+// 	size_t SizeTmp = 0;
+// 	AudioTypeBase * AudioType;
+// 
+// 	if(!media_session->GetMediaData(AudioBuffer.Buf, &SizeTmp)) return NULL;
+// 	if(0 == SizeTmp) {
+// 		cerr << "No RTP data" << endl;
+// 		return NULL;
+// 	}
+// 
+// 
+// 	MyRegex Regex;
+//     if(Regex.Regex(media_session->EncodeType.c_str(), "PCMU", true)) {
+//         // AudioType = &PCMU_AudioObj;
+//     } else {
+//         AudioType = &MPEG_AudioObj;
+//     }
+// 
+// 	if(SizeTmp > AudioBuffer.Size) {
+// 		cerr << "Error: RTP Packet too large(" << SizeTmp << " bytes > " << AudioBuffer.Size << "bytes)" << endl;
+// 		return NULL;
+// 	}
+// 
+// 	if(*size + SizeTmp > max_size) {
+// 		fprintf(stderr, "\033[31mWARNING: NALU truncated because larger than buffer: %lu(NALU size) > %lu(Buffer size)\033[0m\n", *size + SizeTmp, max_size);
+// 		return buf;
+// 	}
+// 
+// 	SizeTmp = AudioType->CopyData(buf + (*size), AudioBuffer.Buf, SizeTmp);
+// 	*size += SizeTmp;
+// 
+// 	return buf;
+// }
 
 uint8_t * RtspClient::GetMediaPacket(MediaSession * media_session, uint8_t * buf, size_t * size) 
 {

@@ -1,4 +1,4 @@
-//   Copyright 2015-2018 Ansersion
+//   Copyright 2015-2019 Ansersion
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -12,28 +12,25 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
+/*******************************/
+/* More info refer to RFC 7655 */
+/*******************************/
+
 
 #include "pcmu_types.h"
 #include <string.h>
 
 PCMU_Audio PCMU_AudioObj;
 
+const string PCMU_Audio::ENCODE_TYPE = "PCMU";
+
 size_t PCMU_Audio::CopyData(uint8_t * buf, uint8_t * data, size_t size)
 {
 	size_t CopySize = 0;
-	int Offset = 0;
-	uint8_t * DataPointer = data;
 
 	if(!buf || !data) return 0;
-	Offset = GetFlagOffset(DataPointer);
-
-	memcpy(buf+CopySize, data + Offset, size - Offset);
-	CopySize += size - Offset;
+	memcpy(buf + CopySize, data, size);
+	CopySize += size;
 
 	return CopySize;
-}
-
-int PCMU_Audio::GetFlagOffset(const uint8_t * rtp_payload)
-{
-	return 0;
 }

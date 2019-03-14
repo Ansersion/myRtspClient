@@ -1,4 +1,4 @@
-//   Copyright 2015-2018 Ansersion
+//   Copyright 2015-2019 Ansersion
 //
 //   Licensed under the Apache License, Version 2.0 (the "License");
 //   you may not use this file except in compliance with the License.
@@ -12,38 +12,47 @@
 //   See the License for the specific language governing permissions and
 //   limitations under the License.
 //
+/*******************************/
+/* More info refer to RFC 7655 */
+/*******************************/
 
 #ifndef PCMU_TYPES_H
 #define PCMU_TYPES_H
 
 #include <string>
 #include <stdint.h>
-#include <audio_type_base.h>
+#include <iostream>
+#include <frame_type_base.h>
 
-class PCMUTypeBase : public AudioTypeBase
+using std::string;
+
+class PCMUTypeBase : public FrameTypeBase
 {
 	public:
-		PCMUTypeBase() {Name.assign("PCMUTypeBase");};
 		virtual ~PCMUTypeBase() {};
 
 	public:
-		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size) { return 0;};
-		virtual int GetFlagOffset(const uint8_t * RTPPayload) { return -1; };
-
-	// protected:
-	// 	std::string Name;
+        virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size) { return FrameTypeBase::CopyData(buf, data, size);}
+        virtual int ParseParaFromSDP(SDPMediaInfo & sdpMediaInfo) { return FrameTypeBase::ParseParaFromSDP(sdpMediaInfo);}
+        virtual int ParsePacket(const uint8_t * packet, bool * EndFlagTmp) {return FrameTypeBase::ParsePacket(packet, EndFlagTmp);}
+		// virtual int GetFlagOffset(const uint8_t * RTPPayload) { return -1; };
 };
 
 
 class PCMU_Audio : public PCMUTypeBase
 {
 	public:
-		PCMU_Audio() { Name.assign("PCMU_Audio"); };
+        static const string ENCODE_TYPE;
+
+		// PCMU_Audio() { Name.assign("PCMU_Audio"); };
 		virtual ~PCMU_Audio() {};
+        // virtual int ParseParaFromSDP(SDPMediaInfo & sdpMediaInfo);
+        // virtual ParsePacket(const uint8_t * packet, bool * EndFlagTmp);
+		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size);
+        // const int SkipHeaderSize() {return 1; };
 		
 	public:
-		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size);
-		virtual int GetFlagOffset(const uint8_t * RTPPayload);
+		// virtual int GetFlagOffset(const uint8_t * RTPPayload);
 };
 
 #endif
