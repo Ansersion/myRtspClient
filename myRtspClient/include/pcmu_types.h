@@ -34,7 +34,7 @@ class PCMUTypeBase : public FrameTypeBase
 	public:
         virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size) { return FrameTypeBase::CopyData(buf, data, size);}
         virtual int ParseParaFromSDP(SDPMediaInfo & sdpMediaInfo) { return FrameTypeBase::ParseParaFromSDP(sdpMediaInfo);}
-        virtual int ParsePacket(const uint8_t * packet, bool * EndFlagTmp) {return FrameTypeBase::ParsePacket(packet, EndFlagTmp);}
+        virtual int ParsePacket(const uint8_t * packet, size_t size, bool * EndFlagTmp) {return FrameTypeBase::ParsePacket(packet, size, EndFlagTmp);}
 		// virtual int GetFlagOffset(const uint8_t * RTPPayload) { return -1; };
 };
 
@@ -44,15 +44,8 @@ class PCMU_Audio : public PCMUTypeBase
 	public:
         static const string ENCODE_TYPE;
 
-		// PCMU_Audio() { Name.assign("PCMU_Audio"); };
 		virtual ~PCMU_Audio() {};
-        // virtual int ParseParaFromSDP(SDPMediaInfo & sdpMediaInfo);
-        // virtual ParsePacket(const uint8_t * packet, bool * EndFlagTmp);
 		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size);
-        // const int SkipHeaderSize() {return 1; };
-		
-	public:
-		// virtual int GetFlagOffset(const uint8_t * RTPPayload);
 };
 
 #endif

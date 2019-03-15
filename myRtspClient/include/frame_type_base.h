@@ -44,7 +44,7 @@ class FrameTypeBase
         virtual int SuffixParameterOnce() {return 0;}
         virtual int SuffixParameterEveryFrame() {return 0;}
         virtual int SuffixParameterEveryPacket() {return 0;}
-	 	virtual int ParsePacket(const uint8_t * RTPPayload, bool * EndFlag) {
+	 	virtual int ParsePacket(const uint8_t * RTPPayload, size_t size, bool * EndFlag) {
             if(EndFlag) *EndFlag = true;
             return 0;
         }

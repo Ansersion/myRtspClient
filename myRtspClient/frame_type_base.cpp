@@ -17,6 +17,7 @@
 #include "nalu_types_h264.h"
 #include "nalu_types_h265.h"
 #include "pcmu_types.h"
+#include "mpeg_types.h"
 #include <string.h>
 
 using std::string;
@@ -31,6 +32,8 @@ FrameTypeBase * FrameTypeBase::CreateNewFrameType(string &EncodeType)
         frame_type_base = new NALUTypeBase_H265();
     } else if(0 == EncodeType.compare(PCMU_Audio::ENCODE_TYPE)) {
         frame_type_base = new PCMU_Audio();
+    } else if(0 == EncodeType.compare(MPEG_Audio::ENCODE_TYPE)) {
+        frame_type_base = new MPEG_Audio();
     }
 
     return frame_type_base;

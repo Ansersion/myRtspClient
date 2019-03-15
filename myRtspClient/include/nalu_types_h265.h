@@ -124,7 +124,7 @@ class NALUTypeBase_H265 : public NALUTypeBase
         virtual uint8_t * PrefixParameterOnce(uint8_t * buf, size_t * size);
         virtual bool NeedPrefixParameterOnce();
         virtual int ParseParaFromSDP(SDPMediaInfo & sdpMediaInfo);
-	 	virtual int ParsePacket(const uint8_t * RTPPayload, bool * EndFlag);
+	 	virtual int ParsePacket(const uint8_t * RTPPayload, size_t size, bool * EndFlag);
 		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size);
         void InsertXPS() { prefixParameterOnce = true; }
         void NotInsertXPSAgain() { prefixParameterOnce = false; }

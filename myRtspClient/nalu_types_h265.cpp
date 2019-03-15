@@ -207,7 +207,7 @@ int NALUTypeBase_H265::ParseParaFromSDP(SDPMediaInfo & sdpMediaInfo)
     return 0;
 }
 
-int NALUTypeBase_H265::ParsePacket(const uint8_t * packet, bool * EndFlagTmp)
+int NALUTypeBase_H265::ParsePacket(const uint8_t * packet, size_t size, bool * EndFlagTmp)
 {
     if(!packet || !EndFlagTmp) {
         return -1;

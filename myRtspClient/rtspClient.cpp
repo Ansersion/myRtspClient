@@ -1806,7 +1806,7 @@ uint8_t * RtspClient::GetMediaData(MediaSession * media_session, uint8_t * buf, 
             fprintf(stderr, "PrefixParameterEveryPacket error\n");
             return NULL;
         }
-        if(media_session->frameTypeBase->ParsePacket(VideoBuffer.Buf, &EndFlag) != 0) {
+        if(media_session->frameTypeBase->ParsePacket(VideoBuffer.Buf, SizeTmp, &EndFlag) != 0) {
             fprintf(stderr, "ParsePacket error\n");
             return NULL;
         }

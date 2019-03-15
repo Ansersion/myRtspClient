@@ -22,19 +22,27 @@
 
 #include <string>
 #include <stdint.h>
-#include <audio_type_base.h>
+#include <frame_type_base.h>
 
-#define MPEG_AUDIO_RTP_HEADER_SIZE 	4
+using std::string;
 
-class MPEGTypeBase : public AudioTypeBase
+#define MPEG_AUDIO_MBZ_SIZE 	2
+#define MPEG_AUDIO_FLAG_OFFSET_SIZE 	2
+#define MPEG_AUDIO_RTP_HEADER_SIZE 	(MPEG_AUDIO_MBZ_SIZE + MPEG_AUDIO_FLAG_OFFSET_SIZE)
+
+class MPEGTypeBase : public FrameTypeBase
 {
 	public:
-		MPEGTypeBase() {Name.assign("MPEGTypeBase");};
+		// MPEGTypeBase() {Name.assign("MPEGTypeBase");};
 		virtual ~MPEGTypeBase() {};
 
+        virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size) { return FrameTypeBase::CopyData(buf, data, size);}
+        virtual int ParseParaFromSDP(SDPMediaInfo & sdpMediaInfo) { return FrameTypeBase::ParseParaFromSDP(sdpMediaInfo);}
+        virtual int ParsePacket(const uint8_t * packet, size_t size, bool * EndFlagTmp) {return FrameTypeBase::ParsePacket(packet, size, EndFlagTmp);}
+
 	public:
-		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size) { return 0;};
-		virtual int GetFlagOffset(const uint8_t * RTPPayload) { return -1; };
+		// virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size) { return 0;};
+		// virtual int GetFlagOffset(const uint8_t * RTPPayload) { return -1; };
 
 	// protected:
 	// 	std::string Name;
@@ -43,12 +51,17 @@ class MPEGTypeBase : public AudioTypeBase
 class MPEG_Audio : public MPEGTypeBase
 {
 	public:
-		MPEG_Audio() { Name.assign("MPEG_Audio"); };
+        static const string ENCODE_TYPE;
 		virtual ~MPEG_Audio() {};
 		
 	public:
+		// virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size);
+		// virtual int GetFlagOffset(const uint8_t * RTPPayload);
+	 	virtual int ParsePacket(const uint8_t * RTPPayload, size_t size, bool * EndFlag);
 		virtual size_t CopyData(uint8_t * buf, uint8_t * data, size_t size);
-		virtual int GetFlagOffset(const uint8_t * RTPPayload);
+
+    private:
+        size_t Offset;
 };
 
 #endif
