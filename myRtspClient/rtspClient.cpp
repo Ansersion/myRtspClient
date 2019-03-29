@@ -770,6 +770,7 @@ ErrorType RtspClient::DoTEARDOWN(MediaSession * media_session, bool http_tunnel_
 			if(media_session->SessionID == it->second->SessionID) break;
 		}
 		if(it != MediaSessionMap->end()) {
+			delete it->second;
 			MediaSessionMap->erase(it);
 		}
 	}
@@ -929,7 +930,13 @@ int RtspClient::ParseSDP(string SDP)
 			NewMediaSession->ControlURI += it1->second.controlURI;
 			// cout << "debug: ControlURI=" << NewMediaSession.ControlURI << endl;;
 		}
-        (*MediaSessionMap)[it1->second.mediaType] = NewMediaSession;
+		if(MediaSessionMap->find(it1->second.mediaType) != MediaSessionMap->end()) {
+			/* TODO: support multiple sessions of video(audios)*/
+			delete NewMediaSession;
+			NewMediaSession = NULL;
+		} else {
+			(*MediaSessionMap)[it1->second.mediaType] = NewMediaSession;
+		}
 		it1++;
 	}
 
