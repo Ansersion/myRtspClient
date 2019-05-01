@@ -148,7 +148,7 @@ void SDPData::parse(string &sdp)
                     int payloadId;
                     ss << group.front(); group.pop_front();
                     ss >> payloadId;
-                    map<int, map<SDP_ATTR_ENUM, string>>::iterator it = currentMediaInfo->fmtMap.find(payloadId);
+                    map<int, map<SDP_ATTR_ENUM, string> >::iterator it = currentMediaInfo->fmtMap.find(payloadId);
                     if(it != currentMediaInfo->fmtMap.end()) {
                         it->second[CODEC_TYPE] = group.front(); group.pop_front();
                         it->second[TIME_RATE] = group.front(); group.pop_front();
@@ -164,7 +164,7 @@ void SDPData::parse(string &sdp)
                     int payloadId;
                     ss << group.front(); group.pop_front();
                     ss >> payloadId;
-                    map<int, map<SDP_ATTR_ENUM, string>>::iterator it = currentMediaInfo->fmtMap.find(payloadId);
+                    map<int, map<SDP_ATTR_ENUM, string> >::iterator it = currentMediaInfo->fmtMap.find(payloadId);
                     if(it != currentMediaInfo->fmtMap.end()) {
                         it->second[ATTR_VPS] = group.front(); group.pop_front();
                         it->second[ATTR_SPS] = group.front(); group.pop_front();
@@ -177,7 +177,7 @@ void SDPData::parse(string &sdp)
                     int payloadId;
                     ss << group.front(); group.pop_front();
                     ss >> payloadId;
-                    map<int, map<SDP_ATTR_ENUM, string>>::iterator it = currentMediaInfo->fmtMap.find(payloadId);
+                    map<int, map<SDP_ATTR_ENUM, string> >::iterator it = currentMediaInfo->fmtMap.find(payloadId);
                     if(it != currentMediaInfo->fmtMap.end()) {
                         it->second[PACK_MODE] = group.front(); group.pop_front();
                         it->second[ATTR_SPS] = group.front(); group.pop_front();

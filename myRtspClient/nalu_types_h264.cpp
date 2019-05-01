@@ -22,7 +22,7 @@
 #include <string.h>
 #include <sstream>
 #include <iostream>
-// #include <stdio.h>
+#include <stdio.h>
 
 using std::stringstream;
 using std::cerr;

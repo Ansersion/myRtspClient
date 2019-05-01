@@ -1,0 +1,48 @@
+# Configure you cross compiling parameters here.
+# If your arm-linux-gcc is installed by "apt-get", it would be:
+#
+#
+# CROSS_COMPILE_DIR?=
+# CROSS_COMPILE?=
+export STAGING_DIR= /home/ansersion/Desktop/staging_dir
+CROSS_COMPILE_DIR= 	/home/ansersion/Desktop/staging_dir/toolchain-mipsel_24kec+dsp_gcc-4.8-linaro_uClibc-0.9.33.2
+CROSS_COMPILE=		$(CROSS_COMPILE_DIR)/bin/mipsel-openwrt-linux-
+
+COMPILE_OPTS =		$(INCLUDES) -I. -O2 -DSOCKLEN_T=socklen_t -DNO_SSTREAM=1  -D_LARGEFILE_SOURCE=1 -D_FILE_OFFSET_BITS=64 -DLOCALE_NOT_USED -fPIC
+C =			c
+C_COMPILER =		$(CROSS_COMPILE)gcc
+C_FLAGS =		$(COMPILE_OPTS)
+CPP =			cpp
+CPLUSPLUS_COMPILER =	$(CROSS_COMPILE)g++
+CPLUSPLUS_FLAGS =	$(COMPILE_OPTS) -Wall 
+OBJ =			o
+LINK =			$(CROSS_COMPILE)g++ -o
+LINK_OPTS =		-lpthread
+CONSOLE_LINK_OPTS =	$(LINK_OPTS)
+LIBRARY_LINK =		ar cr 
+DYN_LIBRARY_LINK =		$(CPLUSPLUS_COMPILER)
+STC_LIBRARY_LINK_OPTS =	
+DYN_LIBRARY_LINK_OPTS =	-fPIC -shared 
+LIB_SUFFIX =			a
+DYN_LIB_SUFFIX =			so
+LIBS_FOR_CONSOLE_APPLICATION =
+LIBS_FOR_GUI_APPLICATION =
+EXE =
+###############################
+# For crosscompiling to set 
+# RTP endian
+# LITTLE_ENDIAN as default 
+###############################
+# RTP_ENDIAN = BIG_ENDIAN
+# OR
+# RTP_ENDIAN = LITTLE_ENDIAN
+RTP_ENDIAN = LITTLE_ENDIAN
+
+###############################
+# JThread enable/disable
+# DISABLE as default 
+###############################
+# RTP_JTHREAD = ENABLE
+# OR
+# RTP_JTHREAD = DISABLE
+RTP_JTHREAD = DISABLE
