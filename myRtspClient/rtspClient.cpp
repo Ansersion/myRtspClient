@@ -1579,7 +1579,7 @@ string RtspClient::ParseSessionID(string ResponseOfSETUP)
 	else return Result;
 
 	// Session: 970756dc30b3a638;timeout=60
-	string Pattern("Session: +([0-9a-fA-F_\\$-.\\..\\+]+)");
+	string Pattern("Session: +([0-9a-zA-Z_\\$-.\\..\\+]+)");
 	list<string> Group;
 	bool IgnoreCase = true;
 	if(Regex.Regex(Response.c_str(), Pattern.c_str(), &Group, IgnoreCase)) {
