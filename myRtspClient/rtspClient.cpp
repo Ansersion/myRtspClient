@@ -107,8 +107,40 @@ RtspClient::RtspClient():
     sdpData = new SDPData();
 }
 
-RtspClient::RtspClient(string uri): RtspClient()
+RtspClient::RtspClient(string uri):
+	RtspURI(""), RtspCSeq(0), RtspSockfd(-1), RtspIP(""), RtspPort(PORT_RTSP), RtspResponse(""), SDPStr(""), 
+	CmdPLAYSent(false), GetVideoDataCount(GET_SPS_PPS_PERIOD),
+	Username(""), Password(""), Realm(""), Nonce("")
 {
+	// SDPInfo = new multimap<string, string>;
+	MediaSessionMap = new map<string, MediaSession *>;
+	AudioBuffer.Size = 0;
+	VideoBuffer.Size = 0;
+	if((AudioBuffer.Buf = (uint8_t *)malloc(MEDIA_BUFSIZ)))
+		AudioBuffer.Size = MEDIA_BUFSIZ;
+	if((VideoBuffer.Buf = (uint8_t *)malloc(MEDIA_BUFSIZ)))
+		VideoBuffer.Size = MEDIA_BUFSIZ;
+
+	ByeFromServerAudioClbk = NULL;
+	ByeFromServerVideoClbk = NULL;
+
+	/* Temporary only FU_A supported */
+	// NALUType = new FU_A;
+
+    RtspOverHttpDataPort = 0;
+    RtspOverHttpDataSockfd = 0;
+
+    HttpHeadUserAgentContent = "MyRTSPClient";
+    HttpHeadXSessionCookieContent = "";
+    HttpHeadAcceptContent = "application/x-rtsp-tunnelled";
+    HttpHeadPramaContent = "no-cache";
+    HttpHeadCacheControlContent = "no-cache";
+    HttpHeadContentTypeContent = "application/x-rtsp-tunnelled";
+    HttpHeadContentLengthContent = "32767";
+    HttpHeadExpiresContent = "Sun, 9 Jan 1972 00:00:00 GMT";
+
+    sdpData = new SDPData();
+
     uri = parseUriWithUserPwd(uri);
     RtspURI.assign(uri);
 }
