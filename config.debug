@@ -1,4 +1,4 @@
-COMPILE_OPTS =		$(INCLUDES) -I. -g -fPIC
+COMPILE_OPTS =		$(INCLUDES) -I. -g -std=c++11 -fPIC
 C =			c
 C_COMPILER =		cc
 C_FLAGS =		$(COMPILE_OPTS) $(CPPFLAGS) $(CFLAGS)
