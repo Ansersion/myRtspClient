@@ -140,16 +140,3 @@ TEST(myRegex, SDP)
 	group.pop_front();
 	EXPECT_EQ(group.front() == "RAHBpVgeSA==", true);
 }
-
-TEST(myRegex, Session)
-{
-    MyRegex Regex;
-
-	string str("Session: 617suw+aMAmF7a3m; timeout=60");
-	string Pattern("Session: +([0-9a-zA-Z_\\$-.\\..\\+]+)");
-    list<string> group;
-
-    EXPECT_EQ(Regex.Regex(str.c_str(), Pattern.c_str(), &group), MyRegex::REGEX_SUCCESS);
-	group.pop_front();
-	EXPECT_EQ(group.front() == "617suw+aMAmF7a3m", true);
-}
